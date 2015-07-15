@@ -1,7 +1,7 @@
 <?php	
 	require 'con_db.php'; /* Коннектор MySQL */
 	
-	$query_bssid  = "SELECT `BSSID` FROM `free` WHERE `BSSID` != '' AND `latitude` = 'not found'";
+	$query_bssid  = "SELECT DISTINCT `BSSID` FROM `free` WHERE `BSSID` != '' AND `latitude` = 'not found' LIMIY";
 	
 	$query_update = "UPDATE `free` SET `latitude`=?,`longitude`=? WHERE `BSSID`=?";
 	$stmt_upd = $db->prepare($query_update);
@@ -47,8 +47,9 @@
 		$res_bssid->close();
 	
 	
-	}
+	};
 	
+	$stmt_upd->close();
 	curl_close($ch);
 	echo "$i done<br>\n";
 ?>
