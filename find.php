@@ -1,4 +1,5 @@
 <?php
+$password="antichat";
 echo '<html><head>
 <title>3WiFi</title>
 
@@ -30,17 +31,17 @@ echo '<html><head>
   
 </head><body>
 ';
-	require 'formfind.php';
+
 	require 'con_db.php'; /* Коннектор MySQL */
-	$pass     =$_POST['pass'];
-	$bssid    =$_POST['bssid'];
-	$essid    =$_POST['essid'];
+
+	if (isset($_POST['pass'] )) {$pass  = $_POST['pass']; } else {$pass='';  };
+	if (isset($_POST['bssid'])and($_POST['bssid']<>'')) {$bssid = $_POST['bssid'];} else {$bssid='%';};
+	if (isset($_POST['essid'])and($_POST['essid']<>'')) {$essid = $_POST['essid'];} else {$essid='%';}; 
 	
-	if ($pass=="antichat") {
-		$query="SELECT * FROM `free` WHERE 1";
-		if ($bssid != "") $query.=" AND `BSSID` LIKE '$bssid'";
-		if ($essid != "") $query.=" AND `ESSID` LIKE '$essid'";
-		
+	require 'formfind.php';
+	
+	if ($pass==$password) {
+		$query="SELECT SQL_NO_CACHE * FROM `free` WHERE `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid'";
 		if ($res = $db->query($query)) {
 			echo "<table>";
 			printf("<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n","time", "comment", "BSSID", "ESSID", "Security","WiFi Key", "WPS PIN", "Latitude", "Longitude","map");

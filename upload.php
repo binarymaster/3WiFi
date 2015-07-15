@@ -9,6 +9,7 @@ if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
 	
 	$row = 0;
 	$comment=$_POST['comment'];
+	if ($comment=='') {$comment='none';};
 	if (($handle = fopen($uploadfile, "r")) !== FALSE) {
 		$sql="INSERT INTO `$db_name`.`free` (           `comment`, `IP`,       `Port`,    `Authorization`, `name`,   `RadioOff`, `Hidden`, `BSSID`,  `ESSID`,  `Security`, `WiFiKey`,     `WPSPIN`,   `LANIP`,     `LANMask`,   `WANIP`,   `WANMask`,   `WANGateway`,   `DNS`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `comment`=?, `IP`=?, `Port`=?, `Authorization`=?, `name`=?, `RadioOff`=?, `Hidden`=?, `BSSID`=?, `ESSID`=?, `Security`=?, `WiFiKey`=?, `WPSPIN`=?, `LANIP`=?, `LANMask`=?, `WANIP`=?, `WANMask`=?,`WANGateway`=?, `DNS`=?;";
 		$stmt = $db->prepare($sql);
