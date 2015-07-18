@@ -21,7 +21,7 @@ echo '<html><head>
     background: #a52a2a; /* Цвет фона */
     color: white; /* Цвет текста */
    }
-   TR.even {
+   TR:nth-child(2n) {
     background: #fff8dc; /* Цвет фона четных строк */
    }
    .la {
