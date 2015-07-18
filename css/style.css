@@ -1,0 +1,23 @@
+TABLE.st1 {
+	background: #fffff0; /* Цвет фона нечетных строк */
+	border: 1px solid #a52a2a; /* Рамка вокруг таблицы */
+	border-collapse: collapse; /* Убираем двойные линии между ячейками */
+}
+TABLE.st1 TD,
+TABLE.st1 TH {
+	padding: 3px; /* Поля вокруг содержимого ячейки */
+}
+TABLE.st1 TD {
+	text-align: center; /* Выравнивание по центру */
+	border: 1px solid #a52a2a; /* Бордюр вокруг ячейки */
+}
+TABLE.st1 TH {
+	background: #a52a2a; /* Цвет фона */
+	color: white; /* Цвет текста */
+}
+TABLE.st1 TR:nth-child(2n) {
+	background: #fff8dc; /* Цвет фона четных строк */
+}
+.la {
+	text-align: left; /* Выравнивание по левому краю */
+}

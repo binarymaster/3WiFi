@@ -6,16 +6,13 @@ function init () {
             zoom: 18
         }),
 		
-		remoteObjectManager = new ymaps.RemoteObjectManager('http://3wifi.tk/getmap.php?bbox=%b',
+		remoteObjectManager = new ymaps.RemoteObjectManager('getmap.php?bbox=%b',
 		{   
 			// Опции кластеров задаются с префиксом cluster.
 			clusterHasBalloon: false,
 			// Опции объектов задаются с префиксом geoObject
 			geoObjectOpenBalloonOnClick: false
 		});
-		
-	
-	
-	
+
 	myMap.geoObjects.add(remoteObjectManager);
 };

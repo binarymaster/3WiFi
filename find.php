@@ -1,50 +1,37 @@
 <?php
-$password="antichat";
-echo '<html><head>
-<title>3WiFi</title>
-
-  <style type="text/css">
-   TABLE {
-    width: 800px; /* Ширина таблицы */
-    background: #fffff0; /* Цвет фона нечетных строк */
-    border: 1px solid #a52a2a; /* Рамка вокруг таблицы */
-    border-collapse: collapse; /* Убираем двойные линии между ячейками */
-   }
-   TD, TH {
-    padding: 3px; /* Поля вокруг содержимого ячейки */
-   }
-   TD {
-    text-align: center; /* Выравнивание по центру */
-    border-bottom: 1px solid #a52a2a; /* Линия внизу ячейки */
-   }
-   TH {
-    background: #a52a2a; /* Цвет фона */
-    color: white; /* Цвет текста */
-   }
-   TR:nth-child(2n) {
-    background: #fff8dc; /* Цвет фона четных строк */
-   }
-   .la {
-    text-align: left; /* Выравнивание по левому краю */
-   }
-  </style>
-  
+if (isset($_POST['pass'])) {$pass = $_POST['pass'];} else {$pass='';};
+if (isset($_POST['bssid'])&&($_POST['bssid']!='')) {$bssid = $_POST['bssid'];} else {$bssid='%';};
+if (isset($_POST['essid'])&&($_POST['essid']!='')) {$essid = $_POST['essid'];} else {$essid='%';}; 
+?>
+<html><head>
+<title>3WiFi: Поиск по базе</title>
+<meta http-equiv=Content-Type content="text/html;charset=UTF-8">
+<link rel=stylesheet href="css/style.css" type="text/css">
 </head><body>
-';
+
+<form enctype="multipart/form-data" action="find.php" method="POST">
+
+	<table>
+	<tr><td>Пароль доступа:</td><td><input name="pass" type="text" value="<?php echo htmlspecialchars($pass);?>" /></td></tr>
+	<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="<?php echo htmlspecialchars($bssid);?>" /></td><td>(% - заменяющий символ)</td></tr>
+	<tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="<?php echo htmlspecialchars($essid);?>" /></td><td>(% - заменяющий символ)</td></tr>
+	<tr><td><input type="submit" value="Найти" /></td><td></td></tr>
+	</table>
+
+</form>
+
+<?php
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
+{
+	$password = "antichat";
 
 	require 'con_db.php'; /* Коннектор MySQL */
 
-	if (isset($_POST['pass'] )) {$pass  = $_POST['pass']; } else {$pass='';  };
-	if (isset($_POST['bssid'])and($_POST['bssid']<>'')) {$bssid = $_POST['bssid'];} else {$bssid='%';};
-	if (isset($_POST['essid'])and($_POST['essid']<>'')) {$essid = $_POST['essid'];} else {$essid='%';}; 
-	
-	require 'formfind.php';
-	
-	if ($pass==$password) {
+	if ($pass == $password) {
 		$query="SELECT SQL_NO_CACHE * FROM `free` WHERE `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid'";
 		if ($res = $db->query($query)) {
-			echo "<table>";
-			printf("<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n","time", "comment", "BSSID", "ESSID", "Security","WiFi Key", "WPS PIN", "Latitude", "Longitude","map");
+			echo "<table class=st1>";
+			printf("<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n","Time", "Comment", "BSSID", "ESSID", "Security","Wi-Fi Key", "WPS PIN", "Latitude", "Longitude","Map");
 			while ($row = $res->fetch_row()) {
 				$xtime=$row[0];
 				$xcomment=$row[1];
@@ -59,16 +46,17 @@ echo '<html><head>
 					$xmap='<a href="http://maps.yandex.ru/?text='.$xlatitude.'%20'.$xlongitude.'">map</a>';
 				}else{
 					$xmap='';
-				};
-				
-				printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n", $xtime, $xcomment, $xbssid, $xessid, $xsecurity, $xwifikey, $xwpspin, $xlatitude, $xlongitude, $xmap);
-			};
+				}
+				$xtime = preg_replace('/\s+/', '<br>', $xtime);
+				printf("<tr><td><tt>%s</tt></td><td>%s</td><td><tt>%s</tt></td><td>%s</td><td>%s</td><td>%s</td><td><tt>%s</tt></td><td>%s</td><td>%s</td><td>%s</td></tr>\n", $xtime, $xcomment, $xbssid, $xessid, $xsecurity, $xwifikey, $xwpspin, $xlatitude, $xlongitude, $xmap);
+			}
 			echo "</table>";
 			$res->close();
-		};
-
+		}
 	} else {
 		echo "AUTH FAILED";
 		exit();
-	};
+	}
+}
 ?>
+</body></html>

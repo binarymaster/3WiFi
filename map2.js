@@ -6,7 +6,7 @@ function init () {
             zoom: 18
         }),
 		
-		loadingObjectManager = new ymaps.LoadingObjectManager('http://3wifi.tk/getmap.php?bbox=%b',
+		loadingObjectManager = new ymaps.LoadingObjectManager('getmap.php?bbox=%b',
 		{   
 			// Включаем кластеризацию.
 			clusterize: true,
@@ -15,9 +15,6 @@ function init () {
 			// Опции объектов задаются с префиксом geoObject
 			geoObjectOpenBalloonOnClick: false
 		});
-		
-	
-	
-	
+
 	myMap.geoObjects.add(loadingObjectManager);
 };
