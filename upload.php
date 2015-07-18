@@ -1,6 +1,6 @@
 <?php
 
-$uploaddir = '/www/3wifi.tk/www/uploads/';
+$uploaddir = 'uploads/';
 $uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
 
 if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
