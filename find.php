@@ -12,7 +12,7 @@ if (isset($_POST['essid'])&&($_POST['essid']!='')) {$essid = $_POST['essid'];} e
 <form enctype="multipart/form-data" action="find.php" method="POST">
 
 	<table>
-	<tr><td>Пароль доступа:</td><td><input name="pass" type="text" value="<?php echo htmlspecialchars($pass);?>" /></td></tr>
+	<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="<?php echo htmlspecialchars($pass);?>" /></td></tr>
 	<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="<?php echo htmlspecialchars($bssid);?>" /></td><td>(% - заменяющий символ)</td></tr>
 	<tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="<?php echo htmlspecialchars($essid);?>" /></td><td>(% - заменяющий символ)</td></tr>
 	<tr><td><input type="submit" value="Найти" /></td><td></td></tr>
