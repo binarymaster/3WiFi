@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 	$uploadfile = $uploaddir . basename($_FILES['userfile']['name']);
 
 	if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
-		echo "Файл загружен на сервер.<br>\n";
+		echo "Файл ".basename($_FILES['userfile']['name'])." загружен на сервер.<br>\n";
 		require 'con_db.php'; /* Коннектор MySQL */
 		
 		$row = 0;
@@ -53,16 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 			if (file_exists($uploadfile)) {
 				unlink($uploadfile);
 				echo "Временный файл удален.<br>\n";
-			} else echo "Временный Файл не найден!<br>\n";
+			} else die("Ошибка: Временный Файл не найден!<br>\n");
 		};
 
 	} else {
-		echo "Ошибка: Файл не был загружен!<br>\n";
+		die("Ошибка: Файл не был загружен!<br>\n");
 	}
 
 	require 'chkxy.php';
-
-	require 'makemap.php';
 
 	echo "Операция завершена.<br>\n";
 }

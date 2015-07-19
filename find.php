@@ -54,8 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 			$res->close();
 		}
 	} else {
-		echo "AUTH FAILED";
-		exit();
+		die("AUTH FAILED");
 	}
 }
 ?>
