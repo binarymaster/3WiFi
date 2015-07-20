@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `free` (
   `ESSID` varchar(32) NOT NULL,
   `Security` varchar(20) NOT NULL,
   `WiFiKey` varchar(64) NOT NULL,
-  `WPSPIN` tinytext NOT NULL,
+  `WPSPIN` varchar(9) NOT NULL,
   `LANIP` varchar(15) NOT NULL,
   `LANMask` varchar(15) NOT NULL,
   `WANIP` varchar(15) NOT NULL,
@@ -35,5 +35,5 @@ CREATE TABLE IF NOT EXISTS `free` (
   `DNS` varchar(50) NOT NULL,
   `latitude` varchar(11) NOT NULL DEFAULT 'none',
   `longitude` varchar(11) NOT NULL DEFAULT 'none',
-  PRIMARY KEY (`BSSID`,`ESSID`,`WiFiKey`)
+  PRIMARY KEY (`BSSID`,`ESSID`,`WiFiKey`,`WPSPIN`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
