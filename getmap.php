@@ -12,7 +12,7 @@
 
 	if ($res = $db->query($query))
 	{
-		Header("Content-Type: application/json");
+		Header("Content-Type: application/json-p");
 		$id=0;
 		$json['type'] = 'FeatureCollection';
 		$json['features'] = array();
