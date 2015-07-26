@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 				$xlatitude=$row[19];
 				$xlongitude=$row[20];
 				if (($xlatitude!="none")and($xlatitude!="not found")and($xlongitude!="none")and($xlongitude!="not found")) {
-					$xmap='<a href="http://maps.yandex.ru/?text='.$xlatitude.'%20'.$xlongitude.'">map</a>';
+					$xmap='<a href="map3.php?lat='.$xlatitude.'&lon='.$xlongitude.'">map</a>';
 				}else{
 					$xmap='';
 				}
