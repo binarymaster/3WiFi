@@ -3,10 +3,10 @@
 	$bbox =  explode(",", $_GET['bbox']);
 	$callback = $_GET['callback'];
 
-	$lat1 = $bbox[0];
-	$lon1 = $bbox[1];
-	$lat2 = $bbox[2];
-	$lon2 = $bbox[3];
+	$lat1 = (float)$bbox[0];
+	$lon1 = (float)$bbox[1];
+	$lat2 = (float)$bbox[2];
+	$lon2 = (float)$bbox[3];
 	
 	$query="SELECT SQL_NO_CACHE * FROM `free` WHERE `latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2 LIMIT 1000";
 

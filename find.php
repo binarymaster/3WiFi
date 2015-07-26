@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 	require 'con_db.php'; /* Коннектор MySQL */
 
 	if ($pass == $password) {
+		$bssid = $db->real_escape_string($bssid);
+		$essid = $db->real_escape_string($essid);
 		$query="SELECT SQL_NO_CACHE * FROM `free` WHERE `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid'";
 		if ($res = $db->query($query)) {
 			echo "<table class=st1>";
