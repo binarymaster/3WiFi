@@ -30,27 +30,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 	if ($pass == $password) {
 		$bssid = $db->real_escape_string($bssid);
 		$essid = $db->real_escape_string($essid);
-		$query="SELECT SQL_NO_CACHE * FROM `free` WHERE `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid'";
+		$query="SELECT * FROM `free` WHERE `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid'";
 		if ($res = $db->query($query)) {
 			echo "<table class=st1>";
-			printf("<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n","Time", "Comment", "BSSID", "ESSID", "Security","Wi-Fi Key", "WPS PIN", "Latitude", "Longitude","Map");
+			printf("<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n","ID","Time", "Comment", "BSSID", "ESSID", "Security","Wi-Fi Key", "WPS PIN", "Latitude", "Longitude","Map");
 			while ($row = $res->fetch_row()) {
-				$xtime=$row[0];
-				$xcomment=$row[1];
-				$xbssid=$row[8];
-				$xessid=$row[9];
-				$xsecurity=$row[10];
-				$xwifikey=$row[11];
-				$xwpspin=$row[12];
-				$xlatitude=$row[19];
-				$xlongitude=$row[20];
+				$xid=$row[0];
+				$xtime=$row[1];
+				$xcomment=$row[2];
+				$xbssid=$row[9];
+				$xessid=$row[10];
+				$xsecurity=$row[11];
+				$xwifikey=$row[12];
+				$xwpspin=$row[13];
+				$xlatitude=$row[20];
+				$xlongitude=$row[21];
 				if (($xlatitude!="none")and($xlatitude!="not found")and($xlongitude!="none")and($xlongitude!="not found")) {
 					$xmap='<a href="map3.php?lat='.$xlatitude.'&lon='.$xlongitude.'">map</a>';
 				}else{
 					$xmap='';
 				}
 				$xtime = preg_replace('/\s+/', '<br>', $xtime);
-				printf("<tr><td><tt>%s</tt></td><td>%s</td><td><tt>%s</tt></td><td>%s</td><td>%s</td><td>%s</td><td><tt>%s</tt></td><td>%s</td><td>%s</td><td>%s</td></tr>\n", $xtime, $xcomment, $xbssid, $xessid, $xsecurity, $xwifikey, $xwpspin, $xlatitude, $xlongitude, $xmap);
+				printf("<tr><td><tt>%s</tt></td><td>%s</td><td>%s</td><td><tt>%s</tt></td><td>%s</td><td>%s</td><td>%s</td><td><tt>%s</tt></td><td>%s</td><td>%s</td><td>%s</td></tr>\n", $xid, $xtime, $xcomment, $xbssid, $xessid, $xsecurity, $xwifikey, $xwpspin, $xlatitude, $xlongitude, $xmap);
 			}
 			echo "</table>";
 			$res->close();

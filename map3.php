@@ -24,7 +24,8 @@ function init () {
 	}),
 
 	remoteObjectManager = new ymaps.RemoteObjectManager('getmap.php?bbox=%b',
-	{
+	{	// Разбивать запросы по тайлам
+		splitRequests: false,
 		// Опции кластеров задаются с префиксом cluster.
 		clusterHasBalloon: false,
 		// Опции объектов задаются с префиксом geoObject

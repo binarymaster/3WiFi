@@ -1,3 +1,3 @@
 <?php 
-require 'map2.php';
+require 'map3.php';
 ?>
