@@ -1,4 +1,5 @@
 <?php
+$topPort=10;
 $topauth=100;
 $topname=30;
 $topbssid=30;
@@ -62,7 +63,27 @@ $topDNS=30;
 		$res->close();
 	};
 
+	/* Таблица порты */
 	
+	$query="SELECT COUNT(DISTINCT `Port`) FROM `free`";
+	if ($res = $db->query($query)) {
+		$row = $res->fetch_row();
+		$yauth=$row[0];
+		$res->close();
+	};
+	
+	$query="SELECT `Port`, COUNT(*) FROM free GROUP BY `Port` ORDER BY COUNT(*) DESC LIMIT $topPort";
+	if ($res = $db->query($query)) {
+		echo "<table class=st1>";
+		printf("<tr><th>count(%s)</th><th>Port (top$topPort)</th></tr>\n",$yauth);
+		while ($row = $res->fetch_row()) {
+			$xauth=$row[0];
+			$xauthcount=$row[1];
+			printf("<tr><td>%s</td><td>%s</td></tr>\n", $xauthcount, $xauth);
+		};
+		echo "</table><br>";
+		$res->close();
+	};
 
 	/* Таблица авторизация */
 	
