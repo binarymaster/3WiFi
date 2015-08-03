@@ -31,6 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 		$bssid = $db->real_escape_string($bssid);
 		$essid = $db->real_escape_string($essid);
 		$query="SELECT * FROM `free` WHERE `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid'";
+		$nowrap = 'style="white-space:nowrap"';
+		$overflow = 'style="max-width:200px;overflow-x:scroll;white-space:nowrap"';
 		if ($res = $db->query($query)) {
 			echo "<table class=st1>";
 			printf("<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n","ID","Time", "Comment", "BSSID", "ESSID", "Security","Wi-Fi Key", "WPS PIN", "Latitude", "Longitude","Map");
@@ -51,7 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 					$xmap='';
 				}
 				$xtime = preg_replace('/\s+/', '<br>', $xtime);
-				printf("<tr><td><tt>%s</tt></td><td>%s</td><td>%s</td><td><tt>%s</tt></td><td>%s</td><td>%s</td><td>%s</td><td><tt>%s</tt></td><td>%s</td><td>%s</td><td>%s</td></tr>\n", $xid, $xtime, $xcomment, $xbssid, $xessid, $xsecurity, $xwifikey, $xwpspin, $xlatitude, $xlongitude, $xmap);
+				//          |       ID          |              Time         | Comment  |     BSSID         | ESSID    | Security
+				printf("<tr><td><tt>%s</tt></td><td $nowrap><tt>%s</tt></td><td>%s</td><td><tt>%s</tt></td><td>%s</td><td>%s</td>", $xid, $xtime, $xcomment, $xbssid, $xessid, $xsecurity);
+				// Wi-Fi Key
+				if (strlen($xwifikey) > 20)
+				{
+					printf("<td $overflow>%s</td>", $xwifikey);
+				} else {
+					printf("<td>%s</td>", $xwifikey);
+				}
+				//      |     WPS PIN       |       Latitude   |       Longitude  | Map Link
+				printf("<td><tt>%s</tt></td><td $nowrap>%s</td><td $nowrap>%s</td><td>%s</td></tr>\n", $xwpspin, $xlatitude, $xlongitude, $xmap);
 			}
 			echo "</table>";
 			$res->close();
