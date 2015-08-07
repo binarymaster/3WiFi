@@ -30,29 +30,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 	if ($pass == $password) {
 		$bssid = $db->real_escape_string($bssid);
 		$essid = $db->real_escape_string($essid);
-		$query="SELECT * FROM `free` WHERE `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid'";
+		$query = "SELECT * FROM `free` WHERE `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid'";
 		$nowrap = 'style="white-space:nowrap"';
 		$overflow = 'style="max-width:200px;overflow-x:scroll;white-space:nowrap"';
 		if ($res = $db->query($query)) {
 			echo "<table class=st1>";
 			printf("<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n","ID","Time", "Comment", "BSSID", "ESSID", "Security","Wi-Fi Key", "WPS PIN", "Latitude", "Longitude","Map");
 			while ($row = $res->fetch_row()) {
-				$xid=$row[0];
-				$xtime=$row[1];
-				$xcomment=$row[2];
-				$xbssid=$row[9];
-				$xessid=$row[10];
-				$xsecurity=$row[11];
-				$xwifikey=$row[12];
-				$xwpspin=$row[13];
-				$xlatitude=$row[20];
-				$xlongitude=$row[21];
-				if (($xlatitude!="none")and($xlatitude!="not found")and($xlongitude!="none")and($xlongitude!="not found")) {
-					$xmap='<a href="map3.php?lat='.$xlatitude.'&lon='.$xlongitude.'">map</a>';
-				}else{
-					$xmap='';
+				$xid = $row[0];
+				$xtime = preg_replace('/\s+/', '<br>', $row[1]);
+				$xcomment = htmlspecialchars($row[2]);
+				$xbssid = htmlspecialchars($row[9]);
+				$xessid = htmlspecialchars($row[10]);
+				$xsecurity = htmlspecialchars($row[11]);
+				$xwifikey = htmlspecialchars($row[12]);
+				$xwpspin = htmlspecialchars($row[13]);
+				$xlatitude = $row[20];
+				$xlongitude = $row[21];
+				if (($xlatitude!="none")&&($xlatitude!="not found")&&($xlongitude!="none")&&($xlongitude!="not found")) {
+					$xmap = '<a href="map3.php?lat='.$xlatitude.'&lon='.$xlongitude.'">map</a>';
+				} else {
+					$xmap = '';
 				}
-				$xtime = preg_replace('/\s+/', '<br>', $xtime);
 				//          |       ID          |              Time         | Comment  |     BSSID         | ESSID    | Security
 				printf("<tr><td><tt>%s</tt></td><td $nowrap><tt>%s</tt></td><td>%s</td><td><tt>%s</tt></td><td>%s</td><td>%s</td>", $xid, $xtime, $xcomment, $xbssid, $xessid, $xsecurity);
 				// Wi-Fi Key

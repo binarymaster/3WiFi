@@ -8,39 +8,37 @@
 	$lat2 = (float)$bbox[2];
 	$lon2 = (float)$bbox[3];
 	
-	$query="SELECT * FROM `free` WHERE `latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2 LIMIT 1000";
+	$query = "SELECT * FROM `free` WHERE `latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2 LIMIT 1000";
 
 	if ($res = $db->query($query))
 	{
 		Header("Content-Type: application/json-p");
-		$json['error']=null;
+		$json['error'] = null;
 		$json['data']['type'] = 'FeatureCollection';
 		$json['data']['features'] = array();
 		$ap['type'] = 'Feature';
 		while ($row = $res->fetch_row())
 		{
-			$xid=$row[0];
-			$xtime=$row[1];
-			$xcomment=$row[2];
-			$xbssid=$row[9];
-			$xessid=$row[10];
-			$xsecurity=$row[11];
-			$xwifikey=$row[12];
-			$xwpspin=$row[13];
-			$xlatitude=$row[20];
-			$xlongitude=$row[21];
+			$xid = $row[0];
+			$xtime = $row[1];
+			$xcomment = htmlspecialchars($row[2]);
+			$xbssid = htmlspecialchars($row[9]);
+			$xessid = htmlspecialchars($row[10]);
+			$xsecurity = htmlspecialchars($row[11]);
+			$xwifikey = htmlspecialchars($row[12]);
+			$xwpspin = htmlspecialchars($row[13]);
+			$xlatitude = $row[20];
+			$xlongitude = $row[21];
 
 			$ap['id'] = $xid;
 			$ap['geometry']['type'] = 'Point';
 			$ap['geometry']['coordinates'][0] = (float)$xlatitude;
 			$ap['geometry']['coordinates'][1] = (float)$xlongitude;
-			$ap['properties']['hintContent'] = "$xbssid<br>$xessid<br>$xwifikey";
+			$ap['properties']['hintContent'] = "$xtime<br>$xbssid<br>$xessid<br>$xwifikey";
 
 			$json['data']['features'][] = $ap;
 		}
 		echo "typeof $callback === 'function' && $callback(".json_encode($json).");";
 		$res->close();
 	}
-
-
 ?>

@@ -1,14 +1,14 @@
 <?php
-$topPort=10;
-$topauth=100;
-$topname=30;
-$topbssid=30;
-$topessid=30;
-$topSecurity=30;
-$topWiFiKey=30;
-$topWPSPIN=30;
-$topWANGateway=30;
-$topDNS=30;
+$topPort = 10;
+$topauth = 100;
+$topname = 30;
+$topbssid = 30;
+$topessid = 30;
+$topSecurity = 30;
+$topWiFiKey = 30;
+$topWPSPIN = 30;
+$topWANGateway = 30;
+$topDNS = 30;
 header('Cache-Control: max-age=30, private, no-store');
 ?>
 <html><head>
@@ -16,7 +16,7 @@ header('Cache-Control: max-age=30, private, no-store');
 <meta http-equiv=Content-Type content="text/html;charset=UTF-8">
 <link rel=stylesheet href="css/style.css" type="text/css">
 </head><body>
-<h2 align="center">Статистика от <?php echo date('Y.m.d H:i:s'); ?>.</h2>
+<h2 align="center">Статистика от <?php echo date('Y.m.d H:i:s'); ?> GMT.</h2>
 <?php
 require 'con_db.php'; /* Коннектор MySQL */
 
@@ -35,7 +35,7 @@ printf("<tr><th>Кол-во (%s)</th><th>Комментарии (%s)</th></tr>\n
 $query="SELECT `comment`, COUNT(*) FROM free GROUP BY `comment` ORDER BY COUNT(*) DESC";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
-		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], $row[0]);
+		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], htmlspecialchars($row[0]));
 	};
 	$res->close();
 };
@@ -52,7 +52,7 @@ printf("<tr><th>Кол-во (%s)</th><th>Названия устройств / �
 $query="SELECT `name`, COUNT(*) FROM free GROUP BY `name` ORDER BY COUNT(*) DESC LIMIT $topname";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
-		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], $row[0]);
+		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], htmlspecialchars($row[0]));
 	};
 	$res->close();
 };
@@ -69,7 +69,7 @@ printf("<tr><th>Кол-во (%s)</th><th>Порты (топ$topPort)</th></tr>\n
 $query="SELECT `Port`, COUNT(*) FROM free GROUP BY `Port` ORDER BY COUNT(*) DESC LIMIT $topPort";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
-		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], $row[0]);
+		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], htmlspecialchars($row[0]));
 	};
 	$res->close();
 };
@@ -90,9 +90,9 @@ if ($res = $db->query($query)) {
 		$xvalue = $row[0];
 		if (strlen($xvalue) > 64)
 		{
-			printf("<tr><td>%s</td><td style=\"max-width:700px;overflow-x:scroll\">%s</td></tr>\n", $xcount, $xvalue);
+			printf("<tr><td>%s</td><td style=\"max-width:700px;overflow-x:scroll\">%s</td></tr>\n", $xcount, htmlspecialchars($xvalue));
 		} else {
-			printf("<tr><td>%s</td><td>%s</td></tr>\n", $xcount, $xvalue);
+			printf("<tr><td>%s</td><td>%s</td></tr>\n", $xcount, htmlspecialchars($xvalue));
 		}
 	};
 	$res->close();
@@ -110,7 +110,7 @@ printf("<tr><th>Кол-во (%s)</th><th>BSSID / MAC-адрес (топ$topbssid
 $query="SELECT `BSSID`, COUNT(*) FROM free GROUP BY `BSSID` ORDER BY COUNT(*) DESC LIMIT $topbssid";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
-		printf("<tr><td>%s</td><td><tt>%s</tt></td></tr>\n", $row[1], $row[0]);
+		printf("<tr><td>%s</td><td><tt>%s</tt></td></tr>\n", $row[1], htmlspecialchars($row[0]));
 	};
 	$res->close();
 };
@@ -127,7 +127,7 @@ printf("<tr><th>Кол-во (%s)</th><th>ESSID / Имя сети (топ$topessi
 $query="SELECT `ESSID`, COUNT(*) FROM free GROUP BY `ESSID` ORDER BY COUNT(*) DESC LIMIT $topessid";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
-		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], $row[0]);
+		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], htmlspecialchars($row[0]));
 	};
 	$res->close();
 };
@@ -144,7 +144,7 @@ printf("<tr><th>Кол-во (%s)</th><th>Тип защиты (топ$topSecurity
 $query="SELECT `Security`, COUNT(*) FROM free GROUP BY `Security` ORDER BY COUNT(*) DESC LIMIT $topSecurity";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
-		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], $row[0]);
+		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], htmlspecialchars($row[0]));
 	};
 	$res->close();
 };
@@ -161,7 +161,7 @@ printf("<tr><th>Кол-во (%s)</th><th>Ключ сети (топ$topWiFiKey)</
 $query="SELECT `WiFiKey`, COUNT(*) FROM free GROUP BY `WiFiKey` ORDER BY COUNT(*) DESC LIMIT $topWiFiKey";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
-		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], $row[0]);
+		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], htmlspecialchars($row[0]));
 	};
 	$res->close();
 };
@@ -178,7 +178,7 @@ printf("<tr><th>Кол-во (%s)</th><th>Пин код WPS (топ$topWPSPIN)</t
 $query="SELECT `WPSPIN`, COUNT(*) FROM free GROUP BY `WPSPIN` ORDER BY COUNT(*) DESC LIMIT $topWPSPIN";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
-		printf("<tr><td>%s</td><td><tt>%s</tt></td></tr>\n", $row[1], $row[0]);
+		printf("<tr><td>%s</td><td><tt>%s</tt></td></tr>\n", $row[1], htmlspecialchars($row[0]));
 	};
 	$res->close();
 };
@@ -195,7 +195,7 @@ printf("<tr><th>Кол-во (%s)</th><th>Шлюз WAN (топ$topWANGateway)</th
 $query="SELECT `WANGateway`, COUNT(*) FROM free GROUP BY `WANGateway` ORDER BY COUNT(*) DESC LIMIT $topWANGateway";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
-		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], $row[0]);
+		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], htmlspecialchars($row[0]));
 	};
 	$res->close();
 };
@@ -212,7 +212,7 @@ printf("<tr><th>Кол-во (%s)</th><th>Серверы доменных имё�
 $query="SELECT `DNS`, COUNT(*) FROM free GROUP BY `DNS` ORDER BY COUNT(*) DESC LIMIT $topDNS";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
-		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], $row[0]);
+		printf("<tr><td>%s</td><td>%s</td></tr>\n", $row[1], htmlspecialchars($row[0]));
 	};
 	$res->close();
 };
