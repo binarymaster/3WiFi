@@ -56,7 +56,7 @@
 				$aphint[] = $xwifikey;
 				$hint[] = implode('<br>', $aphint);
 			}
-			$ap['properties']['hintContent'] = implode('<br><br>', $hint);
+			$ap['properties']['hintContent'] = implode('<hr>', $hint);
 
 			$json['data']['features'][] = $ap;
 		}
