@@ -12,33 +12,54 @@
 
 	if ($res = $db->query($query))
 	{
+		$data = array();
+		while ($row = $res->fetch_row())
+		{
+			$xlatitude = $row[20];
+			$xlongitude = $row[21];
+			if (!isset($data[$xlatitude][$xlongitude])) $data[$xlatitude][$xlongitude] = array();
+			$i = count($data[$xlatitude][$xlongitude]);
+			$data[$xlatitude][$xlongitude][$i]['id'] = (int)$row[0];
+			$data[$xlatitude][$xlongitude][$i]['time'] = $row[1];
+			$data[$xlatitude][$xlongitude][$i]['bssid'] = $row[9];
+			$data[$xlatitude][$xlongitude][$i]['essid'] = $row[10];
+			$data[$xlatitude][$xlongitude][$i]['key'] = $row[12];
+		}
+		$res->close();
+
 		Header("Content-Type: application/json-p");
 		$json['error'] = null;
 		$json['data']['type'] = 'FeatureCollection';
 		$json['data']['features'] = array();
 		$ap['type'] = 'Feature';
-		while ($row = $res->fetch_row())
+		foreach($data as $xlatitude => $xlongitude)
+		foreach($xlongitude as $xlongitude => $apdata)
 		{
-			$xid = $row[0];
-			$xtime = $row[1];
-			$xcomment = htmlspecialchars($row[2]);
-			$xbssid = htmlspecialchars($row[9]);
-			$xessid = htmlspecialchars($row[10]);
-			$xsecurity = htmlspecialchars($row[11]);
-			$xwifikey = htmlspecialchars($row[12]);
-			$xwpspin = htmlspecialchars($row[13]);
-			$xlatitude = $row[20];
-			$xlongitude = $row[21];
-
-			$ap['id'] = $xid;
+			$ap['id'] = $apdata[0]['id'];
 			$ap['geometry']['type'] = 'Point';
 			$ap['geometry']['coordinates'][0] = (float)$xlatitude;
 			$ap['geometry']['coordinates'][1] = (float)$xlongitude;
-			$ap['properties']['hintContent'] = "$xtime<br>$xbssid<br>$xessid<br>$xwifikey";
+
+			$hint = array();
+			for ($i = 0; $i < count($apdata); $i++)
+			{
+				$aphint = array();
+
+				$xtime = $apdata[$i]['time'];
+				$xbssid = htmlspecialchars($apdata[$i]['bssid']);
+				$xessid = htmlspecialchars($apdata[$i]['essid']);
+				$xwifikey = htmlspecialchars($apdata[$i]['key']);
+
+				$aphint[] = $xtime;
+				$aphint[] = $xbssid;
+				$aphint[] = $xessid;
+				$aphint[] = $xwifikey;
+				$hint[] = implode('<br>', $aphint);
+			}
+			$ap['properties']['hintContent'] = implode('<br><br>', $hint);
 
 			$json['data']['features'][] = $ap;
 		}
 		echo "typeof $callback === 'function' && $callback(".json_encode($json).");";
-		$res->close();
 	}
 ?>
