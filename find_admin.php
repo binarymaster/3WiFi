@@ -1,10 +1,13 @@
 <?php
 if (isset($_POST['pass'])) {$pass = $_POST['pass'];} else {$pass='';};
+if (isset($_POST['comment'])&&($_POST['comment']!='')) {$comment = $_POST['comment'];} else {$comment='%';};
 if (isset($_POST['ipaddr'])&&($_POST['ipaddr']!='')) {$ipaddr = $_POST['ipaddr'];} else {$ipaddr='%';};
 if (isset($_POST['auth'])&&($_POST['auth']!='')) {$auth = $_POST['auth'];} else {$auth='%';};
 if (isset($_POST['name'])&&($_POST['name']!='')) {$name = $_POST['name'];} else {$name='%';};
 if (isset($_POST['bssid'])&&($_POST['bssid']!='')) {$bssid = $_POST['bssid'];} else {$bssid='%';};
 if (isset($_POST['essid'])&&($_POST['essid']!='')) {$essid = $_POST['essid'];} else {$essid='%';}; 
+if (isset($_POST['key'])&&($_POST['key']!='')) {$key = $_POST['key'];} else {$key='%';}; 
+if (isset($_POST['wps'])&&($_POST['wps']!='')) {$wps = $_POST['wps'];} else {$wps='%';}; 
 ?>
 <html><head>
 <title>3WiFi: Поиск по базе</title>
@@ -15,11 +18,10 @@ if (isset($_POST['essid'])&&($_POST['essid']!='')) {$essid = $_POST['essid'];} e
 <form enctype="multipart/form-data" method="POST">
 	<table>
 	<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="<?php echo htmlspecialchars($pass);?>" /></td></tr>
-	<tr><td>IP-адрес:</td><td><input name="ipaddr" type="text" value="<?php echo htmlspecialchars($ipaddr);?>" /></td><td>(% - заменяющий символ)</td></tr>
-	<tr><td>Авторизация:</td><td><input name="auth" type="text" value="<?php echo htmlspecialchars($auth);?>" /></td><td>(% - заменяющий символ)</td></tr>
-	<tr><td>Устройство:</td><td><input name="name" type="text" value="<?php echo htmlspecialchars($name);?>" /></td><td>(% - заменяющий символ)</td></tr>
-	<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="<?php echo htmlspecialchars($bssid);?>" /></td><td>(% - заменяющий символ)</td></tr>
-	<tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="<?php echo htmlspecialchars($essid);?>" /></td><td>(% - заменяющий символ)</td></tr>
+	<tr><td>Комментарий:</td><td><input name="comment" type="text" value="<?php echo htmlspecialchars($comment);?>" /></td><td>Устройство:</td><td><input name="name" type="text" value="<?php echo htmlspecialchars($name);?>" /></td></tr>
+	<tr><td>IP-адрес:</td><td><input name="ipaddr" type="text" value="<?php echo htmlspecialchars($ipaddr);?>" /></td><td>Авторизация:</td><td><input name="auth" type="text" value="<?php echo htmlspecialchars($auth);?>" /></td></tr>
+	<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="<?php echo htmlspecialchars($bssid);?>" /></td><td>ESSID / Имя:</td><td><input name="essid" type="text" value="<?php echo htmlspecialchars($essid);?>" /></td></tr>
+	<tr><td>Ключ сети:</td><td><input name="key" type="text" value="<?php echo htmlspecialchars($key);?>" /></td><td>Пин код WPS:</td><td><input name="wps" type="text" value="<?php echo htmlspecialchars($wps);?>" /></td></tr>
 	<tr><td><input type="submit" value="Найти" /></td><td></td></tr>
 	</table>
 </form>
@@ -32,12 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 	require 'con_db.php'; /* Коннектор MySQL */
 
 	if ($pass == $password) {
+		$comment = $db->real_escape_string($comment);
 		$ipaddr = $db->real_escape_string($ipaddr);
 		$auth = $db->real_escape_string($auth);
 		$name = $db->real_escape_string($name);
 		$bssid = $db->real_escape_string($bssid);
 		$essid = $db->real_escape_string($essid);
-		$query = "SELECT * FROM `free` WHERE `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid'";
+		$key = $db->real_escape_string($key);
+		$wps = $db->real_escape_string($wps);
+		$query = "SELECT * FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps'";
 		$nowrap = 'style="white-space:nowrap"';
 		$overflow = 'style="max-width:200px;overflow-x:scroll;white-space:nowrap"';
 		if ($res = $db->query($query)) {
