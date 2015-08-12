@@ -51,7 +51,7 @@ if ($res = $db->query($query)) {
 	$geook = $row[0];
 	$res->close();
 };
-$query="SELECT COUNT(*) FROM `free` WHERE `latitude` = 'none' AND `longitude` = 'none'";
+$query="SELECT COUNT(*) FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none' AND `longitude` = 'none'";
 $inprogress = 0;
 if ($res = $db->query($query)) {
 	$row = $res->fetch_row();
