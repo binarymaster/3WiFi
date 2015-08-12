@@ -37,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 			$format = 'csv';
 			echo "Неизвестное расширение/формат файла, подразумевается CSV.<br>\n";
 		}
+		$warn = array();
 		if (($handle = fopen($uploadfile, "r")) !== FALSE)
 		{
 			$comment = $_POST['comment'];
@@ -46,13 +47,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 			$stmt = $db->prepare($sql);
 
 			$row = 0;
+			$cnt = 0;
 			switch ($format)
 			{
 				case 'csv':
 				while (($data = fgetcsv($handle, 1000, ";")) !== FALSE)
 				{
 					$row++;
-					$num = count($data);
 					if ($row == 1)
 					{
 						if (($data[0]!=="IP Address")or($data[1]!=="Port")or($data[4]!=="Authorization")or($data[5]!=="Server name / Realm name / Device type")or($data[6]!=="Radio Off")or($data[7]!=="Hidden")or($data[8]!=="BSSID")or($data[9]!=="ESSID")or($data[10]!=="Security")or($data[11]!=="Key")or($data[12]!=="WPS PIN")or($data[13]!=="LAN IP Address")or($data[14]!=="LAN Subnet Mask")or($data[15]!=="WAN IP Address")or($data[16]!=="WAN Subnet Mask")or($data[17]!=="WAN Gateway")or($data[18]!=="Domain Name Servers"))
@@ -63,6 +64,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 					}
 					if ($row !== 1)
 					{
+						$cnt++;
+						// Отбираем только валидные точки доступа
+						$bssid = $data[8];
+						$essid = $data[9];
+						$sec = $data[10];
+						$key = $data[11];
+						$wps = $data[12];
+						if ($bssid == '<no wireless>')
+						{
+							$warn[$row] = 1;
+							continue;
+						}
+						if ((strpos($bssid, ':') === false || $wps == '')
+						&& ($essid == '' || $sec == '' || $sec == '-' || $key == '' || $key == '-'))
+						{
+							if (strpos($bssid, ':') !== false
+							|| $essid != ''
+							|| $sec != ''
+							|| $key != ''
+							|| $wps != '')
+							{
+								$warn[$row] = 2;
+							} else {
+								$warn[$row] = 0;
+							}
+							continue;
+						}
+
 						$stmt->bind_param("ssssssssssssssssssssssssssssssssssss", // format
 								// INSERT
 								//    comment   IP        Port      Auth      Name      RadioOff  Hidden    BSSID     ESSID     Security   Key        WPS PIN    LAN IP     LAN Mask   WAN IP     WAN Mask   WAN Gate   DNS Serv
@@ -87,6 +116,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 							break;
 						}
 					}
+					$cnt++;
+					// Отбираем только валидные точки доступа
+					$bssid = $data[8];
+					$essid = $data[9];
+					$sec = $data[10];
+					$key = $data[11];
+					$wps = $data[12];
+					if ($bssid == '<no wireless>')
+					{
+						$warn[$row] = 1;
+						continue;
+					}
+					if ((strpos($bssid, ':') === false || $wps == '')
+					&& ($essid == '' || $sec == '' || $sec == '-' || $key == '' || $key == '-'))
+					{
+						if (strpos($bssid, ':') !== false
+						|| $essid != ''
+						|| $sec != ''
+						|| $key != ''
+						|| $wps != '')
+						{
+							$warn[$row] = 2;
+						} else {
+							$warn[$row] = 0;
+						}
+						continue;
+					}
+
 					$stmt->bind_param("ssssssssssssssssssssssssssssssssssss", // format
 							// INSERT
 							//    comment   IP        Port      Auth      Name      RadioOff  Hidden    BSSID     ESSID     Security   Key        WPS PIN    LAN IP     LAN Mask   WAN IP     WAN Mask   WAN Gate   DNS Serv
@@ -101,7 +158,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 			fclose($handle);
 			$stmt->close();
 			
-			if ($row > 1) echo "Файл загружен в базу.<br>\n";
+			if (count($warn) > 0)
+			{
+				echo "Следующие записи <b>не были</b> внесены в базу:<br>\n<ul>\n";
+				foreach ($warn as $line => $wid)
+				{
+					echo "<li>Строка $line: ";
+					switch ($wid)
+					{
+						case 0:
+						echo 'Нет валидных данных точки доступа';
+						break;
+						case 1:
+						echo 'Устройство не имеет беспроводного адаптера';
+						break;
+						case 2:
+						echo 'Не достаточно полезных данных для внесения в базу';
+						break;
+					}
+					echo ".</li>\n";
+				}
+				echo "</ul>\n";
+			}
+			if ($row > 1) echo "Файл загружен в базу (".($cnt - count($warn))." из $cnt записей).<br>\n";
 			
 			if (file_exists($uploadfile))
 			{
