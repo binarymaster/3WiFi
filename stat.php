@@ -20,18 +20,52 @@ header('Cache-Control: max-age=30, private, no-store');
 <?php
 require 'con_db.php'; /* Коннектор MySQL */
 
-/* Таблица комментарии */
+echo "<table class=st1>";
+$total = 0;
 $yvalue = 0;
-$ycount = 0;
 $query="SELECT COUNT(DISTINCT `comment`),COUNT(*) FROM `free`";
 if ($res = $db->query($query)) {
 	$row = $res->fetch_row();
 	$yvalue=$row[0];
-	$ycount=$row[1];
+	$total=$row[1];
 	$res->close();
 };
-echo "<table class=st1>";
-printf("<tr><th>Кол-во (%s)</th><th>Комментарии (%s)</th></tr>\n", $ycount, $yvalue);
+$query="SELECT COUNT(*) FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__'";
+$bssidok = 0;
+if ($res = $db->query($query)) {
+	$row = $res->fetch_row();
+	$bssidok = $row[0];
+	$res->close();
+};
+$query="SELECT COUNT(*) FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__'";
+$bssidok = 0;
+if ($res = $db->query($query)) {
+	$row = $res->fetch_row();
+	$bssidok = $row[0];
+	$res->close();
+};
+$query="SELECT COUNT(*) FROM `free` WHERE `latitude` > 0 AND `longitude` > 0";
+$geook = 0;
+if ($res = $db->query($query)) {
+	$row = $res->fetch_row();
+	$geook = $row[0];
+	$res->close();
+};
+$query="SELECT COUNT(*) FROM `free` WHERE `latitude` = 'none' AND `longitude` = 'none'";
+$inprogress = 0;
+if ($res = $db->query($query)) {
+	$row = $res->fetch_row();
+	$inprogress = $row[0];
+	$res->close();
+};
+echo "<tr><th>Кол-во</th><th>Сводная таблица</th></tr>\n";
+printf("<tr><td>%s</td><td>Всего записей в базе</td></tr>\n", $total);
+printf("<tr><td>%s</td><td>С корректным BSSID</td></tr>\n", $bssidok);
+printf("<tr><td>%s</td><td>Найдено на карте</td></tr>\n", $geook);
+printf("<tr><td>%s</td><td>В процессе обработки</td></tr>\n", $inprogress);
+
+/* Таблица комментарии */
+printf("<tr><th>Кол-во (%s)</th><th>Комментарии (%s)</th></tr>\n", $total, $yvalue);
 $query="SELECT `comment`, COUNT(*) FROM free GROUP BY `comment` ORDER BY COUNT(*) DESC";
 if ($res = $db->query($query)) {
 	while ($row = $res->fetch_row()) {
