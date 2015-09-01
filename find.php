@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 			echo "<table class=st1>";
 			printf("<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>\n","Time", "Comment", "BSSID", "ESSID", "Security","Wi-Fi Key", "WPS PIN", "Latitude", "Longitude","Map");
 			while ($row = $res->fetch_row()) {
-				$xtime = preg_replace('/\s+/', '<br>', $row[1]);
+				$xtime = substr($row[1], 0, 10);
 				$xcomment = htmlspecialchars($row[2]);
 				$xbssid = htmlspecialchars($row[9]);
 				$xessid = htmlspecialchars($row[10]);
