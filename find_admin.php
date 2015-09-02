@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 		$essid = $db->real_escape_string($essid);
 		$key = $db->real_escape_string($key);
 		$wps = $db->real_escape_string($wps);
-		$query = "SELECT * FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps'";
+		$query = "SELECT * FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps' ORDER BY `time` DESC";
 		$nowrap = 'style="white-space:nowrap"';
 		$overflow = 'style="max-width:200px;overflow-x:scroll;white-space:nowrap"';
 		if ($res = $db->query($query)) {

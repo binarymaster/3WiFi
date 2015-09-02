@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 	if ($pass == $password) {
 		$bssid = $db->real_escape_string($bssid);
 		$essid = $db->real_escape_string($essid);
-		$query = "SELECT * FROM `free` WHERE `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid'";
+		$query = "SELECT * FROM `free` WHERE `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' ORDER BY `time` DESC";
 		$nowrap = 'style="white-space:nowrap"';
 		$overflow = 'style="max-width:200px;overflow-x:scroll;white-space:nowrap"';
 		if ($res = $db->query($query)) {
