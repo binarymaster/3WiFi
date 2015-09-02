@@ -16,7 +16,7 @@ $topWiFiKey = 30;
 $topWPSPIN = 30;
 $topDNS = 30;
 
-require 'con_db.php'; /* Коннектор MySQL */
+require 'con_db.php'; /* РљРѕРЅРЅРµРєС‚РѕСЂ MySQL */
 
 $tstart = microtime(true);
 $json = array();
@@ -24,7 +24,7 @@ $json['result'] = false;
 
 switch ($_GET['a'])
 {
-	// Общая статистика
+	// РћР±С‰Р°СЏ СЃС‚Р°С‚РёСЃС‚РёРєР°
 	case 'stat':
 	$json['result'] = true;
 	$json['stat']['date'] = date('Y.m.d H:i:s');
@@ -54,7 +54,7 @@ switch ($_GET['a'])
 	}
 	break;
 
-	// Комментарии
+	// РљРѕРјРјРµРЅС‚Р°СЂРёРё
 	case 'stcmt':
 	$json['result'] = true;
 	if ($res = $db->query("SELECT `comment`, COUNT(*) FROM free GROUP BY `comment` ORDER BY COUNT(*) DESC"))
@@ -71,7 +71,7 @@ switch ($_GET['a'])
 	}
 	break;
 
-	// Названия устройств
+	// РќР°Р·РІР°РЅРёСЏ СѓСЃС‚СЂРѕР№СЃС‚РІ
 	case 'stdev':
 	$json['result'] = true;
 	$json['stat']['top'] = $topname;
@@ -95,7 +95,7 @@ switch ($_GET['a'])
 	}
 	break;
 
-	// Порты
+	// РџРѕСЂС‚С‹
 	case 'stport':
 	$json['result'] = true;
 	$json['stat']['top'] = $topPort;
@@ -119,7 +119,7 @@ switch ($_GET['a'])
 	}
 	break;
 
-	// Данные авторизации
+	// Р”Р°РЅРЅС‹Рµ Р°РІС‚РѕСЂРёР·Р°С†РёРё
 	case 'stauth':
 	$json['result'] = true;
 	$json['stat']['top'] = $topauth;
@@ -143,7 +143,7 @@ switch ($_GET['a'])
 	}
 	break;
 
-	// BSSID точек доступа
+	// BSSID С‚РѕС‡РµРє РґРѕСЃС‚СѓРїР°
 	case 'stbss':
 	$json['result'] = true;
 	$json['stat']['top'] = $topbssid;
@@ -167,7 +167,7 @@ switch ($_GET['a'])
 	}
 	break;
 
-	// ESSID точек доступа
+	// ESSID С‚РѕС‡РµРє РґРѕСЃС‚СѓРїР°
 	case 'stess':
 	$json['result'] = true;
 	$json['stat']['top'] = $topessid;
@@ -191,7 +191,7 @@ switch ($_GET['a'])
 	}
 	break;
 
-	// Тип защиты точек доступа
+	// РўРёРї Р·Р°С‰РёС‚С‹ С‚РѕС‡РµРє РґРѕСЃС‚СѓРїР°
 	case 'stsec':
 	$json['result'] = true;
 	$json['stat']['top'] = $topSecurity;
@@ -215,7 +215,7 @@ switch ($_GET['a'])
 	}
 	break;
 
-	// Ключи точек доступа
+	// РљР»СЋС‡Рё С‚РѕС‡РµРє РґРѕСЃС‚СѓРїР°
 	case 'stkey':
 	$json['result'] = true;
 	$json['stat']['top'] = $topWiFiKey;
@@ -239,7 +239,7 @@ switch ($_GET['a'])
 	}
 	break;
 
-	// WPS пин коды точек доступа
+	// WPS РїРёРЅ РєРѕРґС‹ С‚РѕС‡РµРє РґРѕСЃС‚СѓРїР°
 	case 'stwps':
 	$json['result'] = true;
 	$json['stat']['top'] = $topWPSPIN;
@@ -263,7 +263,7 @@ switch ($_GET['a'])
 	}
 	break;
 
-	// DNS серверы
+	// DNS СЃРµСЂРІРµСЂС‹
 	case 'stdns':
 	$json['result'] = true;
 	$json['stat']['top'] = $topDNS;
