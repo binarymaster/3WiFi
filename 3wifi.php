@@ -51,6 +51,7 @@ switch ($_GET['a'])
 			$data[$xlatitude][$xlongitude][$i]['key'] = $row[12];
 		}
 		$res->close();
+		$db->close();
 
 		Header("Content-Type: application/json-p");
 		$json['error'] = null;
@@ -87,6 +88,87 @@ switch ($_GET['a'])
 		}
 		echo "typeof $callback === 'function' && $callback(".json_encode($json).");";
 		exit;
+	}
+	break;
+
+	// Поиск по базе
+	case 'find':
+	$pass = '';
+	if (isset($_POST['pass'])) $pass = $_POST['pass'];
+
+	$json['result'] = true;
+	$level = 0;
+	if ($pass == 'antichat') $level = 1;
+	if ($pass == 'secret_password') $level = 2;
+
+	$json['auth'] = $level > 0;
+	if ($level == 0) break;
+	
+	$comment = '%';
+	$ipaddr = '%';
+	$auth = '%';
+	$name = '%';
+	$bssid = '%';
+	$essid = '%';
+	$key = '%';
+	$wps = '%';
+	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
+	if (isset($_POST['essid'])) $essid = $_POST['essid'];
+	if ($level > 1)
+	{
+		if (isset($_POST['comment'])) $comment = $_POST['comment'];
+		if (isset($_POST['ipaddr'])) $ipaddr = $_POST['ipaddr'];
+		if (isset($_POST['auth'])) $auth = $_POST['auth'];
+		if (isset($_POST['name'])) $name = $_POST['name'];
+		if (isset($_POST['key'])) $key = $_POST['key'];
+		if (isset($_POST['wps'])) $wps = $_POST['wps'];
+	}
+	$comment = $db->real_escape_string($comment);
+	$ipaddr = $db->real_escape_string($ipaddr);
+	$auth = $db->real_escape_string($auth);
+	$name = $db->real_escape_string($name);
+	$bssid = $db->real_escape_string($bssid);
+	$essid = $db->real_escape_string($essid);
+	$key = $db->real_escape_string($key);
+	$wps = $db->real_escape_string($wps);
+
+	if ($res = $db->query("SELECT * FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps' ORDER BY `time` DESC"))
+	{
+		$json['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$entry = array();
+			if ($level > 1) $entry['id'] = (int)$row[0];
+			$entry['time'] = $row[1];
+			$entry['comment'] = $row[2];
+			if ($level > 1)
+			{
+				$entry['ipport'] = '';
+				if ($row[3] != '') $entry['ipport'] = $row[3].':'.$row[4];
+				$entry['auth'] = $row[5];
+				$entry['name'] = $row[6];
+			} else {
+				$entry['range'] = '';
+				$oct = explode('.', $row[3]);
+				if (count($oct) == 4)
+				{
+					array_pop($oct);
+					array_pop($oct);
+					$entry['range'] = implode('.', $oct).'.0.0/16';
+				}
+			}
+			$entry['bssid'] = $row[9];
+			$entry['essid'] = $row[10];
+			$entry['sec'] = $row[11];
+			$entry['key'] = $row[12];
+			$entry['wps'] = $row[13];
+			$entry['lat'] = $row[20];
+			$entry['lon'] = $row[21];
+			
+			$json['data'][] = $entry;
+			unset($entry);
+		}
+		$res->close();
 	}
 	break;
 
