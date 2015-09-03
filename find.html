@@ -33,6 +33,7 @@ function switchLevel(newlevel)
 	level = newlevel;
 	$('#fhead').empty();
 	$('#fdata').empty();
+	var nw = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
 	switch (level)
 	{
 		case 1:
@@ -42,7 +43,8 @@ function switchLevel(newlevel)
 		$('#fuserform').show();
 		$('#fadminform').hide();
 		appendTable('fhead', '<th>',
-		['Time','Comment','IP Range','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Map']);
+		['Time','Comment','IP Range','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Map'],
+		[null, null, null, null, null, null, null, nw]);
 		break;
 		case 2:
 		$('input[name=pass]')[1].value = $('input[name=pass]')[0].value;
@@ -50,10 +52,9 @@ function switchLevel(newlevel)
 		$('input[name=essid]')[1].value = $('input[name=essid]')[0].value;
 		$('#fuserform').hide();
 		$('#fadminform').show();
-		var flag = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
 		appendTable('fhead', '<th>',
 		['ID','Time','Comment','IP / Port','Authorization','Device / Firmware / Server Name','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Map'],
-		[null, null, null, null, null, flag]);
+		[null, null, null, null, null, nw, null, null, null, null, nw]);
 		break;
 	}
 	return true;
@@ -64,8 +65,7 @@ function find()
 	var cols = $('#fhead').children().children().length;
 	appendTable('fdata', '<td>', ['<img src="img/loading.gif">'], [{raw: true, mono: false, nowrap: false, over: false, cs: cols}]);
 
-	postdata = $($('form')[level-1]).serialize();
-	$.post('3wifi.php?a=find', postdata, function(d)
+	$.post('3wifi.php?a=find', $($('form')[level-1]).serialize(), function(d)
 	{
 		if (d.result)
 		{
@@ -136,8 +136,8 @@ function initpage()
 <tbody id=fuserform style="display:none">
 <form enctype="multipart/form-data" method="POST">
 <tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
-<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="%" /></td><td>(% - заменяющий символ)</td></tr>
-<tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="%" /></td><td>(% - заменяющий символ)</td></tr>
+<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="%" /></td><td>(% и _ - заменяющие символы)</td></tr>
+<tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="%" /></td><td>(% и _ - заменяющие символы)</td></tr>
 </form>
 </tbody>
 <tbody id=fadminform style="display:none">

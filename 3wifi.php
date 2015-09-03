@@ -103,7 +103,7 @@ switch ($_GET['a'])
 
 	$json['auth'] = $level > 0;
 	if ($level == 0) break;
-	
+
 	$comment = '%';
 	$ipaddr = '%';
 	$auth = '%';
@@ -164,7 +164,7 @@ switch ($_GET['a'])
 			$entry['wps'] = $row[13];
 			$entry['lat'] = $row[20];
 			$entry['lon'] = $row[21];
-			
+
 			$json['data'][] = $entry;
 			unset($entry);
 		}
