@@ -30,6 +30,8 @@ function loadstat()
 		} else {
 			$('#stat').find('tr')[1].childNodes[1].innerText = 'Ошибка загрузки данных.';
 		}
+		// После загрузить остальное
+		loadtable('stcmt');
 	});
 }
 function loadtable(name, tt, of)
@@ -59,26 +61,34 @@ function loadtable(name, tt, of)
 		} else {
 			$('#'+name).find('tr')[1].childNodes[1].innerText = 'Ошибка загрузки данных.';
 		}
+		// Загружать таблицы по очереди
+		switch (name)
+		{
+			case 'stcmt': loadtable('stdev');
+			break;
+			case 'stdev': loadtable('stport');
+			break;
+			case 'stport': loadtable('stauth', false, true);
+			break;
+			case 'stauth': loadtable('stbss', true);
+			break;
+			case 'stbss': loadtable('stess');
+			break;
+			case 'stess': loadtable('stsec');
+			break;
+			case 'stsec': loadtable('stkey');
+			break;
+			case 'stkey': loadtable('stwps', true);
+			break;
+			case 'stwps': loadtable('stdns');
+			break;
+		}
 	});
-}
-function loadall()
-{
-	loadstat();
-	loadtable('stcmt');
-	loadtable('stdev');
-	loadtable('stport');
-	loadtable('stauth', false, true);
-	loadtable('stbss', true);
-	loadtable('stess');
-	loadtable('stsec');
-	loadtable('stkey');
-	loadtable('stwps', true);
-	loadtable('stdns');
 }
 </script>
 </head>
 
-<body onload="loadall()">
+<body onload="loadstat()">
 <h2 align="center">Статистика<span id=stat_date></span>.</h2>
 <noscript>Включите JavaScript для отображения данных.</noscript>
 
