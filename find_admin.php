@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pass']))
 				$xlatitude = $row[20];
 				$xlongitude = $row[21];
 				if (($xlatitude!="none")&&($xlatitude!="not found")&&($xlongitude!="none")&&($xlongitude!="not found")) {
-					$xmap = '<a href="map3.php?lat='.$xlatitude.'&lon='.$xlongitude.'">map</a>';
+					$xmap = '<a href="map.php?lat='.$xlatitude.'&lon='.$xlongitude.'">map</a>';
 				} else {
 					$xmap = '';
 				}
