@@ -34,7 +34,7 @@ switch ($_GET['a'])
 	$lat2 = (float)$bbox[2];
 	$lon2 = (float)$bbox[3];
 
-	if ($res = $db->query("SELECT * FROM `free` WHERE (`latitude` > 0 AND `longitude` > 0) AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) LIMIT 1000"))
+	if ($res = $db->query("SELECT * FROM `free` WHERE (`latitude` != 0 AND `longitude` != 0) AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) LIMIT 1000"))
 	{
 		unset($json); // здесь используется JSON-P
 		$data = array();
@@ -188,7 +188,7 @@ switch ($_GET['a'])
 		$json['stat']['bssids'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT COUNT(*) FROM `free` WHERE `latitude` > 0 AND `longitude` > 0"))
+	if ($res = $db->query("SELECT COUNT(*) FROM `free` WHERE `latitude` != 0 AND `longitude` != 0"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['onmap'] = (int)$row[0];
