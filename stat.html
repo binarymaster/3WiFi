@@ -21,7 +21,7 @@ function loadstat()
 	{
 		if (d.result)
 		{
-			$('#stat_date').text(' от '+d.stat.date+' GMT');
+			$('#stat_cap').text('Статистика от '+d.stat.date+' GMT.');
 			$('#stat').find('tr:gt(0)').remove();
 			appendRow('stat', 0, d.stat.total, 'Всего записей в базе');
 			appendRow('stat', 1, d.stat.bssids, 'С корректным BSSID');
@@ -89,7 +89,7 @@ function loadtable(name, tt, of)
 </head>
 
 <body onload="loadstat()">
-<h2 align="center">Статистика<span id=stat_date></span>.</h2>
+<h2 align="center"><span id=stat_cap>Статистика загружается...</span></h2>
 <noscript>Включите JavaScript для отображения данных.</noscript>
 
 <table class=st1>
