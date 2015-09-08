@@ -3,6 +3,7 @@ function GeoLocateAP($bssid)
 {
 	$coords = GetFromYandex($bssid);
 	if ($coords == '') $coords = GetFromAlterGeo($bssid);
+	if ($coords == '') $coords = GetFromMylnikov($bssid);
 	return $coords;
 }
 function GetFromYandex($bssid)
@@ -35,6 +36,20 @@ function GetFromAlterGeo($bssid)
 			$longitude = $json->location->lng;
 			$result = $latitude.';'.$longitude;
 		}
+	}
+	return $result;
+}
+function GetFromMylnikov($bssid)
+{
+	$data = cURL_Get("http://api.mylnikov.org/wifi/main.py/get?bssid=$bssid");
+
+	$result = '';
+	$json = json_decode($data);
+	if ($json->result == 200)
+	{
+		$latitude = $json->data->lat;
+		$longitude = $json->data->lon;
+		$result = $latitude.';'.$longitude;
 	}
 	return $result;
 }
