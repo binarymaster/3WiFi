@@ -107,13 +107,13 @@ function find()
 						}
 					}
 				} else {
-					$('#fdata').find('tr')[0].childNodes[0].innerText = 'Ничего не найдено.';
+					$('#fdata > tr:first-child > :first-child').text('Ничего не найдено.');
 				}
 			} else {
-				$('#fdata').find('tr')[0].childNodes[0].innerText = 'Не авторизован.';
+				$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
 			}
 		} else {
-			$('#fdata').find('tr')[0].childNodes[0].innerText = 'Ошибка загрузки данных.';
+			$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
 		}
 	});
 }

@@ -13,7 +13,7 @@ function appendRow(rowid, idx, p1, p2, tt, of)
 	if (st != '') st = ' style="'+st+'"';
 
 	$('#'+rowid+' > tr').eq(idx).after('<tr><td>'+p1+'</td><td'+st+'></td></tr>');
-	$('#'+rowid).find('tr:last')[0].childNodes[1].innerText = p2;
+	$('#'+rowid+' > tr:last > :nth-child(2)').text(p2);
 }
 function loadstat()
 {
@@ -28,7 +28,7 @@ function loadstat()
 			appendRow('stat', 2, d.stat.onmap, 'Найдено на карте');
 			appendRow('stat', 3, d.stat.processing, 'В процессе обработки');
 		} else {
-			$('#stat').find('tr')[1].childNodes[1].innerText = 'Ошибка загрузки данных.';
+			$('#stat > tr:nth-child(2) > :nth-child(2)').text('Ошибка загрузки данных.');
 		}
 		// После загрузить остальное
 		loadtable('stcmt');
@@ -59,7 +59,7 @@ function loadtable(name, tt, of)
 				appendRow(name, i, d.stat.data[i][0], d.stat.data[i][1], tt, of);
 			}
 		} else {
-			$('#'+name).find('tr')[1].childNodes[1].innerText = 'Ошибка загрузки данных.';
+			$('#'+name+' > tr:nth-child(2) > :nth-child(2)').text('Ошибка загрузки данных.');
 		}
 		// Загружать таблицы по очереди
 		switch (name)
