@@ -41,7 +41,8 @@ function GetFromAlterGeo($bssid)
 }
 function GetFromMylnikov($bssid)
 {
-	$data = cURL_Get("http://api.mylnikov.org/wifi/main.py/get?bssid=$bssid");
+	while (!($data = cURL_Get("http://api.mylnikov.org/wifi/main.py/get?bssid=$bssid")))
+		sleep(2);
 
 	$result = '';
 	$json = json_decode($data);
