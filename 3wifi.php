@@ -223,13 +223,13 @@ switch ($_GET['a'])
 	case 'stdev':
 	$json['result'] = true;
 	$json['stat']['top'] = $topname;
-	if ($res = $db->query("SELECT COUNT(DISTINCT `name`) FROM `free`"))
+	if ($res = $db->query("SELECT COUNT(DISTINCT `name`) FROM `free` WHERE `name`!=''"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `name`, COUNT(*) FROM free GROUP BY `name` ORDER BY COUNT(*) DESC LIMIT $topname"))
+	if ($res = $db->query("SELECT `name`, COUNT(*) FROM free WHERE `name`!='' GROUP BY `name` ORDER BY COUNT(*) DESC LIMIT $topname"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -247,13 +247,13 @@ switch ($_GET['a'])
 	case 'stport':
 	$json['result'] = true;
 	$json['stat']['top'] = $topPort;
-	if ($res = $db->query("SELECT COUNT(DISTINCT `Port`) FROM `free`"))
+	if ($res = $db->query("SELECT COUNT(DISTINCT `Port`) FROM `free` WHERE `Port`!=''"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `Port`, COUNT(*) FROM free GROUP BY `Port` ORDER BY COUNT(*) DESC LIMIT $topPort"))
+	if ($res = $db->query("SELECT `Port`, COUNT(*) FROM free WHERE `Port`!='' GROUP BY `Port` ORDER BY COUNT(*) DESC LIMIT $topPort"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -271,13 +271,13 @@ switch ($_GET['a'])
 	case 'stauth':
 	$json['result'] = true;
 	$json['stat']['top'] = $topauth;
-	if ($res = $db->query("SELECT COUNT(DISTINCT `Authorization`) FROM `free`"))
+	if ($res = $db->query("SELECT COUNT(DISTINCT `Authorization`) FROM `free` WHERE `Authorization`!=''"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `Authorization`, COUNT(*) FROM free GROUP BY `Authorization` ORDER BY COUNT(*) DESC LIMIT $topauth"))
+	if ($res = $db->query("SELECT `Authorization`, COUNT(*) FROM free WHERE `Authorization`!='' GROUP BY `Authorization` ORDER BY COUNT(*) DESC LIMIT $topauth"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -415,13 +415,13 @@ switch ($_GET['a'])
 	case 'stdns':
 	$json['result'] = true;
 	$json['stat']['top'] = $topDNS;
-	if ($res = $db->query("SELECT COUNT(DISTINCT `DNS`) FROM `free`"))
+	if ($res = $db->query("SELECT COUNT(DISTINCT `DNS`) FROM `free` WHERE `DNS`!=''"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `DNS`, COUNT(*) FROM free GROUP BY `DNS` ORDER BY COUNT(*) DESC LIMIT $topDNS"))
+	if ($res = $db->query("SELECT `DNS`, COUNT(*) FROM free WHERE `DNS`!='' GROUP BY `DNS` ORDER BY COUNT(*) DESC LIMIT $topDNS"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
