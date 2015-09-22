@@ -18,12 +18,12 @@ if (isset($_GET['lat']) && isset($_GET['lon']))
 ymaps.ready(init);
 
 function init () {
-	var myMap = new ymaps.Map('map', {
+	myMap = new ymaps.Map('map', {
 		center: [<?php echo $lat; ?>, <?php echo $lon; ?>],
 		zoom: 18
 	}),
 
-	loadingObjectManager = new ymaps.LoadingObjectManager('getmap.php?bbox=%b',
+	loadingObjectManager = new ymaps.LoadingObjectManager('3wifi.php?a=map&bbox=%b',
 	{   
 		// Включаем кластеризацию.
 		clusterize: true,

@@ -2,12 +2,11 @@
 -- Структура базы данных 3WiFi --
 -- ------------------------------
 
--- Дамп структуры базы данных 3wifi_tk
-CREATE DATABASE IF NOT EXISTS `3wifi_tk` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `3wifi_tk`;
+-- Дамп структуры базы данных 3wifi
+CREATE DATABASE IF NOT EXISTS `3wifi` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `3wifi`;
 
-
--- Дамп структуры для таблица 3wifi_tk.free
+-- Дамп структуры для таблица 3wifi.free
 CREATE TABLE IF NOT EXISTS `free` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -33,4 +32,4 @@ CREATE TABLE IF NOT EXISTS `free` (
   `longitude` varchar(11) NOT NULL DEFAULT 'none',
   PRIMARY KEY (`id`),
   UNIQUE KEY `WIFI` (`BSSID`,`ESSID`,`WiFiKey`,`WPSPIN`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -10,6 +10,7 @@
 	<table>
 	<tr><td>Отчёт Router Scan:</td><td><input name="userfile" type="file" accept=".csv,.txt" /></td><td>(в формате <b>CSV</b> или <b>TXT</b>)</td></tr>
 	<tr><td>Ваш комментарий:</td><td><input name="comment" type="text" <?php if (isset($_POST['comment'])) echo 'value="'.htmlspecialchars($_POST['comment']).'" '; ?>/></td></tr>
+	<tr><td>Дополнительно:</td><td><input type="checkbox" name="checkexist" value="1" checked>Не обновлять существующие в базе точки</td></tr>
 	<tr><td><input type="submit" value="Отправить файл" /></td><td></td></tr>
 	</table>
 </form>
@@ -18,6 +19,16 @@
 function getExtension($filename)
 {
 	return substr(strrchr($filename, '.'), 1);
+}
+function APinDB($bssid, $essid, $key)
+{
+	global $chkst;
+	$chkst->bind_param("sss", $bssid, $essid, $key);
+	$chkst->execute();
+	$chkst->store_result();
+	$result = $chkst->num_rows;
+	$chkst->free_result();
+	return $result > 0;
 }
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 {
@@ -28,6 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 	if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
 		echo "Файл <b>".htmlspecialchars($filename)."</b> загружен на сервер.<br>\n";
 		require 'con_db.php'; /* Коннектор MySQL */
+
+		$checkexist = isset($_POST['checkexist']) && ($_POST['checkexist'] == '1');
+		if ($checkexist)
+			$chkst = $db->prepare("SELECT * FROM `free` WHERE `BSSID`=? AND `ESSID`=? AND `WiFiKey`=? LIMIT 1");
 
 		$ext = strtolower(getExtension($filename));
 		$format = '';
@@ -91,6 +106,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 							}
 							continue;
 						}
+						if ($checkexist)
+							if (APinDB($bssid, $essid, $key))
+							{
+								$warn[$row] = 3;
+								continue;
+							}
 
 						$stmt->bind_param("ssssssssssssssssssssssssssssssssssss", // format
 								// INSERT
@@ -143,6 +164,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 						}
 						continue;
 					}
+					if ($checkexist)
+						if (APinDB($bssid, $essid, $key))
+						{
+							$warn[$row] = 3;
+							continue;
+						}
 
 					$stmt->bind_param("ssssssssssssssssssssssssssssssssssss", // format
 							// INSERT
@@ -155,6 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 				}
 				break;
 			}
+			if ($checkexist) $chkst->close();
 			fclose($handle);
 			$stmt->close();
 			
@@ -174,6 +202,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 						break;
 						case 2:
 						echo 'Не достаточно полезных данных для внесения в базу';
+						break;
+						case 3:
+						echo 'Данная точка доступа уже есть в базе';
 						break;
 					}
 					echo ".</li>\n";

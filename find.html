@@ -1,0 +1,163 @@
+<html><head>
+<title>3WiFi: Поиск по базе</title>
+<meta http-equiv=Content-Type content="text/html;charset=UTF-8">
+<link rel=stylesheet href="css/style.css" type="text/css">
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script type="text/javascript">
+level = 0;
+function appendTable(table, tag, fields, flags)
+{
+	var tr = $('<tr>'), tf;
+	$('#'+table).append(tr);
+	for (var i = 0; i < fields.length; i++)
+	{
+		tf = $(tag);
+		var raw = false;
+		var cs = 1;
+		if (typeof flags == 'object' && typeof flags[i] == 'object' && flags[i] != null)
+		{
+			if (flags[i].raw) raw = true;
+			if (flags[i].mono) tf.css('font-family', 'monospace');
+			if (flags[i].nowrap) tf.css('white-space', 'nowrap');
+			if (flags[i].over) tf.css({"max-width":"200px", "overflow-x":"scroll"});
+			if (flags[i].cs) cs = flags[i].cs;
+		}
+		if (raw) { tf.html(fields[i]); } else { tf.text(fields[i]); }
+		if (cs > 1) tf.attr('colspan', cs);
+		tr.append(tf);
+	}
+}
+function switchLevel(newlevel)
+{
+	if (level == newlevel) return false;
+	level = newlevel;
+	$('#fhead').empty();
+	$('#fdata').empty();
+	var nw = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
+	switch (level)
+	{
+		case 1:
+		$('input[name=pass]')[0].value = $('input[name=pass]')[1].value;
+		$('input[name=bssid]')[0].value = $('input[name=bssid]')[1].value;
+		$('input[name=essid]')[0].value = $('input[name=essid]')[1].value;
+		$('#fuserform').show();
+		$('#fadminform').hide();
+		appendTable('fhead', '<th>',
+		['Time','Comment','IP Range','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Map'],
+		[null, null, null, null, null, null, null, nw]);
+		break;
+		case 2:
+		$('input[name=pass]')[1].value = $('input[name=pass]')[0].value;
+		$('input[name=bssid]')[1].value = $('input[name=bssid]')[0].value;
+		$('input[name=essid]')[1].value = $('input[name=essid]')[0].value;
+		$('#fuserform').hide();
+		$('#fadminform').show();
+		appendTable('fhead', '<th>',
+		['ID','Time','Comment','IP / Port','Authorization','Device / Firmware / Server Name','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Map'],
+		[null, null, null, null, null, nw, null, null, null, null, nw]);
+		break;
+	}
+	return true;
+}
+function find()
+{
+	$('#fdata').empty();
+	var cols = $('#fhead').children().children().length;
+	appendTable('fdata', '<td>', ['<img src="img/loading.gif">'], [{raw: true, mono: false, nowrap: false, over: false, cs: cols}]);
+
+	$.post('3wifi.php?a=find', $($('form')[level-1]).serialize(), function(d)
+	{
+		if (d.result)
+		{
+			if (d.auth)
+			{
+				if (d.data.length > 0)
+				{
+					if (typeof d.data[0].id == 'number')
+					{
+						switchLevel(2);
+					} else {
+						switchLevel(1);
+					}
+					$('#fdata').empty();
+					for (var i = 0; i < d.data.length; i++)
+					{
+						var e = d.data[i];
+						var map = '';
+						if (!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lon))) map = '<a href="map.php?lat='+e.lat+'&lon='+e.lon+'">map</a>';
+						var nw = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
+						var mnw = {raw: false, mono: true, nowrap: true, over: false, cs: 1};
+						var mn = {raw: false, mono: true, nowrap: false, over: false, cs: 1};
+						var of = {raw: false, mono: false, nowrap: true, over: true, cs: 1};
+						var rw = {raw: true, mono: false, nowrap: false, over: false, cs: 1};
+						var mrw = {raw: true, mono: true, nowrap: true, over: false, cs: 1};
+						if (e.key.length < 20) of = null;
+						switch (level)
+						{
+							case 1:
+							appendTable('fdata', '<td>',
+							[e.time.split(' ')[0], e.comment, e.range, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, map],
+							[mrw, null, mn, mn, null, null, of, mn, nw, nw, rw]);
+							break;
+							case 2:
+							appendTable('fdata', '<td>',
+							[e.id, e.time.split(' ').join('<br>'), e.comment, e.ipport, e.auth, e.name, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, map],
+							[mn, mrw, null, mn, null, null, mn, null, null, of, mn, nw, nw, rw]);
+							break;
+						}
+					}
+				} else {
+					$('#fdata > tr:first-child > :first-child').text('Ничего не найдено.');
+				}
+			} else {
+				$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
+			}
+		} else {
+			$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
+		}
+	});
+}
+function initpage()
+{
+	switchLevel(1);
+	$('input').bind('keydown', function (e) {
+		switch (e.keyCode)
+		{
+			case 13: // Enter
+			find();
+			break;
+		}
+	});
+}
+</script>
+</head><body onload='initpage()'>
+
+<table>
+<tbody id=fuserform style="display:none">
+<form enctype="multipart/form-data" method="POST">
+<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
+<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="%" /></td><td>(% и _ - заменяющие символы)</td></tr>
+<tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="%" /></td><td>(% и _ - заменяющие символы)</td></tr>
+</form>
+</tbody>
+<tbody id=fadminform style="display:none">
+<form enctype="multipart/form-data" method="POST">
+<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
+<tr><td>Комментарий:</td><td><input name="comment" type="text" value="%" /></td><td>Устройство:</td><td><input name="name" type="text" value="%" /></td></tr>
+<tr><td>IP-адрес:</td><td><input name="ipaddr" type="text" value="%" /></td><td>Авторизация:</td><td><input name="auth" type="text" value="%" /></td></tr>
+<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="%" /></td><td>ESSID / Имя:</td><td><input name="essid" type="text" value="%" /></td></tr>
+<tr><td>Ключ сети:</td><td><input name="key" type="text" value="%" /></td><td>Пин код WPS:</td><td><input name="wps" type="text" value="%" /></td></tr>
+</form>
+</tbody>
+<tbody>
+<tr><td><button onclick="find()">Найти</button></td><td></td></tr>
+</tbody>
+</table>
+
+<table class=st1>
+<tbody id=fhead>
+</tbody>
+<tbody id=fdata>
+</tbody>
+</table>
+</body></html>
