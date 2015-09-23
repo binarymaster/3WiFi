@@ -1,40 +1,47 @@
 <?php	
-require 'con_db.php'; /* Коннектор MySQL */
-require 'geoext.php'; /* Модуль получения координат */
-
-$query_bssid  = "SELECT `BSSID` FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none'";
-$query_update = "UPDATE `free` SET `latitude`=?,`longitude`=? WHERE `BSSID`=?";
-$stmt_upd = $db->prepare($query_update);
-
-$not_found = "not found";
-$i = 0;
-
-if ($res_bssid = $db->query($query_bssid))
+function CheckLocation($aps)
 {
-	while ($row = $res_bssid->fetch_row())
+	require 'con_db.php'; /* Коннектор MySQL */
+	require 'geoext.php'; /* Модуль получения координат */
+
+	$query_bssid  = "SELECT `BSSID` FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none'";
+	$query_update = "UPDATE `free` SET `latitude`=?,`longitude`=? WHERE `BSSID`=?";
+	$stmt_upd = $db->prepare($query_update);
+
+	$not_found = "not found";
+	$i = 0;
+
+	if ((count($aps) > 0) && ($res_bssid = $db->query($query_bssid)))
 	{
-		$bssid = $row[0];
-		$coords = GeoLocateAP($bssid);
-
-		if ($coords != '')
+		set_time_limit(0);
+		while ($row = $res_bssid->fetch_row())
 		{
-			$coords = explode(';', $coords);
-			$latitude = $coords[0];
-			$longitude = $coords[1];
-			if (strlen($latitude) > 11) $latitude = substr($latitude, 0, 11);
-			if (strlen($longitude) > 11) $longitude = substr($longitude, 0, 11);
+			$bssid = $row[0];
+			if (!in_array($bssid, $aps))
+				continue;
 
-			$stmt_upd->bind_param("sss", $latitude, $longitude, $bssid);
-			$stmt_upd->execute();
+			$coords = GeoLocateAP($bssid);
 
-			$i++;
-		} else {
-			$stmt_upd->bind_param("sss", $not_found, $not_found, $bssid);
-			$stmt_upd->execute();
+			if ($coords != '')
+			{
+				$coords = explode(';', $coords);
+				$latitude = $coords[0];
+				$longitude = $coords[1];
+				if (strlen($latitude) > 11) $latitude = substr($latitude, 0, 11);
+				if (strlen($longitude) > 11) $longitude = substr($longitude, 0, 11);
+
+				$stmt_upd->bind_param("sss", $latitude, $longitude, $bssid);
+				$stmt_upd->execute();
+
+				$i++;
+			} else {
+				$stmt_upd->bind_param("sss", $not_found, $not_found, $bssid);
+				$stmt_upd->execute();
+			}
 		}
+		$res_bssid->close();
 	}
-	$res_bssid->close();
+	$stmt_upd->close();
+	return $i;
 }
-$stmt_upd->close();
-echo "Yandex Map $i total found<br>\n";
 ?>

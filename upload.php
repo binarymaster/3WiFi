@@ -33,17 +33,16 @@ function APinDB($bssid, $essid, $key)
 function ValidHeader($row)
 {
 	if (($row[0]!=="IP Address")or($row[1]!=="Port")or($row[4]!=="Authorization")or($row[5]!=="Server name / Realm name / Device type")or($row[6]!=="Radio Off")or($row[7]!=="Hidden")or($row[8]!=="BSSID")or($row[9]!=="ESSID")or($row[10]!=="Security")or($row[11]!=="Key")or($row[12]!=="WPS PIN")or($row[13]!=="LAN IP Address")or($row[14]!=="LAN Subnet Mask")or($row[15]!=="WAN IP Address")or($row[16]!=="WAN Subnet Mask")or($row[17]!=="WAN Gateway")or($row[18]!=="Domain Name Servers"))
-	{	
-		return false;	
+	{
+		return false;
 	}
-
 	return true;
-
 }
 function addRow($row)
 {
 	global $comment;
 	global $stmt;
+	global $aps;
 	// Отбираем только валидные точки доступа
 	$bssid = $row[8];
 	$essid = $row[9];
@@ -62,9 +61,8 @@ function addRow($row)
 		|| $sec != ''
 		|| $key != ''
 		|| $wps != '')
-		{	return 3;	}
-		else{	return 1;	}
-		
+		{ return 3; }
+		else { return 1; }
 	}
 	if ($checkexist)
 		if (APinDB($bssid, $essid, $key))
@@ -72,6 +70,7 @@ function addRow($row)
 			return 4;
 		}
 
+	$aps[] = $bssid;
 	$stmt->bind_param("ssssssssssssssssssssssssssssssssssss", // format
 			// INSERT
 			//    comment   IP        Port      Auth      Name      RadioOff  Hidden    BSSID     ESSID     Security   Key        WPS PIN    LAN IP     LAN Mask   WAN IP     WAN Mask   WAN Gate   DNS Serv
@@ -90,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 
 	if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
 		echo "Файл <b>".htmlspecialchars($filename)."</b> загружен на сервер.<br>\n";
+		flush();
 		require 'con_db.php'; /* Коннектор MySQL */
 
 		$checkexist = isset($_POST['checkexist']) && ($_POST['checkexist'] == '1');
@@ -103,6 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 		{
 			$format = 'csv';
 			echo "Неизвестное расширение/формат файла, подразумевается CSV.<br>\n";
+			flush();
 		}
 		$warn = array();
 		if (($handle = fopen($uploadfile, "r")) !== FALSE)
@@ -115,6 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 
 			$i = 0;
 			$cnt = 0;
+			$aps = array();
 			switch ($format)
 			{
 				case 'csv':
@@ -133,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 					{
 						$cnt++;
 						$res = addRow($data);
-						if ($res>0) $warn[$i-1]= $res;
+						if ($res>0) $warn[$i-1] = $res;
 					}
 				}
 				break;
@@ -152,10 +154,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 					}
 					$cnt++;
 					$res = addRow($data);
-					if ($res>0) $warn[$i]= $res;
+					if ($res>0) $warn[$i] = $res;
 				}
 				break;
 			}
+			flush();
 			if ($checkexist) $chkst->close();
 			fclose($handle);
 			$stmt->close();
@@ -185,6 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 				}
 				echo "</ul>\n";
 			}
+			flush();
 			if ($i > 1) echo "Файл загружен в базу (".($cnt - count($warn))." из $cnt записей).<br>\n";
 			
 			if (file_exists($uploadfile))
@@ -197,8 +201,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 	} else {
 		die("Ошибка: Файл не был загружен!<br>\n");
 	}
+	flush();
 
 	require 'chkxy.php';
+	$found = CheckLocation($aps);
+	echo "Yandex Map $found total found<br>\n";
 
 	echo "Операция завершена.<br>\n";
 }

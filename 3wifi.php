@@ -172,6 +172,23 @@ switch ($_GET['a'])
 	}
 	break;
 
+	// Перепроверка необработанных результатов
+	case 'check':
+	$json['result'] = true;
+	$json['check']['count'] = 0;
+	if ($res = $db->query("SELECT DISTINCT `BSSID` FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none' AND `longitude` = 'none'"))
+	{
+		$aps = array();
+		while ($row = $res->fetch_row())
+		{
+			$aps[] = $row[0];
+		}
+		$res->close();
+		require 'chkxy.php';
+		$json['check']['count'] = CheckLocation($aps);
+	}
+	break;
+
 	// Общая статистика
 	case 'stat':
 	$json['result'] = true;
