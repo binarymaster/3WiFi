@@ -30,6 +30,58 @@ function APinDB($bssid, $essid, $key)
 	$chkst->free_result();
 	return $result > 0;
 }
+function ValidHeader($row)
+{
+	if (($row[0]!=="IP Address")or($row[1]!=="Port")or($row[4]!=="Authorization")or($row[5]!=="Server name / Realm name / Device type")or($row[6]!=="Radio Off")or($row[7]!=="Hidden")or($row[8]!=="BSSID")or($row[9]!=="ESSID")or($row[10]!=="Security")or($row[11]!=="Key")or($row[12]!=="WPS PIN")or($row[13]!=="LAN IP Address")or($row[14]!=="LAN Subnet Mask")or($row[15]!=="WAN IP Address")or($row[16]!=="WAN Subnet Mask")or($row[17]!=="WAN Gateway")or($row[18]!=="Domain Name Servers"))
+	{	
+		return false;	
+	}
+
+	return true;
+
+}
+function addRow($row)
+{
+	global $comment;
+	global $stmt;
+	// Отбираем только валидные точки доступа
+	$bssid = $row[8];
+	$essid = $row[9];
+	$sec = $row[10];
+	$key = $row[11];
+	$wps = $row[12];
+	if ($bssid == '<no wireless>')
+	{
+		return 2;
+	}
+	if ((strpos($bssid, ':') === false || $wps == '')
+	&& ($essid == '' || $sec == '' || $sec == '-' || $key == '' || $key == '-'))
+	{
+		if (strpos($bssid, ':') !== false
+		|| $essid != ''
+		|| $sec != ''
+		|| $key != ''
+		|| $wps != '')
+		{	return 3;	}
+		else{	return 1;	}
+		
+	}
+	if ($checkexist)
+		if (APinDB($bssid, $essid, $key))
+		{
+			return 4;
+		}
+
+	$stmt->bind_param("ssssssssssssssssssssssssssssssssssss", // format
+			// INSERT
+			//    comment   IP        Port      Auth      Name      RadioOff  Hidden    BSSID     ESSID     Security   Key        WPS PIN    LAN IP     LAN Mask   WAN IP     WAN Mask   WAN Gate   DNS Serv
+				$comment, $row[0], $row[1], $row[4], $row[5], $row[6], $row[7], $row[8], $row[9], $row[10], $row[11], $row[12], $row[13], $row[14], $row[15], $row[16], $row[17], $row[18],
+			// UPDATE
+				$comment, $row[0], $row[1], $row[4], $row[5], $row[6], $row[7], $row[8], $row[9], $row[10], $row[11], $row[12], $row[13], $row[14], $row[15], $row[16], $row[17], $row[18]
+	);
+	$stmt->execute();
+	return 0;
+}
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 {
 	$uploaddir = 'uploads/';
@@ -61,66 +113,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 			$sql="INSERT INTO `$db_name`.`free` (`comment`, `IP`, `Port`, `Authorization`, `name`, `RadioOff`, `Hidden`, `BSSID`, `ESSID`, `Security`, `WiFiKey`, `WPSPIN`, `LANIP`, `LANMask`, `WANIP`, `WANMask`, `WANGateway`, `DNS`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `comment`=?, `IP`=?, `Port`=?, `Authorization`=?, `name`=?, `RadioOff`=?, `Hidden`=?, `BSSID`=?, `ESSID`=?, `Security`=?, `WiFiKey`=?, `WPSPIN`=?, `LANIP`=?, `LANMask`=?, `WANIP`=?, `WANMask`=?,`WANGateway`=?, `DNS`=?;";
 			$stmt = $db->prepare($sql);
 
-			$row = 0;
+			$i = 0;
 			$cnt = 0;
 			switch ($format)
 			{
 				case 'csv':
 				while (($data = fgetcsv($handle, 1000, ";")) !== FALSE)
 				{
-					$row++;
-					if ($row == 1)
+					$i++;
+					if ($i == 1)
 					{
-						if (($data[0]!=="IP Address")or($data[1]!=="Port")or($data[4]!=="Authorization")or($data[5]!=="Server name / Realm name / Device type")or($data[6]!=="Radio Off")or($data[7]!=="Hidden")or($data[8]!=="BSSID")or($data[9]!=="ESSID")or($data[10]!=="Security")or($data[11]!=="Key")or($data[12]!=="WPS PIN")or($data[13]!=="LAN IP Address")or($data[14]!=="LAN Subnet Mask")or($data[15]!=="WAN IP Address")or($data[16]!=="WAN Subnet Mask")or($data[17]!=="WAN Gateway")or($data[18]!=="Domain Name Servers"))
+						if (!ValidHeader($data))
 						{
 							echo "Неподдерживаемый формат отчёта CSV, заголовки отсутствуют!<br>\n";
 							break;
 						}
 					}
-					if ($row !== 1)
+					if ($i !== 1)
 					{
 						$cnt++;
-						// Отбираем только валидные точки доступа
-						$bssid = $data[8];
-						$essid = $data[9];
-						$sec = $data[10];
-						$key = $data[11];
-						$wps = $data[12];
-						if ($bssid == '<no wireless>')
-						{
-							$warn[$row] = 1;
-							continue;
-						}
-						if ((strpos($bssid, ':') === false || $wps == '')
-						&& ($essid == '' || $sec == '' || $sec == '-' || $key == '' || $key == '-'))
-						{
-							if (strpos($bssid, ':') !== false
-							|| $essid != ''
-							|| $sec != ''
-							|| $key != ''
-							|| $wps != '')
-							{
-								$warn[$row] = 2;
-							} else {
-								$warn[$row] = 0;
-							}
-							continue;
-						}
-						if ($checkexist)
-							if (APinDB($bssid, $essid, $key))
-							{
-								$warn[$row] = 3;
-								continue;
-							}
-
-						$stmt->bind_param("ssssssssssssssssssssssssssssssssssss", // format
-								// INSERT
-								//    comment   IP        Port      Auth      Name      RadioOff  Hidden    BSSID     ESSID     Security   Key        WPS PIN    LAN IP     LAN Mask   WAN IP     WAN Mask   WAN Gate   DNS Serv
-									$comment, $data[0], $data[1], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9], $data[10], $data[11], $data[12], $data[13], $data[14], $data[15], $data[16], $data[17], $data[18],
-								// UPDATE
-									$comment, $data[0], $data[1], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9], $data[10], $data[11], $data[12], $data[13], $data[14], $data[15], $data[16], $data[17], $data[18]
-						);
-						$stmt->execute();
+						$res = addRow($data);
+						if ($res>0) $warn[$i-1]= $res;
 					}
 				}
 				break;
@@ -128,8 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 				while (($str = fgets($handle)) !== FALSE)
 				{
 					$data = explode("\t", $str);
-					$row++;
-					if ($row == 1)
+					$i++;
+					if ($i == 1)
 					{
 						if (count($data) != 23)
 						{
@@ -138,47 +151,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 						}
 					}
 					$cnt++;
-					// Отбираем только валидные точки доступа
-					$bssid = $data[8];
-					$essid = $data[9];
-					$sec = $data[10];
-					$key = $data[11];
-					$wps = $data[12];
-					if ($bssid == '<no wireless>')
-					{
-						$warn[$row] = 1;
-						continue;
-					}
-					if ((strpos($bssid, ':') === false || $wps == '')
-					&& ($essid == '' || $sec == '' || $sec == '-' || $key == '' || $key == '-'))
-					{
-						if (strpos($bssid, ':') !== false
-						|| $essid != ''
-						|| $sec != ''
-						|| $key != ''
-						|| $wps != '')
-						{
-							$warn[$row] = 2;
-						} else {
-							$warn[$row] = 0;
-						}
-						continue;
-					}
-					if ($checkexist)
-						if (APinDB($bssid, $essid, $key))
-						{
-							$warn[$row] = 3;
-							continue;
-						}
-
-					$stmt->bind_param("ssssssssssssssssssssssssssssssssssss", // format
-							// INSERT
-							//    comment   IP        Port      Auth      Name      RadioOff  Hidden    BSSID     ESSID     Security   Key        WPS PIN    LAN IP     LAN Mask   WAN IP     WAN Mask   WAN Gate   DNS Serv
-								$comment, $data[0], $data[1], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9], $data[10], $data[11], $data[12], $data[13], $data[14], $data[15], $data[16], $data[17], $data[18],
-							// UPDATE
-								$comment, $data[0], $data[1], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9], $data[10], $data[11], $data[12], $data[13], $data[14], $data[15], $data[16], $data[17], $data[18]
-					);
-					$stmt->execute();
+					$res = addRow($data);
+					if ($res>0) $warn[$i]= $res;
 				}
 				break;
 			}
@@ -194,16 +168,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 					echo "<li>Строка $line: ";
 					switch ($wid)
 					{
-						case 0:
+						case 1:
 						echo 'Нет валидных данных точки доступа';
 						break;
-						case 1:
+						case 2:
 						echo 'Устройство не имеет беспроводного адаптера';
 						break;
-						case 2:
+						case 3:
 						echo 'Не достаточно полезных данных для внесения в базу';
 						break;
-						case 3:
+						case 4:
 						echo 'Данная точка доступа уже есть в базе';
 						break;
 					}
@@ -211,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 				}
 				echo "</ul>\n";
 			}
-			if ($row > 1) echo "Файл загружен в базу (".($cnt - count($warn))." из $cnt записей).<br>\n";
+			if ($i > 1) echo "Файл загружен в базу (".($cnt - count($warn))." из $cnt записей).<br>\n";
 			
 			if (file_exists($uploadfile))
 			{
