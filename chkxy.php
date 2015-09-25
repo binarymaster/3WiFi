@@ -14,6 +14,7 @@ function CheckLocation($aps)
 	if ((count($aps) > 0) && ($res_bssid = $db->query($query_bssid)))
 	{
 		set_time_limit(0);
+		ignore_user_abort(true);
 		while ($row = $res_bssid->fetch_row())
 		{
 			$bssid = $row[0];

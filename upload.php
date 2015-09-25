@@ -105,6 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 			echo "Неизвестное расширение/формат файла, подразумевается CSV.<br>\n";
 			flush();
 		}
+		echo "Чтение файла и запись в БД, подождите...<br>\n";
+		flush();
 		$warn = array();
 		if (($handle = fopen($uploadfile, "r")) !== FALSE)
 		{
@@ -203,6 +205,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && count($_FILES) > 0)
 	}
 	flush();
 
+	echo "Определение координат точек...<br>\n";
+	flush();
 	require 'chkxy.php';
 	$found = CheckLocation($aps);
 	echo "Yandex Map $found total found<br>\n";

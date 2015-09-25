@@ -175,8 +175,7 @@ switch ($_GET['a'])
 	// Перепроверка необработанных результатов
 	case 'check':
 	$json['result'] = true;
-	$json['check']['count'] = 0;
-	if ($res = $db->query("SELECT DISTINCT `BSSID` FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none' AND `longitude` = 'none'"))
+	if ($res = $db->query("SELECT `BSSID` FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none' AND `longitude` = 'none' LIMIT 100"))
 	{
 		$aps = array();
 		while ($row = $res->fetch_row())
@@ -184,8 +183,10 @@ switch ($_GET['a'])
 			$aps[] = $row[0];
 		}
 		$res->close();
+		$aps = array_unique($aps);
 		require 'chkxy.php';
-		$json['check']['count'] = CheckLocation($aps);
+		$json['check']['done'] = count($aps);
+		$json['check']['found'] = CheckLocation($aps);
 	}
 	break;
 
