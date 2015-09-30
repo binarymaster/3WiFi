@@ -8,9 +8,9 @@
     <input type="hidden" name="MAX_FILE_SIZE" value="15000000" />
     <!-- Название элемента input определяет имя в массиве $_FILES -->
 	<table>
-	<tr><td>Отчёт Router Scan:</td><td><input name="userfile" type="file" accept=".csv,.txt" /></td><td>(в формате <b>CSV</b> или <b>TXT</b>)</td></tr>
+	<tr><td>Отчёт Router Scan:</td><td><input name="userfile" type="file" accept=".csv,.txt" /> &nbsp;(в формате <b>CSV</b> или <b>TXT</b>)</td></tr>
 	<tr><td>Ваш комментарий:</td><td><input name="comment" type="text" <?php if (isset($_POST['comment'])) echo 'value="'.htmlspecialchars($_POST['comment']).'" '; ?>/></td></tr>
-	<tr><td>Дополнительно:</td><td><input type="checkbox" name="checkexist" value="1" checked>Не обновлять существующие в базе точки</td></tr>
+	<tr><td style="vertical-align: top">Дополнительно:</td><td><input type="checkbox" name="checkexist" value="1">Не обновлять существующие в базе точки<br>(поставьте галку, если загружаете устаревшие данные, либо точки из других баз)</td></tr>
 	<tr><td><input type="submit" value="Отправить файл" /></td><td></td></tr>
 	</table>
 </form>
