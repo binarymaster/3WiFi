@@ -452,6 +452,83 @@ switch ($_GET['a'])
 		$res->close();
 	}
 	break;
+	
+	// Поиск диапазонов ip
+	case 'find_ranges':
+	$json['result'] = true;
+	$pass = '';
+	if (isset($_POST['pass'])) $pass = $_POST['pass'];
+	if ($pass != 'antichat')
+	{
+		$json['auth'] = false;
+		break;
+	}
+	else $json['auth'] = true;
+	
+	$lat=''; $lon='';
+	if (isset($_POST['latitude'])) $lat = $_POST['latitude'];
+	if (isset($_POST['longitude'])) $lon = $_POST['longitude'];
+	if ($lat == "")
+	{
+		$json['error'] = "Введите значение широты";
+		break;
+	}
+	if ($lon == "")
+	{
+		$json['error'] = "Введите значение долготы";
+		break;
+	}
+	$lat = (float)$lat;
+	$lon = (float)$lon;
+	if ($lat < -90 || $lat > 90)
+	{
+		$json['error'] = "Значение широты должно лежать в диапазоне [-90;90]";
+		break;
+	}
+	if ($lon < -180 || $lon > 180)
+	{
+		$json['error'] = "Значение долготы должно лежать в диапазоне [-180;180]";
+		break;
+	}
+	
+	$radius='';
+	if (isset($_POST['radius'])) $radius = $_POST['radius'];
+	if ($radius == "")
+	{
+		$json['error'] = "Введите значение радиуса поиска";
+		break;
+	}
+	$radius=(int)$radius;
+	if ($radius < 0 || $radius > 25)
+	{
+		$json['error'] = "Значение радиуса поиска должно лежать в диапазоне (0;25]";
+		break;
+	}
+	
+	$lat_km = 111.321*cos(deg2rad($lat)) - 0.094*cos(3*deg2rad($lat));
+	$lon_km = 111.143 - 0.562*cos(2*deg2rad($lat));
+	$lat1 = min(max($lat - $radius/$lat_km, -90), 90);
+	$lat2 = min(max($lat + $radius/$lat_km, -90), 90);
+	$lon1 = min(max($lon - $radius/$lon_km, -180), 180);
+	$lon2 = min(max($lon + $radius/$lon_km, -180), 180);
+	$json['data'] = array();
+	if ($res = $db->query(
+		"SELECT SUBSTRING_INDEX(IP, '.', 2) AS ip_range 
+		FROM `free` 
+		WHERE (`latitude` != 0 AND `longitude` != 0)
+				AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2)
+				AND IP !=''
+		GROUP BY ip_range
+		ORDER BY ip_range"))
+	{
+		while ($row = $res->fetch_row())
+		{
+			$json['data'][] = $row[0].'.0.0/16';
+		}
+		$res->close();
+	}
+	
+	break;
 }
 $db->close();
 
