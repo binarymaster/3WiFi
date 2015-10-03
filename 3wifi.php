@@ -132,7 +132,7 @@ switch ($_GET['a'])
 	$key = $db->real_escape_string($key);
 	$wps = $db->real_escape_string($wps);
 
-	if ($res = $db->query("SELECT * FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps' ORDER BY `time` DESC"))
+	if ($res = $db->query("SELECT * FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps' ORDER BY `time` DESC LIMIT 1000"))
 	{
 		$json['data'] = array();
 		while ($row = $res->fetch_row())
