@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>3WiFi: Поиск диапазонов ip</title>
+<title>3WiFi: Поиск диапазонов IP</title>
 <meta http-equiv=Content-Type content="text/html;charset=UTF-8">
 <link rel=stylesheet href="css/style.css" type="text/css">
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -9,7 +9,7 @@ function find()
 {
 	$('#fdata').empty();
 	$('#fhead').empty();
-	$('#fhead').append('<tr><th>IP range</th></tr>');
+	$('#fhead').append('<tr><th>IP Range</th></tr>');
 	$('#fdata').append('<tr><td><img src="img/loading.gif"></td></tr>');
 
 	$.post('3wifi.php?a=find_ranges', $($('form')[0]).serialize(), function(d)
