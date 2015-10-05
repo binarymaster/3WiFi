@@ -24,9 +24,11 @@ function detect()
 		}
 		if (!d.auth)
 		{
+			localStorage.setItem('3wifi.password', '');
 			$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
 			return;
 		}
+		localStorage.setItem('3wifi.password', $('input[name=pass]').val());
 		if (d.scores.length > 0)
 		{
 			$('#fdata').empty();
@@ -68,6 +70,8 @@ function initpage()
 			break;
 		}
 	});
+	var pass = localStorage.getItem('3wifi.password');
+	if (pass != null) $('input[name=pass]').val(pass);
 }
 </script>
 </head><body onload='initpage()'>

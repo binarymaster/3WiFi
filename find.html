@@ -71,6 +71,7 @@ function find()
 		{
 			if (d.auth)
 			{
+				localStorage.setItem('3wifi.password', $('input[name=pass]').val());
 				if (d.data.length > 0)
 				{
 					if (typeof d.data[0].id == 'number')
@@ -110,6 +111,7 @@ function find()
 					$('#fdata > tr:first-child > :first-child').text('Ничего не найдено.');
 				}
 			} else {
+				localStorage.setItem('3wifi.password', '');
 				$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
 			}
 		} else {
@@ -128,6 +130,8 @@ function initpage()
 			break;
 		}
 	});
+	var pass = localStorage.getItem('3wifi.password');
+	if (pass != null) $('input[name=pass]').val(pass);
 }
 </script>
 </head><body onload='initpage()'>
