@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>3WiFi: Имя устройства по MAC</title>
+<meta http-equiv=Content-Type content="text/html;charset=UTF-8">
+<link rel=stylesheet href="css/style.css" type="text/css">
+<style>
+td { white-space: nowrap; text-align: left !important }
+</style>
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script type="text/javascript">
+function detect()
+{
+	$('#fdata').empty();
+	$('#fhead').empty();
+	$('#fhead').append('<tr><th>Device Name</th><th>Probability</th></tr>');
+	$('#fdata').append('<tr><td colspan=2><img src="img/loading.gif"></td></tr>');
+
+	$.post('3wifi.php?a=devicemac', $($('form')[0]).serialize(), function(d)
+	{
+		if (!d.result)
+		{
+			$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
+			return;
+		}
+		if (!d.auth)
+		{
+			$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
+			return;
+		}
+		if (d.scores.length > 0)
+		{
+			$('#fdata').empty();
+			for (var i = 0; i < d.scores.length; i++)
+			{
+				$('#fdata').append('<tr><td>'+d.scores[i].name+'</td><td><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
+				var perc = $('.perc:last');
+				var wid = 180;
+				perc.css('width', wid + 'px');
+				perc.css('height', '16px');
+				perc.css('border-width', '1');
+				perc.css('border-style', 'inset');
+				perc.css('background-color', '#C0C0C0');
+				perc.css('display', 'inline-flex');
+				perc.css('position', 'relative');
+				perc.css('top', '1px');
+				var chld = $('<span>');
+				chld.css('width', (d.scores[i].score * wid - 2) + 'px');
+				chld.css('height', '14px');
+				chld.css('background-color', '#5566CC');
+				chld.css('display', 'inherit');
+				chld.css('position', 'relative');
+				chld.css('left', '1px');
+				chld.css('top', '1px');
+				perc.html(chld);
+			}
+		} else {
+			$('#fdata > tr:first-child > :first-child').text('Таких устройств в базе нет.');
+		}
+	});
+}
+function initpage()
+{
+	$('input').bind('keydown', function (e) {
+		switch (e.keyCode)
+		{
+			case 13: // Enter
+			detect();
+			break;
+		}
+	});
+}
+</script>
+</head><body onload='initpage()'>
+
+<table>
+	<tbody>
+		<form enctype="multipart/form-data" method="POST">
+			<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
+			<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td></tr>
+		</form>
+	</tbody>
+	<tbody>
+		<tr><td><button onclick="detect()">Определить</button></td><td></td></tr>
+	</tbody>
+</table>
+</br>
+<table class=st1>
+	<tbody id=fhead></tbody>
+	<tbody id=fdata></tbody>
+</table>
+</body>
+</html>

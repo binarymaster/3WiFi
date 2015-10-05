@@ -18,6 +18,9 @@ $topDNS = 30;
 
 require 'con_db.php'; /* Коннектор MySQL */
 
+$pass_level1 = 'antichat';
+$pass_level2 = 'secret_password';
+
 $tstart = microtime(true);
 $json = array();
 $json['result'] = false;
@@ -98,8 +101,8 @@ switch ($_GET['a'])
 
 	$json['result'] = true;
 	$level = 0;
-	if ($pass == 'antichat') $level = 1;
-	if ($pass == 'secret_password') $level = 2;
+	if ($pass == $pass_level1) $level = 1;
+	if ($pass == $pass_level2) $level = 2;
 
 	$json['auth'] = $level > 0;
 	if ($level == 0) break;
@@ -177,13 +180,13 @@ switch ($_GET['a'])
 	$json['result'] = true;
 	$pass = '';
 	if (isset($_POST['pass'])) $pass = $_POST['pass'];
-	if ($pass != 'antichat')
+	if ($pass != $pass_level1 && $pass != $pass_level2)
 	{
 		$json['auth'] = false;
 		break;
 	}
 	else $json['auth'] = true;
-	
+
 	$lat = ''; $lon = '';
 	if (isset($_POST['latitude'])) $lat = $_POST['latitude'];
 	if (isset($_POST['longitude'])) $lon = $_POST['longitude'];
@@ -245,6 +248,88 @@ switch ($_GET['a'])
 			$json['data'][] = $row[0].'.0.0/16';
 		}
 		$res->close();
+	}
+	break;
+
+	// Определение устройства по MAC
+	case 'devicemac':
+	$json['result'] = true;
+	$pass = '';
+	if (isset($_POST['pass'])) $pass = $_POST['pass'];
+	if ($pass != $pass_level1 && $pass != $pass_level2)
+	{
+		$json['auth'] = false;
+		break;
+	}
+	else $json['auth'] = true;
+
+	$bssid = '';
+	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
+	$bssid = strtoupper($_POST['bssid']);
+	$bssid = str_replace(':', '', $bssid);
+	$bssid = str_replace('-', '', $bssid);
+	$bssid = str_replace('.', '', $bssid);
+	if (strlen($bssid) != 12) break;
+
+	$bssid = substr_replace($bssid, ':', 10, 0);
+	$bssid = substr_replace($bssid, ':', 8, 0);
+	$bssid = substr_replace($bssid, ':', 6, 0);
+	$bssid = substr_replace($bssid, ':', 4, 0);
+	$bssid = substr_replace($bssid, ':', 2, 0);
+	$oui = substr($bssid, 0, 9) . '%';
+
+	$oui = $db->real_escape_string($oui);
+	if ($res = $db->query("SELECT `BSSID`,`name` FROM `free` WHERE `BSSID` LIKE '$oui' AND `name`!=''"))
+	{
+		$devs = array();
+		while ($row = $res->fetch_row())
+		{
+			$bss = strtoupper($row[0]);
+			$name = $row[1];
+			if (strlen($bss) != 17) continue;
+
+			if (!isset($devs[$name]))
+			{
+				$devs[$name][12] = 0;
+				$devs[$name][11] = 0;
+				$devs[$name][10] = 0;
+				$devs[$name][9] = 0;
+				$devs[$name][8] = 0;
+				$devs[$name][7] = 0;
+				$devs[$name][6] = 0;
+			}
+			$match = 6;
+			for ($i = 9; $i < strlen($bss); $i++)
+			{
+				if ($i == 11 || $i == 14) $i++; // ':'
+				if ($bssid[$i] == $bss[$i])
+				{
+					$match++;
+				} else break;
+			}
+			$devs[$name][$match] += 1;
+		}
+		$res->close();
+	}
+	$scores = array();
+	foreach($devs as $name => $match)
+	{
+		$val =
+		$match[12] * 2048 + $match[11] * 1024 +
+		$match[10] * 256 + $match[9] * 64 +
+		$match[8] * 16 + $match[7] * 8 + $match[6] * 4;
+		$scores[$name] = (($val * 512) ^ (1/2)) / ((($val * 512) + 1048576) ^ (1/2));
+	}
+	arsort($scores);
+	$scores = array_slice($scores, 0, 8);
+
+	$json['scores'] = array();
+	foreach($scores as $name => $score)
+	{
+		$entry = array();
+		$entry['name'] = $name;
+		$entry['score'] = $score;
+		$json['scores'][] = $entry;
 	}
 	break;
 
