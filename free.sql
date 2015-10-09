@@ -6,7 +6,7 @@
 CREATE DATABASE IF NOT EXISTS `3wifi` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `3wifi`;
 
--- Дамп структуры для таблица 3wifi.free
+-- Дамп структуры таблицы 3wifi.free
 CREATE TABLE IF NOT EXISTS `free` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -32,4 +32,14 @@ CREATE TABLE IF NOT EXISTS `free` (
   `longitude` varchar(11) NOT NULL DEFAULT 'none',
   PRIMARY KEY (`id`),
   UNIQUE KEY `WIFI` (`BSSID`,`ESSID`,`WiFiKey`,`WPSPIN`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Дамп структуры таблицы 3wifi.ranges
+CREATE TABLE IF NOT EXISTS `ranges` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `startIP` INT UNSIGNED NOT NULL,
+  `endIP` INT UNSIGNED NOT NULL,
+  `descr` TEXT NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `RANGE` (`startIP`,`endIP`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
