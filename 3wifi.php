@@ -220,7 +220,7 @@ switch ($_GET['a'])
 		$json['error'] = "Введите значение радиуса поиска";
 		break;
 	}
-	$radius = (int)$radius;
+	$radius = (float)$radius;
 	if ($radius < 0 || $radius > 25)
 	{
 		$json['error'] = "Значение радиуса поиска должно лежать в диапазоне (0;25]";
@@ -235,19 +235,33 @@ switch ($_GET['a'])
 	$lon2 = min(max($lon + $radius / $lon_km, -180), 180);
 	$json['data'] = array();
 	if ($res = $db->query(
-		"SELECT SUBSTRING_INDEX(IP, '.', 2) AS ip_range 
+		"SELECT IP 
 		FROM `free` 
 		WHERE (`latitude` != 0 AND `longitude` != 0)
 				AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2)
 				AND IP !=''
-		GROUP BY ip_range
-		ORDER BY ip_range"))
+		ORDER BY INET_ATON(IP)"))
 	{
+		require 'ipext.php';
+		$last_upper = '0.0.0.0';
 		while ($row = $res->fetch_row())
 		{
-			$json['data'][] = $row[0].'.0.0/16';
+			if (compare_ip($row[0], $last_upper) <= 0)
+			{
+				continue;
+			}
+			$ip_range = GetIPRange($row[0]);
+			if(is_null($ip_range))
+			{
+				continue;
+			}
+			$last_upper = $ip_range["endIP"];
+			$json['data'][] = array(
+				"range" => pretty_range($ip_range["startIP"], $ip_range["endIP"]),
+				"descr" => $ip_range["descr"]);
 		}
 		$res->close();
+		usort($json['data'], function($a, $b){return strcmp($a['descr'], $b['descr']);});
 	}
 	break;
 

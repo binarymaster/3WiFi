@@ -34,9 +34,11 @@ function find()
 		if (d.data.length > 0)
 		{
 			$('#fdata').empty();
+			$('#fhead').empty();
+			$('#fhead').append('<tr><th>IP Range</th><th>Description</th></tr>');
 			for (var i = 0; i < d.data.length; i++)
 			{
-				$('#fdata').append('<tr><td>'+d.data[i]+'</td></tr>');
+				$('#fdata').append('<tr><td>'+d.data[i].range+'</td><td>'+d.data[i].descr+'</td></tr>');
 			}
 		} else {
 			$('#fdata > tr:first-child > :first-child').text('Ничего не найдено.');
