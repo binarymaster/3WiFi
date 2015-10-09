@@ -24,7 +24,8 @@ function QueryRangeFromRIPE($IP)
 		return;
 	}
 	$atribute = $json->objects->object[0]->attributes->attribute;
-	$inetnum = array_filter($atribute, function($obj){return $obj->name == 'inetnum';})[0]->value;
+	$inetnum = array_filter($atribute, function($obj){return $obj->name == 'inetnum';});
+	$inetnum = $inetnum[0]->value;
 	$inetnum = explode(" - ", $inetnum);
 	$descr = implode(
 		" | ",

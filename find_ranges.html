@@ -9,8 +9,8 @@ function find()
 {
 	$('#fdata').empty();
 	$('#fhead').empty();
-	$('#fhead').append('<tr><th>IP Range</th></tr>');
-	$('#fdata').append('<tr><td><img src="img/loading.gif"></td></tr>');
+	$('#fhead').append('<tr><th>IP Range</th><th>Description</th></tr>');
+	$('#fdata').append('<tr><td colspan=2><img src="img/loading.gif"></td></tr>');
 
 	$.post('3wifi.php?a=find_ranges', $($('form')[0]).serialize(), function(d)
 	{
