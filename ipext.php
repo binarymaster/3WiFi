@@ -1,5 +1,4 @@
 <?php
-
 function cURL_Get($url)
 {
 	$ch = curl_init();
@@ -126,3 +125,4 @@ function pretty_range($IP1, $IP2)
 	}
 	return $IP1.'-'.$IP2;
 }
+?>
