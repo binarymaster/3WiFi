@@ -59,11 +59,40 @@ function switchLevel(newlevel)
 	}
 	return true;
 }
-function find()
+function buildPages(count, current)
+{
+	// TODO: если страниц очень много, надо отображать иначе (сокращать вывод)
+	var result = '';
+	if (count > 1)
+	{
+		for (var i = 1; i <= count; i++)
+		{
+			if (i == current)
+			{
+				result += '<th>'+i+'</th>';
+			} else {
+				result += '<td class=swp onclick="switchPage(this.innerText)">'+i+'</td>';
+			}
+		}
+	}
+	return result;
+}
+function switchPage(num)
+{
+	if (num < 1 || num > cnt_pages || num == cur_page) return;
+
+	var pages = buildPages(cnt_pages, num);
+	$('#pages_t').html(pages);
+	$('#pages_b').html(pages);
+
+	find(num);
+}
+function find(page)
 {
 	$('#fdata').empty();
 	var cols = $('#fhead').children().children().length;
 	appendTable('fdata', '<td>', ['<img src="img/loading.gif">'], [{raw: true, mono: false, nowrap: false, over: false, cs: cols}]);
+	$($('input[name=page]')[level-1]).val(page);
 
 	$.post('3wifi.php?a=find', $($('form')[level-1]).serialize(), function(d)
 	{
@@ -72,6 +101,14 @@ function find()
 			if (d.auth)
 			{
 				localStorage.setItem('3wifi.password', $('input[name=pass]').val());
+				$('#found').text('Результатов: '+ d.found +' ('+ d.time.toFixed(2) +' сек.)');
+
+				cur_page = d.page.current;
+				cnt_pages = d.page.count;
+				var pages = buildPages(cnt_pages, cur_page);
+				$('#pages_t').html(pages);
+				$('#pages_b').html(pages);
+
 				if (d.data.length > 0)
 				{
 					if (typeof d.data[0].id == 'number')
@@ -125,12 +162,14 @@ function find()
 }
 function initpage()
 {
+	cur_page = 0;
+	cnt_pages = 0;
 	switchLevel(1);
 	$('input').bind('keydown', function (e) {
 		switch (e.keyCode)
 		{
 			case 13: // Enter
-			find();
+			find(1);
 			break;
 		}
 	});
@@ -138,6 +177,9 @@ function initpage()
 	if (pass != null) $('input[name=pass]').val(pass);
 }
 </script>
+<style type="text/css">
+.swp { cursor: pointer }
+</style>
 </head><body onload='initpage()'>
 
 <table>
@@ -146,6 +188,7 @@ function initpage()
 <tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
 <tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="%" /></td><td>(% и _ - заменяющие символы)</td></tr>
 <tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="%" /></td><td>(% и _ - заменяющие символы)</td></tr>
+<input name="page" type="hidden" value="1" />
 </form>
 </tbody>
 <tbody id=fadminform style="display:none">
@@ -155,11 +198,15 @@ function initpage()
 <tr><td>IP-адрес:</td><td><input name="ipaddr" type="text" value="%" /></td><td>Авторизация:</td><td><input name="auth" type="text" value="%" /></td></tr>
 <tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="%" /></td><td>ESSID / Имя:</td><td><input name="essid" type="text" value="%" /></td></tr>
 <tr><td>Ключ сети:</td><td><input name="key" type="text" value="%" /></td><td>Пин код WPS:</td><td><input name="wps" type="text" value="%" /></td></tr>
+<input name="page" type="hidden" value="1" />
 </form>
 </tbody>
 <tbody>
-<tr><td><button onclick="find()">Найти</button></td><td></td></tr>
+<tr><td><button onclick="find(1)">Найти</button></td><td id=found></td></tr>
 </tbody>
+</table>
+
+<table class=st1 id=pages_t style="margin-top: 2px; margin-bottom: 4px">
 </table>
 
 <table class=st1>
@@ -168,4 +215,8 @@ function initpage()
 <tbody id=fdata>
 </tbody>
 </table>
+
+<table class=st1 id=pages_b style="margin-top: 4px; margin-bottom: 2px">
+</table>
+
 </body></html>

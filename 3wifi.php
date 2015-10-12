@@ -135,8 +135,23 @@ switch ($_GET['a'])
 	$key = $db->real_escape_string($key);
 	$wps = $db->real_escape_string($wps);
 
-	if ($res = $db->query("SELECT * FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps' ORDER BY `time` DESC LIMIT 1000"))
+	$cur_page = 1;
+	$per_page = 20;
+	if (isset($_POST['page'])) $cur_page = (int)$_POST['page'];
+	if ($cur_page < 1) $cur_page = 1;
+	$from = ($cur_page - 1) * $per_page;
+
+	if ($res = $db->query("SELECT SQL_CALC_FOUND_ROWS * FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps' ORDER BY `time` DESC LIMIT $from, $per_page"))
 	{
+		if ($res_rows = $db->query("SELECT FOUND_ROWS()"))
+		{
+			$rows = $res_rows->fetch_row();
+			$rows = (int)$rows[0];
+			$pages = ceil($rows / $per_page);
+			$json['found'] = $rows;
+			$json['page']['current'] = $cur_page;
+			$json['page']['count'] = $pages;
+		}
 		$json['data'] = array();
 		while ($row = $res->fetch_row())
 		{
