@@ -1,3 +1,11 @@
+<?php
+$lat = 46.224421;
+$lon = 39.834659;
+$rad = 7;
+if (isset($_GET['lat'])) $lat = (float)$_GET['lat'];
+if (isset($_GET['lon'])) $lon = (float)$_GET['lon'];
+if (isset($_GET['rad'])) $rad = (float)$_GET['rad'];
+?>
 <html>
 <head>
 <title>3WiFi: Поиск диапазонов IP</title>
@@ -7,6 +15,7 @@
 <script type="text/javascript">
 function find()
 {
+	$('#tranges').css('display', 'none');
 	$('#fdata').empty();
 	$('#fhead').empty();
 	$('#fhead').append('<tr><th>IP Range</th><th>Description</th></tr>');
@@ -45,6 +54,28 @@ function find()
 		}
 	});
 }
+function rangesText()
+{
+	var data = $('#fdata > tr > :first-child');
+	var str = '';
+	for (var i = 0; i < data.length; i++)
+	{
+		var td = $(data[i]);
+		if (td.prop('colspan') == 2) continue;
+		str += td.text()+"\r\n";
+	}
+	return str;
+}
+function listRanges()
+{
+	var str = rangesText();
+	if (str == '') {
+		$('#tranges').css('display', 'none');		
+		return;
+	}
+	$('#tranges').val(str);
+	$('#tranges').css('display', 'block');
+}
 function initpage()
 {
 	$('input').bind('keydown', function (e) {
@@ -65,16 +96,17 @@ function initpage()
 	<tbody id=fuserform>
 		<form enctype="multipart/form-data" method="POST">
 			<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
-			<tr><td>Latitude / Широта:</td><td><input name="latitude" type="number" value="46.224421" /></td><td>° [-90; 90]</td></tr>
-			<tr><td>Longitude / Долгота:</td><td><input name="longitude" type="number" value="39.834659" /></td><td>° [-180; 180]</td></tr>
-			<tr><td>Search radius / Радиус поиска:</td><td><input name="radius" type="number" value="7" /></td><td>км (max 25)</td></tr>
+			<tr><td>Latitude / Широта:</td><td><input name="latitude" type="number" value="<?php echo $lat; ?>" /></td><td>° [-90; 90]</td></tr>
+			<tr><td>Longitude / Долгота:</td><td><input name="longitude" type="number" value="<?php echo $lon; ?>" /></td><td>° [-180; 180]</td></tr>
+			<tr><td>Search radius / Радиус поиска:</td><td><input name="radius" type="number" value="<?php echo $rad; ?>" /></td><td>км (max 25)</td></tr>
 		</form>
 	</tbody>
 	<tbody>
-		<tr><td><button onclick="find()">Найти</button></td><td></td></tr>
+		<tr><td><button onclick="find()">Найти</button> <button onclick="listRanges()">Список</button></td><td></td></tr>
 	</tbody>
 </table>
-</br>
+<textarea id=tranges cols=24 rows=8 style="display: none"></textarea>
+<br>
 <table class=st1>
 	<tbody id=fhead></tbody>
 	<tbody id=fdata></tbody>

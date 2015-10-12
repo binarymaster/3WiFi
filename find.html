@@ -43,7 +43,7 @@ function switchLevel(newlevel)
 		$('#fuserform').show();
 		$('#fadminform').hide();
 		appendTable('fhead', '<th>',
-		['Time','Comment','IP Range','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Map'],
+		['Time','Comment','IP Range','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Links'],
 		[null, null, null, null, null, null, null, nw]);
 		break;
 		case 2:
@@ -53,7 +53,7 @@ function switchLevel(newlevel)
 		$('#fuserform').hide();
 		$('#fadminform').show();
 		appendTable('fhead', '<th>',
-		['ID','Time','Comment','IP / Port','Authorization','Device / Firmware / Server Name','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Map'],
+		['ID','Time','Comment','IP / Port','Authorization','Device / Firmware / Server Name','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Links'],
 		[null, null, null, null, null, nw, null, null, null, null, nw]);
 		break;
 	}
@@ -84,8 +84,12 @@ function find()
 					for (var i = 0; i < d.data.length; i++)
 					{
 						var e = d.data[i];
-						var map = '';
-						if (!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lon))) map = '<a href="map.php?lat='+e.lat+'&lon='+e.lon+'">map</a>';
+						var links = '';
+						if (!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lon)))
+						{
+							links += '<a href="map.php?lat='+e.lat+'&lon='+e.lon+'">map</a><br>';
+							links += '<a href="find_ranges.php?lat='+e.lat+'&lon='+e.lon+'&rad=1">ranges</a>';
+						}
 						var nw = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
 						var mnw = {raw: false, mono: true, nowrap: true, over: false, cs: 1};
 						var mn = {raw: false, mono: true, nowrap: false, over: false, cs: 1};
@@ -97,12 +101,12 @@ function find()
 						{
 							case 1:
 							appendTable('fdata', '<td>',
-							[e.time.split(' ')[0], e.comment, e.range, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, map],
+							[e.time.split(' ')[0], e.comment, e.range, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, links],
 							[mrw, null, mn, mn, null, null, of, mn, nw, nw, rw]);
 							break;
 							case 2:
 							appendTable('fdata', '<td>',
-							[e.id, e.time.split(' ').join('<br>'), e.comment, e.ipport, e.auth, e.name, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, map],
+							[e.id, e.time.split(' ').join('<br>'), e.comment, e.ipport, e.auth, e.name, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, links],
 							[mn, mrw, null, mn, null, null, mn, null, null, of, mn, nw, nw, rw]);
 							break;
 						}
