@@ -117,6 +117,7 @@ switch ($_GET['a'])
 	$wps = '%';
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
 	if (isset($_POST['essid'])) $essid = $_POST['essid'];
+	$bssid = str_replace('-', ':', $bssid);
 	if ($level > 1)
 	{
 		if (isset($_POST['comment'])) $comment = $_POST['comment'];
@@ -136,7 +137,7 @@ switch ($_GET['a'])
 	$wps = $db->real_escape_string($wps);
 
 	$cur_page = 1;
-	$per_page = 20;
+	$per_page = 50;
 	if (isset($_POST['page'])) $cur_page = (int)$_POST['page'];
 	if ($cur_page < 1) $cur_page = 1;
 	$from = ($cur_page - 1) * $per_page;

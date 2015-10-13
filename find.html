@@ -61,18 +61,26 @@ function switchLevel(newlevel)
 }
 function buildPages(count, current)
 {
-	// TODO: если страниц очень много, надо отображать иначе (сокращать вывод)
-	var result = '';
-	if (count > 1)
+	if (count <= 1) return '';
+
+	var outer = 4, inner = 3, result = '';
+	for (var i = 1; i <= count; i++)
 	{
-		for (var i = 1; i <= count; i++)
+		if (i < count - outer + 1 && current - inner - 1 > outer && i > outer && i < current - inner)
 		{
-			if (i == current)
-			{
-				result += '<th>'+i+'</th>';
-			} else {
-				result += '<td class=swp onclick="switchPage(this.innerText)">'+i+'</td>';
-			}
+			result += '<td>…</td>';
+			i = current - inner;
+		}
+		if (i > outer && current + inner + 1 < count - outer + 1 && i > current + inner && i < count - outer + 1)
+		{
+			result += '<td>…</td>';
+			i = count - outer + 1;
+		}
+		if (i == current)
+		{
+			result += '<th>'+i+'</th>';
+		} else {
+			result += '<td class=swp onclick="switchPage(parseInt(this.innerText))">'+i+'</td>';
 		}
 	}
 	return result;
@@ -124,7 +132,7 @@ function find(page)
 						var links = '';
 						if (!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lon)))
 						{
-							links += '<a href="map.php?lat='+e.lat+'&lon='+e.lon+'">map</a><br>';
+							links += '<a href="map.php?lat='+e.lat+'&lon='+e.lon+'">map</a>&nbsp;';
 							links += '<a href="find_ranges.php?lat='+e.lat+'&lon='+e.lon+'&rad=1">ranges</a>';
 						}
 						var nw = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
@@ -134,6 +142,8 @@ function find(page)
 						var rw = {raw: true, mono: false, nowrap: false, over: false, cs: 1};
 						var mrw = {raw: true, mono: true, nowrap: true, over: false, cs: 1};
 						if (e.key.length < 20) of = null;
+						e.lat = String(e.lat).substr(0,9);
+						e.lon = String(e.lon).substr(0,9);
 						switch (level)
 						{
 							case 1:
