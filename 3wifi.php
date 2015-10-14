@@ -289,7 +289,7 @@ switch ($_GET['a'])
 
 	$bssid = '';
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
-	$bssid = strtoupper($_POST['bssid']);
+	$bssid = strtoupper($bssid);
 	$bssid = str_replace(':', '', $bssid);
 	$bssid = str_replace('-', '', $bssid);
 	$bssid = str_replace('.', '', $bssid);
@@ -300,7 +300,7 @@ switch ($_GET['a'])
 	$bssid = substr_replace($bssid, ':', 6, 0);
 	$bssid = substr_replace($bssid, ':', 4, 0);
 	$bssid = substr_replace($bssid, ':', 2, 0);
-	$oui = substr($bssid, 0, 9) . '%';
+	$oui = substr($bssid, 0, 9) . '__:__:__';
 
 	$oui = $db->real_escape_string($oui);
 	if ($res = $db->query("SELECT `BSSID`,`name` FROM `free` WHERE `BSSID` LIKE '$oui' AND `name`!=''"))
@@ -310,7 +310,6 @@ switch ($_GET['a'])
 		{
 			$bss = strtoupper($row[0]);
 			$name = $row[1];
-			if (strlen($bss) != 17) continue;
 
 			if (!isset($devs[$name]))
 			{
