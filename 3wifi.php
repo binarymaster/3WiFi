@@ -21,6 +21,19 @@ require 'con_db.php'; /* Коннектор MySQL */
 $pass_level1 = 'antichat';
 $pass_level2 = 'secret_password';
 
+$pass = '';
+if (isset($_POST['pass']))
+{
+	$pass = $_POST['pass'];
+} else {
+	if (isset($_GET['pass']))
+		$pass = $_GET['pass'];
+}
+
+$level = 0;
+if ($pass == $pass_level1) $level = 1;
+if ($pass == $pass_level2) $level = 2;
+
 $tstart = microtime(true);
 $json = array();
 $json['result'] = false;
@@ -79,10 +92,10 @@ switch ($_GET['a'])
 				$xessid = htmlspecialchars($apdata[$i]['essid']);
 				$xwifikey = htmlspecialchars($apdata[$i]['key']);
 
-				$aphint[] = $xtime;
+				if ($level > 0) $aphint[] = $xtime;
 				$aphint[] = $xbssid;
 				$aphint[] = $xessid;
-				$aphint[] = $xwifikey;
+				if ($level > 0) $aphint[] = $xwifikey;
 				$hint[] = implode('<br>', $aphint);
 			}
 			$ap['properties']['hintContent'] = implode('<hr>', $hint);
@@ -96,14 +109,7 @@ switch ($_GET['a'])
 
 	// Поиск по базе
 	case 'find':
-	$pass = '';
-	if (isset($_POST['pass'])) $pass = $_POST['pass'];
-
 	$json['result'] = true;
-	$level = 0;
-	if ($pass == $pass_level1) $level = 1;
-	if ($pass == $pass_level2) $level = 2;
-
 	$json['auth'] = $level > 0;
 	if ($level == 0) break;
 
@@ -194,14 +200,8 @@ switch ($_GET['a'])
 	// Поиск диапазонов IP
 	case 'find_ranges':
 	$json['result'] = true;
-	$pass = '';
-	if (isset($_POST['pass'])) $pass = $_POST['pass'];
-	if ($pass != $pass_level1 && $pass != $pass_level2)
-	{
-		$json['auth'] = false;
-		break;
-	}
-	else $json['auth'] = true;
+	$json['auth'] = $level > 0;
+	if ($level == 0) break;
 
 	$lat = ''; $lon = '';
 	if (isset($_POST['latitude'])) $lat = $_POST['latitude'];
@@ -284,14 +284,8 @@ switch ($_GET['a'])
 	// Определение устройства по MAC
 	case 'devicemac':
 	$json['result'] = true;
-	$pass = '';
-	if (isset($_POST['pass'])) $pass = $_POST['pass'];
-	if ($pass != $pass_level1 && $pass != $pass_level2)
-	{
-		$json['auth'] = false;
-		break;
-	}
-	else $json['auth'] = true;
+	$json['auth'] = $level > 0;
+	if ($level == 0) break;
 
 	$bssid = '';
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];

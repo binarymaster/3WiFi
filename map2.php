@@ -18,12 +18,15 @@ if (isset($_GET['lat']) && isset($_GET['lon']))
 ymaps.ready(init);
 
 function init () {
+	var pass = localStorage.getItem('3wifi.password');
+	if (pass == null) pass = '';
+
 	myMap = new ymaps.Map('map', {
 		center: [<?php echo $lat; ?>, <?php echo $lon; ?>],
 		zoom: 18
 	}),
 
-	loadingObjectManager = new ymaps.LoadingObjectManager('3wifi.php?a=map&bbox=%b',
+	loadingObjectManager = new ymaps.LoadingObjectManager('3wifi.php?a=map&pass='+pass+'&bbox=%b',
 	{   
 		// Включаем кластеризацию.
 		clusterize: true,

@@ -18,12 +18,15 @@ if (isset($_GET['lat']) && isset($_GET['lon']))
 ymaps.ready(init);
 
 function init () {
+	var pass = localStorage.getItem('3wifi.password');
+	if (pass == null) pass = '';
+
 	myMap = new ymaps.Map('map', {
 		center: [<?php echo $lat; ?>, <?php echo $lon; ?>],
 		zoom: 18
 	}),
 
-	remoteObjectManager = new ymaps.RemoteObjectManager('3wifi.php?a=map&bbox=%b',
+	remoteObjectManager = new ymaps.RemoteObjectManager('3wifi.php?a=map&pass='+pass+'&bbox=%b',
 	{	// Разбивать запросы по тайлам
 		splitRequests: false,
 		// Опции кластеров задаются с префиксом cluster.
