@@ -80,7 +80,7 @@ function buildPages(count, current)
 		{
 			result += '<th>'+i+'</th>';
 		} else {
-			result += '<td class=swp onclick="switchPage(parseInt(this.innerText))">'+i+'</td>';
+			result += '<td class=swp onclick="switchPage('+i+')">'+i+'</td>';
 		}
 	}
 	return result;
@@ -97,6 +97,7 @@ function switchPage(num)
 }
 function find(page)
 {
+	$('#found').empty();
 	$('#fdata').empty();
 	var cols = $('#fhead').children().children().length;
 	appendTable('fdata', '<td>', ['<img src="img/loading.gif">'], [{raw: true, mono: false, nowrap: false, over: false, cs: cols}]);
