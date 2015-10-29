@@ -5,6 +5,7 @@ if (!isset($_GET['a']))
 	Header('Location: /');
 	exit;
 }
+$action = $_GET['a'];
 
 $topPort = 10;
 $topauth = 100;
@@ -16,6 +17,7 @@ $topWiFiKey = 30;
 $topWPSPIN = 30;
 $topDNS = 30;
 
+$daemonize = false;
 require 'con_db.php'; /* Коннектор MySQL */
 
 $pass_level1 = 'antichat';
@@ -34,11 +36,86 @@ $level = 0;
 if ($pass == $pass_level1) $level = 1;
 if ($pass == $pass_level2) $level = 2;
 
-$tstart = microtime(true);
+$time = microtime(true);
 $json = array();
 $json['result'] = false;
 
-switch ($_GET['a'])
+function randhex($length)
+{
+	$alpha = '0123456789abcdef';
+	$len = strlen($alpha);
+	$str = '';
+	for ($i = 0; $i < $length; $i++)
+		$str .= $alpha[rand(0, $len - 1)];
+	return $str;
+}
+
+function disable_gzip()
+{
+	@ini_set('zlib.output_compression', 'Off');
+	@ini_set('output_buffering', 'Off');
+	@ini_set('output_handler', '');
+	@apache_setenv('no-gzip', 1);	
+}
+
+function getTask($tid)
+{
+	global $db;
+	$result = false;
+	$tid = $db->real_escape_string($tid);
+	if ($res = $db->query("SELECT * FROM `tasks` WHERE `tid`='$tid'"))
+	{
+		if ($row = $res->fetch_row())
+		{
+			$result = array();
+			$result['id'] = $row[0];
+			$result['state'] = (int)$row[1];
+			$result['created'] = $row[2];
+			$result['modified'] = $row[3];
+			$result['ext'] = $row[4];
+			$result['comment'] = $row[5];
+			$result['checkexist'] = (bool)$row[6];
+			$result['lines'] = (int)$row[7];
+			$result['accepted'] = (int)$row[8];
+			$result['onmap'] = (int)$row[9];
+			$result['warns'] = $row[10];
+		}
+		$res->close();
+	}
+	return $result;
+}
+
+function ValidHeaderCSV($row)
+{
+	if (($row[0] !== 'IP Address')
+	|| ($row[1] !== 'Port')
+	|| ($row[4] !== 'Authorization')
+	|| ($row[5] !== 'Server name / Realm name / Device type')
+	|| ($row[6] !== 'Radio Off')
+	|| ($row[7] !== 'Hidden')
+	|| ($row[8] !== 'BSSID')
+	|| ($row[9] !== 'ESSID')
+	|| ($row[10] !== 'Security')
+	|| ($row[11] !== 'Key')
+	|| ($row[12] !== 'WPS PIN')
+	|| ($row[13] !== 'LAN IP Address')
+	|| ($row[14] !== 'LAN Subnet Mask')
+	|| ($row[15] !== 'WAN IP Address')
+	|| ($row[16] !== 'WAN Subnet Mask')
+	|| ($row[17] !== 'WAN Gateway')
+	|| ($row[18] !== 'Domain Name Servers'))
+	{
+		return false;
+	}
+	return true;
+}
+function ValidHeaderTXT($row)
+{
+	$row = explode("\t", $row);
+	return (count($row) == 23);
+}
+
+switch ($action)
 {
 	// Координаты точек на карте
 	case 'map':
@@ -356,6 +433,140 @@ switch ($_GET['a'])
 	}
 	break;
 
+	// Загрузка отчётов в базу
+	case 'upload':
+	$json['result'] = true;
+
+	$json['upload']['state'] = false;
+	$json['upload']['processing'] = false;
+	$error = array();
+	if ($_SERVER['REQUEST_METHOD'] == 'POST'
+	&& ($_SERVER['CONTENT_TYPE'] == 'text/plain'
+	|| $_SERVER['CONTENT_TYPE'] == 'text/csv')
+	&& isset($HTTP_RAW_POST_DATA)
+	&& strlen($HTTP_RAW_POST_DATA) > 0
+	&& strlen($HTTP_RAW_POST_DATA) < 5000000)
+	{
+		$tid = '';
+		if (isset($_GET['tid'])) $tid = $_GET['tid'];
+		$comment = '';
+		if (isset($_GET['comment'])) $comment = $_GET['comment'];
+		if ($comment == '') $comment = 'none';
+		$checkexist = isset($_GET['checkexist']) && ($_GET['checkexist'] == '1');
+		$done = isset($_GET['done']) && ($_GET['done'] == '1');
+		$nowait = isset($_GET['nowait']) && ($_GET['nowait'] == '1');
+		if ($_SERVER['CONTENT_TYPE'] == 'text/csv') $ext = '.csv';
+		if ($_SERVER['CONTENT_TYPE'] == 'text/plain') $ext = '.txt';
+
+		if ($tid == '')
+		{
+			// Создание нового задания
+			$task = true;
+			while ($task !== false)
+			{
+				$tid = randhex(32);
+				$task = getTask($tid);
+			}
+			// Сохраняем файл
+			$filename = 'uploads/'.$tid.$ext;
+			if (($handle = fopen($filename, 'ab')) !== false)
+			{
+				fwrite($handle, $HTTP_RAW_POST_DATA);
+				fclose($handle);
+			}
+			// Проверка на валидность
+			$valid = false;
+			if (($handle = fopen($filename, 'r')) !== false)
+			{
+				switch ($ext)
+				{
+					case '.csv':
+					if (($row = fgetcsv($handle, 1000, ";")) !== false)
+						$valid = ValidHeaderCSV($row);
+					if (!$valid) $error[] = 6; // Неправильный CSV
+					break;
+					case '.txt':
+					if (($row = fgets($handle)) !== false)
+						$valid = ValidHeaderTXT($row);
+					if (!$valid) $error[] = 7; // Неправильный TXT
+					break;
+				}
+				fclose($handle);
+			}
+			if ($valid)
+			{
+				$comment = $db->real_escape_string($comment);
+				if ($db->query("INSERT INTO `tasks` (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`) VALUES ('$tid',now(),now(),'$ext','$comment','$checkexist')"))
+				{
+					$json['upload']['state'] = true;
+					$json['upload']['tid'] = $tid;					
+				}
+			} else
+				unlink($filename);
+		} else {
+			// Обновление существующего задания
+			$task = getTask($tid);
+			if ($task === false)
+			{
+				$error[] = 2; // Задание не существует
+			} else {
+				if ($task['state'] > 0)
+				{
+					$error[] = 3; // В процессе обработки, невозможно внести изменения
+					$json['upload']['processing'] = true;
+				} else {
+					$json['upload']['state'] = true;
+					$json['upload']['tid'] = $tid;
+					$filename = 'uploads/'.$tid.$task['ext'];
+					$comment = $db->real_escape_string($comment);
+					$db->query("UPDATE `tasks` SET `modified`=now(),`comment`='$comment',`checkexist`='$checkexist' WHERE `tid`='$tid')");
+					if ($task['ext'] != $ext)
+					{
+						$error[] = 4; // Несовпадение с форматом файла задания
+					} else {
+						if (filesize($filename) > 500000000)
+						{
+							$error[] = 5; // Превышен максимально допустимый объём задания
+							$done = true;
+						} else
+							if (($handle = fopen($filename, 'ab')) !== false)
+							{
+								fwrite($handle, $HTTP_RAW_POST_DATA);
+								fclose($handle);
+							}
+					}
+				}
+			}
+		}
+		if ($json['upload']['state'] && $done)
+		{
+			// Запуск обработки задания
+			$json['upload']['processing'] = $db->query("UPDATE `tasks` SET `tstate`='1' WHERE `tid`='$tid'");
+			$daemonize = $json['upload']['processing'];
+		}
+	} else
+		$error[] = 1; // Неверные заголовки или размер данных
+	$json['upload']['error'] = $error;
+	break;
+
+	// Проверка состояния загрузки
+	case 'upstat':
+	$json['result'] = true;
+
+	$tid = '';
+	if (isset($_GET['tid'])) $tid = $_GET['tid'];
+	$task = getTask($tid);
+	if ($task !== false && $task['state'] > 0)
+	{
+		$json['upstat']['state'] = $task['state'];
+		$json['upstat']['lines'] = $task['lines'];
+		$json['upstat']['accepted'] = $task['accepted'];
+		$json['upstat']['onmap'] = $task['onmap'];
+		$json['upstat']['warns'] = $task['warns'];
+	} else
+		$json['upstat']['state'] = -1;
+	break;
+
 	// Перепроверка необработанных результатов
 	case 'check':
 	$json['result'] = true;
@@ -637,11 +848,172 @@ switch ($_GET['a'])
 	}
 	break;
 }
-$db->close();
 
-$time = microtime(true) - $tstart;
+$time = microtime(true) - $time;
 $json['time'] = $time;
 
 Header('Content-Type: application/json');
-echo json_encode($json);
+if (!$daemonize)
+{
+	$db->close();
+	echo json_encode($json);
+	exit;
+}
+
+if ($daemonize)
+{
+	// Превращаемся в демона и обрабатываем данные в фоне
+	set_time_limit(0);
+	ignore_user_abort(true);
+	disable_gzip();
+	ob_start();
+	echo json_encode($json);
+	Header('Connection: close');
+	Header("Content-Encoding: none");
+	Header('Content-Length: ' . ob_get_length());
+	ob_end_flush();
+	ob_flush();
+	flush();
+	/* ------------------------------------------------- */
+	switch ($action)
+	{
+		case 'upload':
+		function APinDB($bssid, $essid, $key)
+		{
+			global $chkst;
+			$chkst->bind_param("sss", $bssid, $essid, $key);
+			$chkst->execute();
+			$chkst->store_result();
+			$result = $chkst->num_rows;
+			$chkst->free_result();
+			return $result > 0;
+		}
+		function addRow($row)
+		{
+			global $comment;
+			global $checkexist;
+			global $stmt;
+			global $aps;
+			// Отбираем только валидные точки доступа
+			$addr = $row[0];
+			$port = $row[1];
+			if ($addr == 'IP Address' && $port == 'Port')
+			{
+				return 1;
+			}
+			$bssid = $row[8];
+			$essid = $row[9];
+			$sec = $row[10];
+			$key = $row[11];
+			$wps = $row[12];
+			if ($bssid == '<no wireless>')
+			{
+				return 2;
+			}
+			if ((strpos($bssid, ':') === false || $wps == '')
+			&& ($essid == '' || $sec == '' || $sec == '-' || $key == '' || $key == '-'))
+			{
+				if (strpos($bssid, ':') !== false
+				|| $essid != ''
+				|| $sec != ''
+				|| $key != ''
+				|| $wps != '')
+				{ return 3; }
+				else { return 1; }
+			}
+			if ($checkexist)
+				if (APinDB($bssid, $essid, $key))
+				{
+					return 4;
+				}
+
+			$aps[] = $bssid;
+			$stmt->bind_param("ssssssssssssssssssssssssssssssssssss", // format
+					// INSERT
+					//    comment   IP        Port      Auth      Name      RadioOff  Hidden    BSSID     ESSID     Security   Key        WPS PIN    LAN IP     LAN Mask   WAN IP     WAN Mask   WAN Gate   DNS Serv
+						$comment, $row[0], $row[1], $row[4], $row[5], $row[6], $row[7], $row[8], $row[9], $row[10], $row[11], $row[12], $row[13], $row[14], $row[15], $row[16], $row[17], $row[18],
+					// UPDATE
+						$comment, $row[0], $row[1], $row[4], $row[5], $row[6], $row[7], $row[8], $row[9], $row[10], $row[11], $row[12], $row[13], $row[14], $row[15], $row[16], $row[17], $row[18]
+			);
+			$stmt->execute();
+			return 0;
+		}
+
+		$task = getTask($tid);
+		if ($task !== false)
+		{
+			$checkexist = $task['checkexist'];
+			if ($checkexist)
+				$chkst = $db->prepare("SELECT * FROM `free` WHERE `BSSID`=? AND `ESSID`=? AND `WiFiKey`=? LIMIT 1");
+
+			$warn = array();
+			$ext = $task['ext'];
+			$filename = 'uploads/'.$tid.$ext;
+			if (($handle = fopen($filename, 'r')) !== false)
+			{
+				$comment = $task['comment'];
+
+				$sql = 'INSERT INTO `free` (`comment`,`IP`,`Port`,`Authorization`,`name`,`RadioOff`,`Hidden`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`LANIP`,`LANMask`,`WANIP`,`WANMask`,`WANGateway`,`DNS`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE `comment`=?,`IP`=?,`Port`=?,`Authorization`=?,`name`=?,`RadioOff`=?,`Hidden`=?,`BSSID`=?,`ESSID`=?,`Security`=?,`WiFiKey`=?,`WPSPIN`=?,`LANIP`=?,`LANMask`=?,`WANIP`=?,`WANMask`=?,`WANGateway`=?,`DNS`=?;';
+				$stmt = $db->prepare($sql);
+
+				$i = 0;
+				$cnt = 0;
+				$aps = array();
+				$hangcheck = 5;
+				$time = microtime(true);
+				switch ($ext)
+				{
+					case '.csv':
+					while (($data = fgetcsv($handle, 1000, ';')) !== false)
+					{
+						$i++;
+						if ($i == 1) continue; // Пропуск заголовка CSV
+						$res = addRow($data);
+						($res == 0 ? $cnt++ : $warn[$i - 1] = $res);
+						if (microtime(true) - $time > $hangcheck)
+						{
+							$db->query("UPDATE `tasks` SET `lines`='$i',`accepted`='$cnt' WHERE `tid`='$tid'");
+							$time = microtime(true);
+						}
+					}
+					$i--;
+					break;
+					case '.txt':
+					while (($str = fgets($handle)) !== false)
+					{
+						$data = explode("\t", $str);
+						$i++;
+						$res = addRow($data);
+						($res == 0 ? $cnt++ : $warn[$i] = $res);
+						if (microtime(true) - $time > $hangcheck)
+						{
+							$db->query("UPDATE `tasks` SET `lines`='$i',`accepted`='$cnt' WHERE `tid`='$tid'");
+							$time = microtime(true);
+						}
+					}
+					break;
+				}
+				if ($checkexist) $chkst->close();
+				fclose($handle);
+				$stmt->close();
+			}
+			$warns = array();
+			foreach ($warn as $line => $wid)
+				$warns[] = implode('|', array($line, $wid));
+			$warns = implode(',', $warns);
+
+			$db->query("UPDATE `tasks` SET `lines`='$i',`accepted`='$cnt',`warns`='$warns',`tstate`='2' WHERE `tid`='$tid'");
+			unlink($filename);
+
+			require 'chkxy.php';
+			$found = CheckLocation($aps, $tid);
+			$db->query("UPDATE `tasks` SET `onmap`='$found',`tstate`='3' WHERE `tid`='$tid'");
+
+			if (!$nowait) sleep(60);
+			$db->query("DELETE FROM `tasks` WHERE `tid`='$tid'");
+		}
+		break;
+	}
+	$db->close();
+}
 ?>

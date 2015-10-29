@@ -1,0 +1,405 @@
+<html><head>
+<title>3WiFi: Добавление точек в базу</title>
+<meta http-equiv=Content-Type content="text/html;charset=UTF-8">
+<link rel=stylesheet href="css/style.css" type="text/css">
+<style>
+td { white-space: nowrap; text-align: left !important }
+</style>
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script type="text/javascript">
+function filePart(file, from, len)
+{
+	if (typeof file.slice == "function") {
+		return file.slice(from, len);
+	} else if (file.webkitSlice) {
+		return file.webkitSlice(from, len);
+	} else if (file.mozSlice) {
+		return file.mozSlice(from, len);
+	}
+	return false;
+}
+function uploadStat()
+{
+	$.get('3wifi.php?a=upstat&tid=' + tid, function(data)
+	{
+		if (data.upstat.state == -1)
+		{
+			$('#output').append('<b>Ошибка:</b> Задание не существует, либо обработка ещё не началась.<br>');
+			return;
+		}
+		if (lastState < data.upstat.state)
+		{
+			if (data.upstat.state >= 1)
+			{
+				if (lastState < 1)
+					$('#output').append('Производится запись отчёта в БД...<br>');
+				if ($('#cnttotal').length == 0)
+					$('#output').append('Загружено в базу: <b id=cntadded></b> из <b id=cnttotal></b><span id=st2></span>.<br>');
+			}
+			if (data.upstat.state >= 2)
+			{
+				if (data.upstat.warns.length > 0 && $('#ulwrn').length == 0)
+				{
+					$('#output').append('Следующие записи <b>не были</b> внесены в базу: <button onclick="$(\'#ulwrn\').css(\'display\',\'block\')">Показать</button><br><ul id=ulwrn style="display:none"></ul>');
+					var warns = data.upstat.warns.split(',');
+					var line = 0;
+					var warnid = 0;
+					var wrnstr = '';
+					for (var i = 0; i < warns.length; i++)
+					{
+						line = parseInt(warns[i].split('|')[0]);
+						warnid = parseInt(warns[i].split('|')[1]);
+						wrnstr = 'Неизвестная ошибка';
+						switch (warnid)
+						{
+							case 1:
+							wrnstr = 'Нет валидных данных точки доступа';
+							break;
+							case 2:
+							wrnstr = 'Устройство не имеет беспроводного адаптера';
+							break;
+							case 3:
+							wrnstr = 'Не достаточно полезных данных для внесения в базу';
+							break;
+							case 4:
+							wrnstr = 'Данная точка доступа уже есть в базе';
+							break;
+						}
+						$('#ulwrn').append('<li>Строка ' + line + ': ' + wrnstr + '.</li>');
+					}
+				}
+				if (lastState < 2)
+					$('#output').append('<br>Определение координат точек...<br>');
+				if ($('#cntfound').length == 0)
+					$('#output').append('Найдено на карте: <b id=cntfound></b><span id=st3></span>.<br>');
+			}
+			if (data.upstat.state == 3)
+			{
+				$('#output').append('Задание выполнено!<br>');
+				setProgress(0);
+				$('input[type=file]').replaceWith($('input[type=file]').val('').clone(true));
+				$('input[type=file]').prop('disabled', false);
+				$('input[type=text]').prop('disabled', false);
+				$('input[type=checkbox]').prop('disabled', false);
+			}
+		}
+		var ajaxstr = '&nbsp;<img src="img/loadsm.gif">..';
+		if ($('#st2').length > 0)
+			if (data.upstat.state == 1)
+			{
+				$('#st2').html(ajaxstr);
+			} else {
+				$('#st2').empty();				
+			}
+		if ($('#st3').length > 0)
+			if (data.upstat.state == 2)
+			{
+				$('#st3').html(ajaxstr);
+			} else {
+				$('#st3').empty();				
+			}
+		if ($('#cnttotal').length > 0)
+		{
+			$('#cnttotal').html(data.upstat.lines);
+			$('#cntadded').html(data.upstat.accepted);
+		}
+		if ($('#cntfound').length > 0)
+			$('#cntfound').html(data.upstat.onmap);
+		lastState = data.upstat.state;
+		if (data.upstat.state < 3) setTimeout('uploadStat()', 3000);
+	});
+}
+function processLines()
+{
+	var lines = reader.result.split(/\r?\n/).length;
+	switch (act)
+	{
+		case 0: // init
+		if (lines < ldLines + 1)
+		{
+			if (from + blob.size < file.size)
+			{
+				// try load more lines
+				szChunk += szStep;
+				blob = filePart(file, from, szChunk);
+				reader.readAsText(blob);
+				return;
+			}
+			// upload entire file
+			act = 3;
+			oldf = from;
+			from += blob.size;
+			setTimeout('processLines()', 1);
+			return;
+		}
+		if (lines > ldLines + 1)
+		{
+			// try load less lines
+			act = 1;
+			shr = 1;
+			parm = 1;
+			setTimeout('processLines()', 1);
+			return;
+		}
+		if (lines == ldLines + 1)
+		{
+			// cut excess data
+			act = 2;
+			parm = 1;
+			setTimeout('processLines()', 1);
+			return;
+		}
+		break;
+
+		case 1: // load less lines
+		if (lines > ldLines + 1)
+		{
+			if (parm < 0)
+			{
+				parm = 1;
+				shr++;
+			}
+			var delta = szStep >> shr;
+			if (delta == 0) delta = 1;
+			szChunk -= delta;
+			blob = filePart(file, from, szChunk);
+			reader.readAsText(blob);
+			return;
+		}
+		if (lines < ldLines + 1)
+		{
+			if (parm > 0)
+			{
+				parm = -1;
+				shr++;
+			}
+			var delta = szStep >> shr;
+			if (delta == 0) delta = 1;
+			szChunk += delta;
+			blob = filePart(file, from, szChunk);
+			reader.readAsText(blob);
+			return;
+		}
+		if (lines == ldLines + 1)
+		{
+			act = 2;
+			setTimeout('processLines()', 1);
+			return;
+		}
+		break;
+
+		case 2: // cut excess data
+		if (reader.result.charCodeAt(reader.result.length - 1) == 10)
+		{
+			act = 3;
+			oldf = from;
+			from += blob.size;
+			setTimeout('processLines()', 1);
+		} else {
+			var delta = 1;
+			if (parm == 1)
+			{
+				delta = reader.result.length - reader.result.lastIndexOf("\n") - 1;
+				parm = 0;
+			}
+			szChunk -= delta;
+			blob = filePart(file, from, szChunk);
+			reader.readAsText(blob);
+		}
+		return;
+		break;
+
+		case 3: // upload part
+		setProgress((oldf + from) / (file.size * 2));
+		var query = 'a=upload';
+		if (tid != '') query += '&tid=' + tid;
+		query += '&comment=' + encodeURIComponent($('input[type=text]').val());
+		query += '&checkexist=' + ($('input[type=checkbox]').prop('checked') ? '1' : '0');
+		if (from == file.size) query += '&done=1';
+		var ct = 'text/csv';
+		if (file.name.substr(file.name.lastIndexOf('.')).toLowerCase() == '.txt') ct = 'text/plain';
+
+		$.ajax({
+			type: 'POST',
+			url: '3wifi.php?' + query,
+			contentType: ct,
+			data: reader.result,
+			cache: false,
+			processData: false,
+			success: function(data)
+			{
+				for (var i = 0; i < data.upload.error.length; i++)
+				{
+					var err = 'Неизвестная ошибка';
+					switch (data.upload.error[i])
+					{
+						case 1:
+						err = 'Некорректные заголовки, либо недопустимый размер данных';
+						break;
+						case 2:
+						err = 'Указанное задание не существует';
+						break;
+						case 3:
+						err = 'Задание в процессе обработки, невозможно внести изменения';
+						break;
+						case 4:
+						err = 'Несовпадение с форматом файла задания';
+						break;
+						case 5:
+						err = 'Превышен максимально допустимый объём задания';
+						break;
+						case 6:
+						err = 'Неподдерживаемый формат отчёта CSV, заголовки не верны или отсутствуют';
+						break;
+						case 7:
+						err = 'Неподдерживаемый формат отчёта TXT, нестандартное количество столбцов';
+						break;
+					}
+					$('#output').append('<b>Ошибка:</b> ' + err + '.<br>');
+				}
+				if (data.upload.state)
+				{
+					tid = data.upload.tid;
+					setProgress(from / file.size);
+					if (!data.upload.processing)
+					{
+						if (from < file.size)
+						{
+							// process next part
+							act = 0;
+							szChunk = szStep;
+							blob = filePart(file, from, szChunk);
+							reader.readAsText(blob);
+						} else {
+							$('input[type=file]').replaceWith($('input[type=file]').val('').clone(true));
+							$('input[type=file]').prop('disabled', false);
+							$('input[type=text]').prop('disabled', false);
+							$('input[type=checkbox]').prop('disabled', false);
+							$('#st1').empty();
+							$('#output').append('Загрузка успешно завершена!<br>');
+							$('#output').append('<br>Не удалось запустить обработку данных.<br>');
+						}
+					} else {
+						$('#st1').empty();
+						if (from < file.size)
+						{
+							$('#output').append('Загрузка завершена, но не полностью.<br>');
+						} else {
+							$('#output').append('Загрузка успешно завершена!<br>');
+						}
+						$('#output').append('<br>Выполняется обработка данных...<br>');
+						$('#output').append('<b>Примечание:</b> Вы можете закрыть окно, либо обновить страницу для загрузки другого файла - обработка продолжится в фоновом режиме. Оставайтесь на странице, чтобы получить отчёт о вашей загрузке.<br><br>');
+						lastState = 0;
+						setTimeout('uploadStat()', 1000);
+					}
+				} else {
+					setProgress(0);
+					$('#st1').empty();
+					$('input[type=file]').replaceWith($('input[type=file]').val('').clone(true));
+					$('input[type=file]').prop('disabled', false);
+					$('input[type=text]').prop('disabled', false);
+					$('input[type=checkbox]').prop('disabled', false);
+					$('#output').append('Загрузка остановлена из-за ошибки.<br>');
+				}
+			}
+		});
+		return;
+		break;
+	}
+}
+function startProcess()
+{
+	$('input[type=file]').prop('disabled', true);
+	$('input[type=text]').prop('disabled', true);
+	$('input[type=checkbox]').prop('disabled', true);
+	$('input[type=submit]').prop('disabled', true);
+	szStep = 1048576;
+	ldLines = 500;
+
+	tid = '';
+	act = 0;
+	from = 0;
+	szChunk = szStep;
+
+	$('#output').append('Выполняется загрузка файла...<span id=st1>&nbsp;<img src="img/loadsm.gif"></span><br>');
+	reader = new FileReader();
+	reader.onload = processLines;
+	blob = filePart(file, from, szChunk);
+	reader.readAsText(blob);
+}
+function jqEscape(str)
+{
+	return $('<div>').text(str).html();
+}
+function checkFile(f)
+{
+	$('input[type=submit]').prop('disabled', true);
+	file = f.files[0];
+	if (!file) return;
+	if (file.size > 500000000) // 500 MB
+	{
+		$(f).replaceWith($(f).val('').clone(true));
+		$('#output').text('Размер файла должен быть не более 500 МБ!');
+		return;
+	}
+	if (file.size == 0)
+	{
+		$(f).replaceWith($(f).val('').clone(true));
+		$('#output').text('Выбранный файл не содержит данных!');
+		return;
+	}
+	$('input[type=submit]').prop('disabled', false);
+	setProgress(0);
+	$('#output').empty();
+	var ext = file.name.substr(file.name.lastIndexOf('.')).toLowerCase();
+	if (ext != '.txt' && ext != '.csv')
+		$('#output').append('<b>Предупреждение:</b> Неизвестное расширение/формат файла, подразумевается CSV.<br>');
+	$('#output').append('Файл <b>' + jqEscape(file.name) + '</b> готов к загрузке.<br>');
+}
+
+function setProgress(val)
+{
+	var perc = $('.perc:last');
+	var wid = 180;
+	perc.css('width', wid + 'px');
+	perc.css('height', '16px');
+	perc.css('border-width', '1');
+	perc.css('border-style', 'inset');
+	perc.css('background-color', '#C0C0C0');
+	perc.css('display', 'inline-flex');
+	perc.css('position', 'relative');
+	perc.css('top', '1px');
+	var chld = $('<span>');
+	chld.css('width', Math.round(val * wid - 2) + 'px');
+	chld.css('height', '14px');
+	chld.css('background-color', '#5566CC');
+	chld.css('display', 'inherit');
+	chld.css('position', 'relative');
+	chld.css('left', '1px');
+	chld.css('top', '1px');
+	perc.html(chld);
+	$('#percnum').html('&nbsp; '+Math.round(val * 100)+'%');
+}
+function initpage()
+{
+	if (window.File && window.FileReader && window.FileList && window.Blob)
+	{
+		// Good
+		setProgress(0);
+	} else {
+		$('body').html("Необходимые File API не поддерживаются вашим браузером.<br><br>Попробуйте открыть эту страницу другим браузером.");
+	}
+}
+</script>
+</head><body onload="initpage()">
+
+<table>
+<tr><td>Отчёт Router Scan:</td><td><input name="userfile" type="file" accept=".csv,.txt" onchange="checkFile(this)" /> &nbsp;(в формате <b>CSV</b> или <b>TXT</b>)</td></tr>
+<tr><td>Ваш комментарий:</td><td><input name="comment" type="text" /></td></tr>
+<tr><td style="vertical-align: top">Дополнительно:</td><td><input type="checkbox" name="checkexist" value="1">Не обновлять существующие в базе точки<br>(поставьте галку, если загружаете устаревшие данные, либо точки из других баз)</td></tr>
+<tr><td>Ход загрузки:</td><td><span class=perc></span><b id=percnum></b></td></tr>
+<tr><td><input type="submit" value="Отправить файл" onclick="startProcess()" disabled></td><td></td></tr>
+</table>
+<hr>
+<p id=output></p>
+</body></html>

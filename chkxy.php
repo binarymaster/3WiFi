@@ -1,5 +1,5 @@
 <?php	
-function CheckLocation($aps)
+function CheckLocation($aps, $tid = '')
 {
 	require 'con_db.php'; /* Коннектор MySQL */
 	require 'geoext.php'; /* Модуль получения координат */
@@ -15,6 +15,8 @@ function CheckLocation($aps)
 	{
 		set_time_limit(0);
 		ignore_user_abort(true);
+		$hangcheck = 5;
+		$time = microtime(true);
 		while ($row = $res_bssid->fetch_row())
 		{
 			$bssid = $row[0];
@@ -38,6 +40,11 @@ function CheckLocation($aps)
 			} else {
 				$stmt_upd->bind_param("sss", $not_found, $not_found, $bssid);
 				$stmt_upd->execute();
+			}
+			if ($tid != '' && microtime(true) - $time > $hangcheck)
+			{
+				$db->query("UPDATE `tasks` SET `onmap`='$i' WHERE `tid`='$tid'");
+				$time = microtime(true);
 			}
 		}
 		$res_bssid->close();
