@@ -62,7 +62,6 @@ function getTask($tid)
 {
 	global $db;
 	$result = false;
-	$tid = $db->real_escape_string($tid);
 	if ($res = $db->query("SELECT * FROM `tasks` WHERE `tid`='$tid'"))
 	{
 		if ($row = $res->fetch_row())
@@ -453,6 +452,7 @@ switch ($action)
 	{
 		$tid = '';
 		if (isset($_GET['tid'])) $tid = $_GET['tid'];
+		$tid = $db->real_escape_string($tid);
 		$comment = '';
 		if (isset($_GET['comment'])) $comment = $_GET['comment'];
 		if ($comment == '') $comment = 'none';
@@ -559,6 +559,7 @@ switch ($action)
 
 	$tid = '';
 	if (isset($_GET['tid'])) $tid = $_GET['tid'];
+	$tid = $db->real_escape_string($tid);
 	$task = getTask($tid);
 	if ($task !== false && $task['state'] > 0)
 	{
@@ -943,6 +944,7 @@ if ($daemonize)
 			return 0;
 		}
 
+		$tid = $db->real_escape_string($tid);
 		$task = getTask($tid);
 		if ($task !== false)
 		{
