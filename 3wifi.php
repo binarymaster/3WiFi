@@ -440,9 +440,13 @@ switch ($action)
 	$json['upload']['state'] = false;
 	$json['upload']['processing'] = false;
 	$error = array();
+	// Извлекаем тип данных, игнорируя кодировку
+	$contentType = explode('; ', $_SERVER['CONTENT_TYPE']);
+	$contentType = $contentType[0];
+	// Проверяем всё необходимое
 	if ($_SERVER['REQUEST_METHOD'] == 'POST'
-	&& ($_SERVER['CONTENT_TYPE'] == 'text/plain'
-	|| $_SERVER['CONTENT_TYPE'] == 'text/csv')
+	&& ($contentType == 'text/plain'
+	|| $contentType == 'text/csv')
 	&& isset($HTTP_RAW_POST_DATA)
 	&& strlen($HTTP_RAW_POST_DATA) > 0
 	&& strlen($HTTP_RAW_POST_DATA) < 5000000)
@@ -455,8 +459,8 @@ switch ($action)
 		$checkexist = isset($_GET['checkexist']) && ($_GET['checkexist'] == '1');
 		$done = isset($_GET['done']) && ($_GET['done'] == '1');
 		$nowait = isset($_GET['nowait']) && ($_GET['nowait'] == '1');
-		if ($_SERVER['CONTENT_TYPE'] == 'text/csv') $ext = '.csv';
-		if ($_SERVER['CONTENT_TYPE'] == 'text/plain') $ext = '.txt';
+		if ($contentType == 'text/csv') $ext = '.csv';
+		if ($contentType == 'text/plain') $ext = '.txt';
 
 		if ($tid == '')
 		{
