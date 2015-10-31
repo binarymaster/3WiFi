@@ -38,7 +38,7 @@ function QueryRangeFromRIPE($IP)
 		'descr' => $descr);
 }
 
-function GetIPRange($IP)
+function GetIPRange($db, $IP)
 {
 	// If invalid
 	$ip_long = ip2long($IP);
@@ -62,7 +62,6 @@ function GetIPRange($IP)
 
 	// If stored in local db
 	$ip_long = sprintf('%u', $ip_long);
-	require 'con_db.php';
 	if ($res = $db->query(
 		"SELECT * FROM ranges
 		WHERE startIP <= $ip_long AND endIP >= $ip_long

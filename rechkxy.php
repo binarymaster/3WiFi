@@ -2,6 +2,9 @@
 require 'con_db.php'; /* Коннектор MySQL */
 require 'geoext.php'; /* Модуль получения координат */
 
+if (!db_connect())
+	die('Database connection error');
+
 $query_bssid  = "SELECT DISTINCT `BSSID` FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'not found' LIMIY";
 $query_update = "UPDATE `free` SET `latitude`=?,`longitude`=? WHERE `BSSID`=?";
 $stmt_upd = $db->prepare($query_update);
@@ -36,5 +39,6 @@ if ($res_bssid = $db->query($query_bssid))
 	$res_bssid->close();
 }
 $stmt_upd->close();
+$db->close();
 echo "$i done<br>\n";
 ?>

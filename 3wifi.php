@@ -142,6 +142,12 @@ switch ($action)
 	$lat2 = (float)$bbox[2];
 	$lon2 = (float)$bbox[3];
 
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT * FROM `free` WHERE (`latitude` != 0 AND `longitude` != 0) AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) LIMIT 1000"))
 	{
 		unset($json); // здесь используется JSON-P
@@ -225,6 +231,12 @@ switch ($action)
 		if (isset($_POST['key'])) $key = $_POST['key'];
 		if (isset($_POST['wps'])) $wps = $_POST['wps'];
 	}
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	$comment = $db->real_escape_string($comment);
 	$ipaddr = $db->real_escape_string($ipaddr);
 	$auth = $db->real_escape_string($auth);
@@ -287,6 +299,7 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// Поиск диапазонов IP
@@ -342,6 +355,12 @@ switch ($action)
 	$lon1 = min(max($lon - $radius / $lon_km, -180), 180);
 	$lon2 = min(max($lon + $radius / $lon_km, -180), 180);
 	$json['data'] = array();
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query(
 		"SELECT IP 
 		FROM `free` 
@@ -358,7 +377,7 @@ switch ($action)
 			{
 				continue;
 			}
-			$ip_range = GetIPRange($row[0]);
+			$ip_range = GetIPRange($db, $row[0]);
 			if(is_null($ip_range))
 			{
 				continue;
@@ -371,6 +390,7 @@ switch ($action)
 		$res->close();
 		usort($json['data'], function($a, $b){return strcmp($a['descr'], $b['descr']);});
 	}
+	$db->close();
 	break;
 
 	// Определение устройства по MAC
@@ -394,6 +414,12 @@ switch ($action)
 	$bssid = substr_replace($bssid, ':', 2, 0);
 	$oui = substr($bssid, 0, 9) . '__:__:__';
 
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	$oui = $db->real_escape_string($oui);
 	if ($res = $db->query("SELECT `BSSID`,`name` FROM `free` WHERE `BSSID` LIKE '$oui' AND `name`!=''"))
 	{
@@ -426,6 +452,7 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	$scores = array();
 	foreach($devs as $name => $match)
 	{
@@ -466,6 +493,12 @@ switch ($action)
 	&& strlen($HTTP_RAW_POST_DATA) > 0
 	&& strlen($HTTP_RAW_POST_DATA) < 5000000)
 	{
+		if (!db_connect())
+		{
+			$json['result'] = false;
+			$json['error'] = 'database';
+			break;
+		}
 		$tid = '';
 		if (isset($_GET['tid'])) $tid = $_GET['tid'];
 		$tid = $db->real_escape_string($tid);
@@ -564,6 +597,7 @@ switch ($action)
 			$json['upload']['processing'] = $db->query("UPDATE `tasks` SET `tstate`='1' WHERE `tid`='$tid'");
 			$daemonize = $json['upload']['processing'];
 		}
+		$db->close();
 	} else
 		$error[] = 1; // Неверные заголовки или размер данных
 	$json['upload']['error'] = $error;
@@ -573,10 +607,17 @@ switch ($action)
 	case 'upstat':
 	$json['result'] = true;
 
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	$tid = '';
 	if (isset($_GET['tid'])) $tid = $_GET['tid'];
 	$tid = $db->real_escape_string($tid);
 	$task = getTask($tid);
+	$db->close();
 	if ($task !== false && $task['state'] > 0)
 	{
 		$json['upstat']['state'] = $task['state'];
@@ -591,6 +632,13 @@ switch ($action)
 	// Перепроверка необработанных результатов
 	case 'check':
 	$json['result'] = true;
+
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT `BSSID` FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none' AND `longitude` = 'none' LIMIT 100"))
 	{
 		$aps = array();
@@ -602,14 +650,21 @@ switch ($action)
 		$aps = array_unique($aps);
 		require 'chkxy.php';
 		$json['check']['done'] = count($aps);
-		$json['check']['found'] = CheckLocation($aps);
+		$json['check']['found'] = CheckLocation($db, $aps);
 	}
+	$db->close();
 	break;
 
 	// Общая статистика
 	case 'stat':
 	$json['result'] = true;
 	$json['stat']['date'] = date('Y.m.d H:i:s');
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT COUNT(*) FROM `free`"))
 	{
 		$row = $res->fetch_row();
@@ -634,11 +689,18 @@ switch ($action)
 		$json['stat']['processing'] = (int)$row[0];
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// Комментарии
 	case 'stcmt':
 	$json['result'] = true;
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT `comment`, COUNT(*) FROM free GROUP BY `comment` ORDER BY COUNT(*) DESC"))
 	{
 		$json['stat']['data'] = array();
@@ -651,12 +713,19 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// Названия устройств
 	case 'stdev':
 	$json['result'] = true;
 	$json['stat']['top'] = $topname;
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT COUNT(DISTINCT `name`) FROM `free` WHERE `name`!=''"))
 	{
 		$row = $res->fetch_row();
@@ -675,12 +744,19 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// Порты
 	case 'stport':
 	$json['result'] = true;
 	$json['stat']['top'] = $topPort;
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT COUNT(DISTINCT `Port`) FROM `free` WHERE `Port`!=''"))
 	{
 		$row = $res->fetch_row();
@@ -699,12 +775,19 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// Данные авторизации
 	case 'stauth':
 	$json['result'] = true;
 	$json['stat']['top'] = $topauth;
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT COUNT(DISTINCT `Authorization`) FROM `free` WHERE `Authorization`!=''"))
 	{
 		$row = $res->fetch_row();
@@ -723,12 +806,19 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// BSSID точек доступа
 	case 'stbss':
 	$json['result'] = true;
 	$json['stat']['top'] = $topbssid;
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT COUNT(DISTINCT `BSSID`) FROM `free`"))
 	{
 		$row = $res->fetch_row();
@@ -747,12 +837,19 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// ESSID точек доступа
 	case 'stess':
 	$json['result'] = true;
 	$json['stat']['top'] = $topessid;
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT COUNT(DISTINCT `ESSID`) FROM `free`"))
 	{
 		$row = $res->fetch_row();
@@ -771,12 +868,19 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// Тип защиты точек доступа
 	case 'stsec':
 	$json['result'] = true;
 	$json['stat']['top'] = $topSecurity;
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT COUNT(DISTINCT `Security`) FROM `free`"))
 	{
 		$row = $res->fetch_row();
@@ -795,12 +899,19 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// Ключи точек доступа
 	case 'stkey':
 	$json['result'] = true;
 	$json['stat']['top'] = $topWiFiKey;
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT COUNT(DISTINCT `WiFiKey`) FROM `free`"))
 	{
 		$row = $res->fetch_row();
@@ -819,12 +930,19 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// WPS пин коды точек доступа
 	case 'stwps':
 	$json['result'] = true;
 	$json['stat']['top'] = $topWPSPIN;
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT COUNT(DISTINCT `WPSPIN`) FROM `free`"))
 	{
 		$row = $res->fetch_row();
@@ -843,12 +961,19 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 
 	// DNS серверы
 	case 'stdns':
 	$json['result'] = true;
 	$json['stat']['top'] = $topDNS;
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
 	if ($res = $db->query("SELECT COUNT(DISTINCT `DNS`) FROM `free` WHERE `DNS`!=''"))
 	{
 		$row = $res->fetch_row();
@@ -867,6 +992,7 @@ switch ($action)
 		}
 		$res->close();
 	}
+	$db->close();
 	break;
 }
 
@@ -876,7 +1002,6 @@ $json['time'] = $time;
 Header('Content-Type: application/json');
 if (!$daemonize)
 {
-	$db->close();
 	echo json_encode($json);
 	exit;
 }
@@ -960,6 +1085,7 @@ if ($daemonize)
 			return 0;
 		}
 
+		if (!db_connect()) break;
 		$tid = $db->real_escape_string($tid);
 		$task = getTask($tid);
 		if ($task !== false)
@@ -1025,17 +1151,22 @@ if ($daemonize)
 			$warns = implode(',', $warns);
 
 			$db->query("UPDATE `tasks` SET `lines`='$i',`accepted`='$cnt',`warns`='$warns',`tstate`='2' WHERE `tid`='$tid'");
+			$db->close();
 			unlink($filename);
 
 			require 'chkxy.php';
-			$found = CheckLocation($aps, $tid);
+			if (!db_connect()) break;
+			$found = CheckLocation($db, $aps, $tid);
+			$db->close();
+
+			if (!db_connect()) break;
 			$db->query("UPDATE `tasks` SET `onmap`='$found',`tstate`='3' WHERE `tid`='$tid'");
 
 			if (!$nowait) sleep(60);
 			$db->query("DELETE FROM `tasks` WHERE `tid`='$tid'");
+			$db->close();
 		}
 		break;
 	}
-	$db->close();
 }
 ?>

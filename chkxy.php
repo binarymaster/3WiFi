@@ -1,7 +1,6 @@
 <?php	
-function CheckLocation($aps, $tid = '')
+function CheckLocation($db, $aps, $tid = '')
 {
-	require 'con_db.php'; /* Коннектор MySQL */
 	require 'geoext.php'; /* Модуль получения координат */
 
 	$query_bssid  = "SELECT `BSSID` FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none'";

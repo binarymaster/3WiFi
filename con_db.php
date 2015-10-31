@@ -1,16 +1,27 @@
 <?php
-/* Подключаемся к БД */
-$db_serv = "localhost";
-$db_name = "3wifi";
-$db_user = "root";
-$db_pass = "";
-
-$db = mysqli_connect($db_serv, $db_user, $db_pass, $db_name);
-
-/* проверка подключения */
-if ($db->connect_errno)
+function db_connect()
 {
-	echo "Не удалось подключиться к MySQL: (" . $db->connect_errno . ") " . $db->connect_error;
-	exit();
+	/* Данные входа в БД */
+	$db_serv = "localhost";
+	$db_name = "3wifi";
+	$db_user = "root";
+	$db_pass = "";
+	global $db;
+
+	$result = false;
+	$tries = 3;
+	while (!$result && $tries--)
+	{
+		/* Подключаемся к БД */
+		$db = mysqli_connect($db_serv, $db_user, $db_pass, $db_name);
+
+		/* Проверка подключения */
+		if ($db->connect_errno)
+		{
+			sleep(3);
+		} else
+			$result = true;
+	}
+	return $result;
 }
 ?>
