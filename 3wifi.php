@@ -20,6 +20,7 @@ $topDNS = 30;
 $daemonize = false;
 require 'con_db.php'; /* Коннектор MySQL */
 
+$magic = '3wifi-magic-word';
 $pass_level1 = 'antichat';
 $pass_level2 = 'secret_password';
 
@@ -116,6 +117,21 @@ function ValidHeaderTXT($row)
 
 switch ($action)
 {
+	// Проверка для Router Scan и других приложений
+	case 'hash':
+	$json['result'] = true;
+	$json['hash']['state'] = false;
+	if (isset($_GET['check']))
+	{
+		$check = $_GET['check'];
+		if (strlen($check) == 32)
+		{
+			$json['hash']['data'] = md5($check . ':' . $magic);
+			$json['hash']['state'] = true;
+		}
+	}
+	break;
+
 	// Координаты точек на карте
 	case 'map':
 	$bbox =  explode(",", $_GET['bbox']);
@@ -454,7 +470,7 @@ switch ($action)
 		if (isset($_GET['tid'])) $tid = $_GET['tid'];
 		$tid = $db->real_escape_string($tid);
 		$comment = '';
-		if (isset($_GET['comment'])) $comment = $_GET['comment'];
+		if (isset($_GET['comment'])) $comment = trim(preg_replace('/\s+/', ' ', $_GET['comment']));
 		if ($comment == '') $comment = 'none';
 		$checkexist = isset($_GET['checkexist']) && ($_GET['checkexist'] == '1');
 		$done = isset($_GET['done']) && ($_GET['done'] == '1');
