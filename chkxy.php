@@ -3,13 +3,14 @@ function CheckLocation($db, $aps, $tid = '')
 {
 	require 'geoext.php'; /* Модуль получения координат */
 
-	$query_bssid  = "SELECT `BSSID` FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none'";
+	$query_bssid  = "SELECT SQL_NO_CACHE `BSSID` FROM `free` WHERE `latitude`='none' AND `BSSID` LIKE '__:__:__:__:__:__'";
 	$query_update = "UPDATE `free` SET `latitude`=?,`longitude`=? WHERE `BSSID`=?";
 	$stmt_upd = $db->prepare($query_update);
 
 	$not_found = "not found";
 	$i = 0;
 
+	// TODO: Лучше переделать в отдельные запросы по BSSID
 	if ((count($aps) > 0) && ($res_bssid = $db->query($query_bssid)))
 	{
 		set_time_limit(0);
