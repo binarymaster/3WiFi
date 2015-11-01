@@ -247,7 +247,7 @@ switch ($action)
 	$wps = $db->real_escape_string($wps);
 
 	$cur_page = 1;
-	$per_page = 50;
+	$per_page = 100;
 	if (isset($_POST['page'])) $cur_page = (int)$_POST['page'];
 	if ($cur_page < 1) $cur_page = 1;
 	$from = ($cur_page - 1) * $per_page;
