@@ -639,7 +639,7 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT `BSSID` FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none' AND `longitude` = 'none' LIMIT 100"))
+	if ($res = $db->query("SELECT `BSSID` FROM `free` WHERE `latitude`='none' AND `BSSID` LIKE '__:__:__:__:__:__' LIMIT 1000"))
 	{
 		$aps = array();
 		while ($row = $res->fetch_row())
@@ -1150,19 +1150,23 @@ if ($daemonize)
 				$warns[] = implode('|', array($line, $wid));
 			$warns = implode(',', $warns);
 
-			$db->query("UPDATE `tasks` SET `lines`='$i',`accepted`='$cnt',`warns`='$warns',`tstate`='2' WHERE `tid`='$tid'");
-			$db->close();
 			unlink($filename);
+			$db->query("UPDATE `tasks` SET `lines`='$i',`accepted`='$cnt',`warns`='$warns',`tstate`='2' WHERE `tid`='$tid'");
 
-			require 'chkxy.php';
-			if (!db_connect()) break;
-			$found = CheckLocation($db, $aps, $tid);
-			$db->close();
+			if (!$nowait)
+			{
+				$db->close();
 
-			if (!db_connect()) break;
-			$db->query("UPDATE `tasks` SET `onmap`='$found',`tstate`='3' WHERE `tid`='$tid'");
+				require 'chkxy.php';
+				if (!db_connect()) break;
+				$found = CheckLocation($db, $aps, $tid);
+				$db->close();
 
-			if (!$nowait) sleep(60);
+				if (!db_connect()) break;
+				$db->query("UPDATE `tasks` SET `onmap`='$found',`tstate`='3' WHERE `tid`='$tid'");
+
+				sleep(60);
+			}
 			$db->query("DELETE FROM `tasks` WHERE `tid`='$tid'");
 			$db->close();
 		}
