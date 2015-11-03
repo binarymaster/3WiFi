@@ -148,21 +148,21 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT * FROM `free` WHERE (`latitude` != 0 AND `longitude` != 0) AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) LIMIT 1000"))
+	if ($res = $db->query("SELECT `id`,`time`,`BSSID`,`ESSID`,`WiFiKey`,`latitude`,`longitude` FROM `free` WHERE (`latitude` != 0 AND `longitude` != 0) AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) LIMIT 1000"))
 	{
 		unset($json); // здесь используется JSON-P
 		$data = array();
 		while ($row = $res->fetch_row())
 		{
-			$xlatitude = $row[20];
-			$xlongitude = $row[21];
+			$xlatitude = $row[5];
+			$xlongitude = $row[6];
 			if (!isset($data[$xlatitude][$xlongitude])) $data[$xlatitude][$xlongitude] = array();
 			$i = count($data[$xlatitude][$xlongitude]);
 			$data[$xlatitude][$xlongitude][$i]['id'] = (int)$row[0];
 			$data[$xlatitude][$xlongitude][$i]['time'] = $row[1];
-			$data[$xlatitude][$xlongitude][$i]['bssid'] = $row[9];
-			$data[$xlatitude][$xlongitude][$i]['essid'] = $row[10];
-			$data[$xlatitude][$xlongitude][$i]['key'] = $row[12];
+			$data[$xlatitude][$xlongitude][$i]['bssid'] = $row[2];
+			$data[$xlatitude][$xlongitude][$i]['essid'] = $row[3];
+			$data[$xlatitude][$xlongitude][$i]['key'] = $row[4];
 		}
 		$res->close();
 		$db->close();
@@ -252,7 +252,7 @@ switch ($action)
 	if ($cur_page < 1) $cur_page = 1;
 	$from = ($cur_page - 1) * $per_page;
 
-	if ($res = $db->query("SELECT SQL_CALC_FOUND_ROWS * FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps' ORDER BY `time` DESC LIMIT $from, $per_page"))
+	if ($res = $db->query("SELECT SQL_CALC_FOUND_ROWS `id`,`time`,`comment`,`IP`,`Port`,`Authorization`,`name`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`latitude`,`longitude` FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps' ORDER BY `time` DESC LIMIT $from, $per_page"))
 	{
 		if ($res_rows = $db->query("SELECT FOUND_ROWS()"))
 		{
@@ -286,13 +286,13 @@ switch ($action)
 					$entry['range'] = implode('.', $oct).'.0.0/16';
 				}
 			}
-			$entry['bssid'] = $row[9];
-			$entry['essid'] = $row[10];
-			$entry['sec'] = $row[11];
-			$entry['key'] = $row[12];
-			$entry['wps'] = $row[13];
-			$entry['lat'] = $row[20];
-			$entry['lon'] = $row[21];
+			$entry['bssid'] = $row[7];
+			$entry['essid'] = $row[8];
+			$entry['sec'] = $row[9];
+			$entry['key'] = $row[10];
+			$entry['wps'] = $row[11];
+			$entry['lat'] = $row[12];
+			$entry['lon'] = $row[13];
 
 			$json['data'][] = $entry;
 			unset($entry);
@@ -683,7 +683,7 @@ switch ($action)
 		$json['stat']['onmap'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT COUNT(*) FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__' AND `latitude` = 'none' AND `longitude` = 'none'"))
+	if ($res = $db->query("SELECT COUNT(*) FROM `free` WHERE `latitude` = 'none' AND `longitude` = 'none' AND `BSSID` LIKE '__:__:__:__:__:__'"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['processing'] = (int)$row[0];
