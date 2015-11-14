@@ -1,0 +1,4 @@
+Options -Indexes
+<ifModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/xml application/xml application/xhtml+xml text/css text/javascript application/javascript application/x-javascript application/json application/json-p
+</ifModule>

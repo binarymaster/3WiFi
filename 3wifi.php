@@ -5,7 +5,10 @@ if (!isset($_GET['a']))
 	Header('Location: /');
 	exit;
 }
-$action = $_GET['a'];
+require 'auth.php';
+require 'utils.php';
+require 'db.php';
+session_start();
 
 $topPort = 10;
 $topauth = 100;
@@ -17,103 +20,11 @@ $topWiFiKey = 30;
 $topWPSPIN = 30;
 $topDNS = 30;
 
-$daemonize = false;
-require 'con_db.php'; /* Коннектор MySQL */
-
-$magic = '3wifi-magic-word';
-$pass_level1 = 'antichat';
-$pass_level2 = 'secret_password';
-
-$pass = '';
-if (isset($_POST['pass']))
-{
-	$pass = $_POST['pass'];
-} else {
-	if (isset($_GET['pass']))
-		$pass = $_GET['pass'];
-}
-
-$level = 0;
-if ($pass == $pass_level1) $level = 1;
-if ($pass == $pass_level2) $level = 2;
+$action = $_GET['a'];
 
 $time = microtime(true);
 $json = array();
 $json['result'] = false;
-
-function randhex($length)
-{
-	$alpha = '0123456789abcdef';
-	$len = strlen($alpha);
-	$str = '';
-	for ($i = 0; $i < $length; $i++)
-		$str .= $alpha[rand(0, $len - 1)];
-	return $str;
-}
-
-function disable_gzip()
-{
-	@ini_set('zlib.output_compression', 'Off');
-	@ini_set('output_buffering', 'Off');
-	@ini_set('output_handler', '');
-	@apache_setenv('no-gzip', 1);	
-}
-
-function getTask($tid)
-{
-	global $db;
-	$result = false;
-	if ($res = $db->query("SELECT * FROM `tasks` WHERE `tid`='$tid'"))
-	{
-		if ($row = $res->fetch_row())
-		{
-			$result = array();
-			$result['id'] = $row[0];
-			$result['state'] = (int)$row[1];
-			$result['created'] = $row[2];
-			$result['modified'] = $row[3];
-			$result['ext'] = $row[4];
-			$result['comment'] = $row[5];
-			$result['checkexist'] = (bool)$row[6];
-			$result['lines'] = (int)$row[7];
-			$result['accepted'] = (int)$row[8];
-			$result['onmap'] = (int)$row[9];
-			$result['warns'] = $row[10];
-		}
-		$res->close();
-	}
-	return $result;
-}
-
-function ValidHeaderCSV($row)
-{
-	if (($row[0] !== 'IP Address')
-	|| ($row[1] !== 'Port')
-	|| ($row[4] !== 'Authorization')
-	|| ($row[5] !== 'Server name / Realm name / Device type')
-	|| ($row[6] !== 'Radio Off')
-	|| ($row[7] !== 'Hidden')
-	|| ($row[8] !== 'BSSID')
-	|| ($row[9] !== 'ESSID')
-	|| ($row[10] !== 'Security')
-	|| ($row[11] !== 'Key')
-	|| ($row[12] !== 'WPS PIN')
-	|| ($row[13] !== 'LAN IP Address')
-	|| ($row[14] !== 'LAN Subnet Mask')
-	|| ($row[15] !== 'WAN IP Address')
-	|| ($row[16] !== 'WAN Subnet Mask')
-	|| ($row[17] !== 'WAN Gateway')
-	|| ($row[18] !== 'Domain Name Servers'))
-	{
-		return false;
-	}
-	return true;
-}
-function ValidHeaderTXT($row)
-{
-	$row = explode("\t", $row);
-	return (count($row) == 23);
-}
 
 switch ($action)
 {
@@ -134,7 +45,7 @@ switch ($action)
 
 	// Координаты точек на карте
 	case 'map':
-	$bbox =  explode(",", $_GET['bbox']);
+	$bbox = explode(",", $_GET['bbox']);
 	$callback = $_GET['callback'];
 
 	$lat1 = (float)$bbox[0];
@@ -148,7 +59,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT `id`,`time`,`BSSID`,`ESSID`,`WiFiKey`,`latitude`,`longitude` FROM `free` WHERE (`latitude` != 0 AND `longitude` != 0) AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) LIMIT 1000"))
+	if ($res = QuerySql("SELECT `id`,`time`,`GEO_TABLE`.`BSSID`,`ESSID`,`WiFiKey`,`latitude`,`longitude` FROM `GEO_TABLE`, `BASE_TABLE` WHERE 
+						(`latitude` != 0 AND `longitude` != 0) 
+						AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) 
+						AND `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` LIMIT 2500"))
 	{
 		unset($json); // здесь используется JSON-P
 		$data = array();
@@ -160,7 +74,7 @@ switch ($action)
 			$i = count($data[$xlatitude][$xlongitude]);
 			$data[$xlatitude][$xlongitude][$i]['id'] = (int)$row[0];
 			$data[$xlatitude][$xlongitude][$i]['time'] = $row[1];
-			$data[$xlatitude][$xlongitude][$i]['bssid'] = $row[2];
+			$data[$xlatitude][$xlongitude][$i]['bssid'] = dec2mac($row[2]);
 			$data[$xlatitude][$xlongitude][$i]['essid'] = $row[3];
 			$data[$xlatitude][$xlongitude][$i]['key'] = $row[4];
 		}
@@ -211,11 +125,95 @@ switch ($action)
 	$json['auth'] = $level > 0;
 	if ($level == 0) break;
 
-	$comment = '%';
-	$ipaddr = '%';
+	function GenerateFindQuery($comment, $BSSID, $ESSID, $Name, $Page, $Limit)
+	{
+		if(!isset($_SESSION['Search'])) $_SESSION['Search'] = array();
+		if(!isset($_SESSION['Search']['ArgsHash'])) $_SESSION['Search']['ArgsHash'] = '';
+		if(!isset($_SESSION['Search']['LastRowsNum'])) $_SESSION['Search']['LastRowsNum'] = -1;
+		if(!isset($_SESSION['Search']['LastId'])) $_SESSION['Search']['FirstId'] = -1;
+		if(!isset($_SESSION['Search']['LastId'])) $_SESSION['Search']['LastId'] = -1;
+		if(!isset($_SESSION['Search']['LastPage'])) $_SESSION['Search']['LastPage'] = 1;
+
+		$DiffPage = 0;
+		$NextPageStartId = 0;
+
+		if($Page == 1) 
+		{
+			$_SESSION['Search']['FirstId'] = -1;
+			$_SESSION['Search']['LastId'] = -1;
+		}
+
+		$sql = 'SELECT SQL_CALC_FOUND_ROWS 
+				`id`,`time`,
+				`cmtid`,`cmtval`,
+				`IP`,`Port`,`Authorization`,`name`,
+				`NoBSSID`,`BSSID`,`ESSID`,`Security`,
+				`WiFiKey`,`WPSPIN`,
+				`latitude`,`longitude` 
+				FROM `BASE_TABLE` 
+				LEFT JOIN `comments` USING(cmtid) 
+				LEFT JOIN `GEO_TABLE` USING(BSSID) 
+				WHERE 1';
+		if ($comment != '*')
+		{
+			$sql .= ' AND (`cmtid` '.($comment == '' ? 'IS NULL)' : "= $comment)");
+		}
+		if ($BSSID != '')
+		{
+			if (StrInStr($BSSID, '*'))
+			{
+				$mmac = mac2dec(mac_mask($BSSID));
+				$mask = mac2dec(mac_mask($BSSID, false));
+				$sql .= " AND (`BSSID` & $mask = $mmac)";
+			}
+			else $sql .= ' AND `BSSID` = '.mac2dec($BSSID).'';
+		}
+		if ($ESSID != '')
+		{
+			if(StrInStr($ESSID, '%')) $sql .= ' AND `ESSID` LIKE \''.$ESSID.'\'';
+			else $sql .= ' AND `ESSID` = \''.$ESSID.'\'';
+		}
+		if($Name != '')
+		{
+			$sql .= ' AND `name` LIKE \''.$Name.'\'';
+		}
+
+		if($_SESSION['Search']['ArgsHash'] == md5($BSSID.$ESSID.$Name))
+		{
+			$sql = str_replace('SQL_CALC_FOUND_ROWS', '', $sql);
+		}
+		else
+		{
+			$_SESSION['Search']['LastRowsNum'] = -1;
+			$_SESSION['Search']['FirstId'] = -1;
+			$_SESSION['Search']['LastId'] = -1;
+			$_SESSION['Search']['LastPage'] = 1;
+		}
+
+		$DiffPage = ((int)$Page-$_SESSION['Search']['LastPage']);
+		$DiffPage *= 100;
+
+		if($_SESSION['Search']['LastId'] == -1 || $_SESSION['Search']['FirstId'] == -1) 
+		{
+			$NextPageStartId = 4294967295;
+		}
+		else
+		{
+			$NextPageStartId = ((int)$_SESSION['Search']['LastId'])-$DiffPage;
+		}
+		$sql .= ' AND `id` < '.$NextPageStartId.' LIMIT '.$Limit;
+
+		$_SESSION['Search']['LastPage'] = $Page;
+		$_SESSION['Search']['ArgsHash'] = md5($BSSID.$ESSID.$Name);
+		$_SESSION['Search']['LastId'] = -1;
+
+		return $sql;
+	}
+	$comment = '*';
+	$ipaddr = '';
 	$auth = '%';
 	$name = '%';
-	$bssid = '%';
+	$bssid = '';
 	$essid = '%';
 	$key = '%';
 	$wps = '%';
@@ -237,8 +235,25 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$comment = $db->real_escape_string($comment);
-	$ipaddr = $db->real_escape_string($ipaddr);
+	$json['data'] = array();
+
+	if ($comment != '' && $comment != '*')
+	{
+		$comment = $db->real_escape_string($comment);
+		$res = QuerySql("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
+		if ($res->num_rows > 0)
+		{
+			$row = $res->fetch_row();
+			$cmtid = $row[0];
+		}
+		else
+		{
+			$res->close();
+			break;
+		}
+		$res->close();
+	}
+	$ipaddr = _ip2long($db->real_escape_string($ipaddr));
 	$auth = $db->real_escape_string($auth);
 	$name = $db->real_escape_string($name);
 	$bssid = $db->real_escape_string($bssid);
@@ -250,54 +265,74 @@ switch ($action)
 	$per_page = 100;
 	if (isset($_POST['page'])) $cur_page = (int)$_POST['page'];
 	if ($cur_page < 1) $cur_page = 1;
-	$from = ($cur_page - 1) * $per_page;
 
-	if ($res = $db->query("SELECT SQL_CALC_FOUND_ROWS `id`,`time`,`comment`,`IP`,`Port`,`Authorization`,`name`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`latitude`,`longitude` FROM `free` WHERE `comment` LIKE '$comment' AND `IP` LIKE '$ipaddr' AND `Authorization` LIKE '$auth' AND `name` LIKE '$name' AND `BSSID` LIKE '$bssid' AND `ESSID` LIKE '$essid' AND `WiFiKey` LIKE '$key' AND `WPSPIN` LIKE '$wps' ORDER BY `time` DESC LIMIT $from, $per_page"))
+	$sql = GenerateFindQuery($comment, $bssid, $essid, $name, $cur_page, $per_page);
+	if ($res = QuerySql($sql))
 	{
-		if ($res_rows = $db->query("SELECT FOUND_ROWS()"))
+		if($_SESSION['Search']['LastRowsNum'] == -1)
 		{
-			$rows = $res_rows->fetch_row();
-			$rows = (int)$rows[0];
+			$res_rows = QuerySql("SELECT FOUND_ROWS()");
+			$t = $res_rows->fetch_row();
+			$_SESSION['Search']['LastRowsNum'] = (int)$t[0];
+		}
+		if(isset($_SESSION['Search']['LastRowsNum']))
+		{
+			$rows = (int)$_SESSION['Search']['LastRowsNum'];
 			$pages = ceil($rows / $per_page);
 			$json['found'] = $rows;
 			$json['page']['current'] = $cur_page;
 			$json['page']['count'] = $pages;
 		}
-		$json['data'] = array();
 		while ($row = $res->fetch_row())
 		{
 			$entry = array();
 			if ($level > 1) $entry['id'] = (int)$row[0];
 			$entry['time'] = $row[1];
-			$entry['comment'] = $row[2];
+			$entry['comment'] = ($row[2] == null ? '' : $row[3]);
 			if ($level > 1)
 			{
 				$entry['ipport'] = '';
-				if ($row[3] != '') $entry['ipport'] = $row[3].':'.$row[4];
-				$entry['auth'] = $row[5];
-				$entry['name'] = $row[6];
+				if ($row[4] != '') $entry['ipport'] = _long2ip($row[4]).':'.$row[5];
+				$entry['auth'] = $row[6];
+				$entry['name'] = $row[7];
 			} else {
 				$entry['range'] = '';
-				$oct = explode('.', $row[3]);
-				if (count($oct) == 4)
+				$oct = explode('.', _long2ip($row[4]));
+				if ((int)$row[4] != 0)
 				{
 					array_pop($oct);
 					array_pop($oct);
 					$entry['range'] = implode('.', $oct).'.0.0/16';
 				}
 			}
-			$entry['bssid'] = $row[7];
-			$entry['essid'] = $row[8];
-			$entry['sec'] = $row[9];
-			$entry['key'] = $row[10];
-			$entry['wps'] = $row[11];
-			$entry['lat'] = $row[12];
-			$entry['lon'] = $row[13];
+			$entry['bssid'] = '';
+			if ((int)$row[8] == 0) $entry['bssid'] = dec2mac($row[9]);
+			$entry['essid'] = $row[10];
+			$entry['sec'] = sec2str((int)$row[11]);
+			$entry['key'] = $row[12];
+			$entry['wps'] = ($row[13] == null ? '' : str_pad($row[13], 8, '0', STR_PAD_LEFT));
+			$entry['lat'] = 'none';
+			$entry['lon'] = 'none';
+			if ((int)$row[8] == 0)
+			{
+				$entry['lat'] = (float)$row[14];
+				$entry['lon'] = (float)$row[15];
+				if ($entry['lat'] == 0 && $entry['lon'] == 0)
+				{
+					$entry['lat'] = 'not found';
+					$entry['lon'] = 'not found';
+				}
+			}
 
 			$json['data'][] = $entry;
 			unset($entry);
 		}
 		$res->close();
+		if(sizeof($json['data'] > 0))
+		{
+			$_SESSION['Search']['FirstId'] = $json['data'][0];
+			$_SESSION['Search']['LastId'] = $json['data'][sizeof($json['data'])-1];
+		}
 	}
 	$db->close();
 	break;
@@ -311,26 +346,26 @@ switch ($action)
 	$lat = ''; $lon = '';
 	if (isset($_POST['latitude'])) $lat = $_POST['latitude'];
 	if (isset($_POST['longitude'])) $lon = $_POST['longitude'];
-	if ($lat == "")
+	if ($lat == '')
 	{
-		$json['error'] = "Введите значение широты";
+		$json['error'] = 'Введите значение широты';
 		break;
 	}
-	if ($lon == "")
+	if ($lon == '')
 	{
-		$json['error'] = "Введите значение долготы";
+		$json['error'] = 'Введите значение долготы';
 		break;
 	}
 	$lat = (float)$lat;
 	$lon = (float)$lon;
 	if ($lat < -90 || $lat > 90)
 	{
-		$json['error'] = "Значение широты должно лежать в диапазоне [-90;90]";
+		$json['error'] = 'Значение широты должно лежать в диапазоне [-90;90]';
 		break;
 	}
 	if ($lon < -180 || $lon > 180)
 	{
-		$json['error'] = "Значение долготы должно лежать в диапазоне [-180;180]";
+		$json['error'] = 'Значение долготы должно лежать в диапазоне [-180;180]';
 		break;
 	}
 
@@ -338,13 +373,13 @@ switch ($action)
 	if (isset($_POST['radius'])) $radius = $_POST['radius'];
 	if ($radius == "")
 	{
-		$json['error'] = "Введите значение радиуса поиска";
+		$json['error'] = 'Введите значение радиуса поиска';
 		break;
 	}
 	$radius = (float)$radius;
 	if ($radius < 0 || $radius > 25)
 	{
-		$json['error'] = "Значение радиуса поиска должно лежать в диапазоне (0;25]";
+		$json['error'] = 'Значение радиуса поиска должно лежать в диапазоне (0;25]';
 		break;
 	}
 
@@ -361,19 +396,21 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query(
-		"SELECT IP 
-		FROM `free` 
-		WHERE (`latitude` != 0 AND `longitude` != 0)
-				AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2)
-				AND IP !=''
-		ORDER BY INET_ATON(IP)"))
+	if ($res = QuerySql(
+		"SELECT DISTINCT IP 
+		FROM `BASE_TABLE`, `GEO_TABLE` 
+		WHERE `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
+				AND (`GEO_TABLE`.`latitude` != 0 AND `GEO_TABLE`.`longitude` != 0 
+				AND `GEO_TABLE`.`latitude` IS NOT NULL AND `GEO_TABLE`.`longitude` IS NOT NULL) 
+				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2) 
+				AND IP != 0 ORDER BY CAST(IP AS UNSIGNED INTEGER)"));
 	{
 		require 'ipext.php';
 		$last_upper = '0.0.0.0';
 		while ($row = $res->fetch_row())
 		{
-			if (compare_ip($row[0], $last_upper) <= 0)
+			$row[0] = (int)$row[0];
+			if (compare_ip(long2ip($row[0]), $last_upper) <= 0)
 			{
 				continue;
 			}
@@ -382,13 +419,14 @@ switch ($action)
 			{
 				continue;
 			}
-			$last_upper = $ip_range["endIP"];
+			$last_upper = $ip_range['endIP'];
 			$json['data'][] = array(
-				"range" => pretty_range($ip_range["startIP"], $ip_range["endIP"]),
-				"descr" => $ip_range["descr"]);
+				'range' => pretty_range($ip_range['startIP'], $ip_range['endIP']),
+				'descr' => $ip_range['descr']);
 		}
 		$res->close();
-		usort($json['data'], function($a, $b){return strcmp($a['descr'], $b['descr']);});
+		usort($json['data'], function($a, $b) { return strcmp($a['descr'], $b['descr']); });
+		array_unique($json['data']);
 	}
 	$db->close();
 	break;
@@ -401,19 +439,10 @@ switch ($action)
 
 	$bssid = '';
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
-	$bssid = strtoupper($bssid);
-	$bssid = str_replace(':', '', $bssid);
-	$bssid = str_replace('-', '', $bssid);
-	$bssid = str_replace('.', '', $bssid);
-	if (strlen($bssid) != 12) break;
-
-	$bssid = substr_replace($bssid, ':', 10, 0);
-	$bssid = substr_replace($bssid, ':', 8, 0);
-	$bssid = substr_replace($bssid, ':', 6, 0);
-	$bssid = substr_replace($bssid, ':', 4, 0);
-	$bssid = substr_replace($bssid, ':', 2, 0);
-	$oui = substr($bssid, 0, 9) . '__:__:__';
-
+	$oui = mac2dec($bssid);
+	$oui = bcdiv($oui, bcpow('2', '24')); // XX:XX:XX:XX:XX:XX => XX:XX:XX:00:00:00
+	$oui = bcmul($oui, bcpow('2', '24'));
+	$mask = '281474959933440'; // FF:FF:FF:00:00:00
 	if (!db_connect())
 	{
 		$json['result'] = false;
@@ -421,12 +450,12 @@ switch ($action)
 		break;
 	}
 	$oui = $db->real_escape_string($oui);
-	if ($res = $db->query("SELECT `BSSID`,`name` FROM `free` WHERE `BSSID` LIKE '$oui' AND `name`!=''"))
+	if ($res = QuerySql("SELECT `BSSID`,`name` FROM `BASE_TABLE` WHERE (`NoBSSID` = 0 AND `BSSID` & $mask = $oui) AND `name` != ''"))
 	{
 		$devs = array();
 		while ($row = $res->fetch_row())
 		{
-			$bss = strtoupper($row[0]);
+			$bss = dec2mac($row[0]);
 			$name = $row[1];
 
 			if (!isset($devs[$name]))
@@ -504,15 +533,25 @@ switch ($action)
 		$tid = $db->real_escape_string($tid);
 		$comment = '';
 		if (isset($_GET['comment'])) $comment = trim(preg_replace('/\s+/', ' ', $_GET['comment']));
-		if ($comment == '') $comment = 'none';
 		$checkexist = isset($_GET['checkexist']) && ($_GET['checkexist'] == '1');
-		$done = isset($_GET['done']) && ($_GET['done'] == '1');
+		$checkexist = ($checkexist ? 1 : 0);
 		$nowait = isset($_GET['nowait']) && ($_GET['nowait'] == '1');
+		$nowait = ($nowait ? 1 : 0);
+		$done = isset($_GET['done']) && ($_GET['done'] == '1');
 		if ($contentType == 'text/csv') $ext = '.csv';
 		if ($contentType == 'text/plain') $ext = '.txt';
 
 		if ($tid == '')
 		{
+			function randhex($length)
+			{
+				$alpha = '0123456789abcdef';
+				$len = strlen($alpha);
+				$str = '';
+				for ($i = 0; $i < $length; $i++)
+					$str .= $alpha[rand(0, $len - 1)];
+				return $str;
+			}
 			// Создание нового задания
 			$task = true;
 			while ($task !== false)
@@ -529,6 +568,37 @@ switch ($action)
 			}
 			// Проверка на валидность
 			$valid = false;
+
+			function ValidHeaderCSV($row)
+			{
+				if (($row[0] !== 'IP Address')
+				|| ($row[1] !== 'Port')
+				|| ($row[4] !== 'Authorization')
+				|| ($row[5] !== 'Server name / Realm name / Device type')
+				|| ($row[6] !== 'Radio Off')
+				|| ($row[7] !== 'Hidden')
+				|| ($row[8] !== 'BSSID')
+				|| ($row[9] !== 'ESSID')
+				|| ($row[10] !== 'Security')
+				|| ($row[11] !== 'Key')
+				|| ($row[12] !== 'WPS PIN')
+				|| ($row[13] !== 'LAN IP Address')
+				|| ($row[14] !== 'LAN Subnet Mask')
+				|| ($row[15] !== 'WAN IP Address')
+				|| ($row[16] !== 'WAN Subnet Mask')
+				|| ($row[17] !== 'WAN Gateway')
+				|| ($row[18] !== 'Domain Name Servers'))
+				{
+					return false;
+				}
+				return true;
+			}
+			function ValidHeaderTXT($row)
+			{
+				$row = explode("\t", $row);
+				return (count($row) == 23);
+			}
+
 			if (($handle = fopen($filename, 'r')) !== false)
 			{
 				switch ($ext)
@@ -549,10 +619,10 @@ switch ($action)
 			if ($valid)
 			{
 				$comment = $db->real_escape_string($comment);
-				if ($db->query("INSERT INTO `tasks` (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`) VALUES ('$tid',now(),now(),'$ext','$comment','$checkexist')"))
+				if (QuerySql("INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`) VALUES ('$tid',now(),now(),'$ext','$comment',$checkexist,$nowait)"))
 				{
 					$json['upload']['state'] = true;
-					$json['upload']['tid'] = $tid;					
+					$json['upload']['tid'] = $tid;
 				}
 			} else
 				unlink($filename);
@@ -572,7 +642,7 @@ switch ($action)
 					$json['upload']['tid'] = $tid;
 					$filename = 'uploads/'.$tid.$task['ext'];
 					$comment = $db->real_escape_string($comment);
-					$db->query("UPDATE `tasks` SET `modified`=now(),`comment`='$comment',`checkexist`='$checkexist' WHERE `tid`='$tid')");
+					QuerySql("UPDATE tasks SET `modified`=now(),`comment`='$comment',`checkexist`=$checkexist,`nowait`=$nowait WHERE `tid`='$tid')");
 					if ($task['ext'] != $ext)
 					{
 						$error[] = 4; // Несовпадение с форматом файла задания
@@ -594,8 +664,7 @@ switch ($action)
 		if ($json['upload']['state'] && $done)
 		{
 			// Запуск обработки задания
-			$json['upload']['processing'] = $db->query("UPDATE `tasks` SET `tstate`='1' WHERE `tid`='$tid'");
-			$daemonize = $json['upload']['processing'];
+			$json['upload']['processing'] = QuerySql("UPDATE tasks SET `tstate`=1 WHERE `tid`='$tid'");
 		}
 		$db->close();
 	} else
@@ -629,32 +698,6 @@ switch ($action)
 		$json['upstat']['state'] = -1;
 	break;
 
-	// Перепроверка необработанных результатов
-	case 'check':
-	$json['result'] = true;
-
-	if (!db_connect())
-	{
-		$json['result'] = false;
-		$json['error'] = 'database';
-		break;
-	}
-	if ($res = $db->query("SELECT `BSSID` FROM `free` WHERE `latitude`='none' AND `BSSID` LIKE '__:__:__:__:__:__' LIMIT 1000"))
-	{
-		$aps = array();
-		while ($row = $res->fetch_row())
-		{
-			$aps[] = $row[0];
-		}
-		$res->close();
-		$aps = array_unique($aps);
-		require 'chkxy.php';
-		$json['check']['done'] = count($aps);
-		$json['check']['found'] = CheckLocation($db, $aps);
-	}
-	$db->close();
-	break;
-
 	// Общая статистика
 	case 'stat':
 	$json['result'] = true;
@@ -665,25 +708,26 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT COUNT(*) FROM `free`"))
+	if ($res = QuerySql("SELECT COUNT(*) FROM BASE_TABLE"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT COUNT(*) FROM `free` WHERE `BSSID` LIKE '__:__:__:__:__:__'"))
+	if ($res = QuerySql("SELECT COUNT(*) FROM BASE_TABLE WHERE `NoBSSID` = 0"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['bssids'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT COUNT(*) FROM `free` WHERE `latitude` != 0 AND `longitude` != 0"))
+	if ($res = QuerySql("SELECT COUNT(*) FROM GEO_TABLE WHERE (`latitude` IS NOT NULL AND `longitude` IS NOT NULL) 
+																AND (`latitude` != 0 AND `longitude` != 0)"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['onmap'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT COUNT(*) FROM `free` WHERE `latitude` = 'none' AND `longitude` = 'none' AND `BSSID` LIKE '__:__:__:__:__:__'"))
+	if ($res = QuerySql("SELECT COUNT(*) FROM GEO_TABLE WHERE `latitude` IS NULL"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['processing'] = (int)$row[0];
@@ -701,14 +745,14 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT `comment`, COUNT(*) FROM free GROUP BY `comment` ORDER BY COUNT(*) DESC"))
+	if ($res = QuerySql("SELECT `cmtid`, COUNT(*) FROM BASE_TABLE GROUP BY `cmtid` ORDER BY COUNT(*) DESC"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
 		{
 			$data = array();
 			$data[] = (int)$row[1];
-			$data[] = $row[0];
+			$data[] = ($row[0] == null ? 'no comment' : getCommentVal((int)$row[0]));
 			$json['stat']['data'][] = $data;
 		}
 		$res->close();
@@ -726,13 +770,13 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT COUNT(DISTINCT `name`) FROM `free` WHERE `name`!=''"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `name`) FROM BASE_TABLE WHERE `name` != ''"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `name`, COUNT(*) FROM free WHERE `name`!='' GROUP BY `name` ORDER BY COUNT(*) DESC LIMIT $topname"))
+	if ($res = QuerySql("SELECT `name`, COUNT(*) FROM BASE_TABLE WHERE `name` != '' GROUP BY `name` ORDER BY COUNT(*) DESC LIMIT $topname"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -757,13 +801,13 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT COUNT(DISTINCT `Port`) FROM `free` WHERE `Port`!=''"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `Port`) FROM BASE_TABLE WHERE NOT(`Port` IS NULL)"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `Port`, COUNT(*) FROM free WHERE `Port`!='' GROUP BY `Port` ORDER BY COUNT(*) DESC LIMIT $topPort"))
+	if ($res = QuerySql("SELECT `Port`, COUNT(*) FROM BASE_TABLE WHERE NOT(`Port` IS NULL) GROUP BY `Port` ORDER BY COUNT(*) DESC LIMIT $topPort"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -788,13 +832,13 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT COUNT(DISTINCT `Authorization`) FROM `free` WHERE `Authorization`!=''"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `Authorization`) FROM BASE_TABLE WHERE `Authorization`!=''"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `Authorization`, COUNT(*) FROM free WHERE `Authorization`!='' GROUP BY `Authorization` ORDER BY COUNT(*) DESC LIMIT $topauth"))
+	if ($res = QuerySql("SELECT `Authorization`, COUNT(*) FROM BASE_TABLE WHERE `Authorization`!='' GROUP BY `Authorization` ORDER BY COUNT(*) DESC LIMIT $topauth"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -819,20 +863,20 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT COUNT(DISTINCT `BSSID`) FROM `free`"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `BSSID`) FROM BASE_TABLE WHERE `NoBSSID`=0"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `BSSID`, COUNT(*) FROM free GROUP BY `BSSID` ORDER BY COUNT(*) DESC LIMIT $topbssid"))
+	if ($res = QuerySql("SELECT `BSSID`, COUNT(*) FROM BASE_TABLE WHERE `NoBSSID`=0 GROUP BY `BSSID` ORDER BY COUNT(*) DESC LIMIT $topbssid"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
 		{
 			$data = array();
 			$data[] = (int)$row[1];
-			$data[] = $row[0];
+			$data[] = dec2mac($row[0]);
 			$json['stat']['data'][] = $data;
 		}
 		$res->close();
@@ -850,13 +894,13 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT COUNT(DISTINCT `ESSID`) FROM `free`"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `ESSID`) FROM BASE_TABLE"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `ESSID`, COUNT(*) FROM free GROUP BY `ESSID` ORDER BY COUNT(*) DESC LIMIT $topessid"))
+	if ($res = QuerySql("SELECT `ESSID`, COUNT(*) FROM BASE_TABLE GROUP BY `ESSID` ORDER BY COUNT(*) DESC LIMIT $topessid"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -881,20 +925,20 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT COUNT(DISTINCT `Security`) FROM `free`"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `Security`) FROM BASE_TABLE"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `Security`, COUNT(*) FROM free GROUP BY `Security` ORDER BY COUNT(*) DESC LIMIT $topSecurity"))
+	if ($res = QuerySql("SELECT `Security`, COUNT(*) FROM BASE_TABLE GROUP BY `Security` ORDER BY COUNT(*) DESC LIMIT $topSecurity"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
 		{
 			$data = array();
 			$data[] = (int)$row[1];
-			$data[] = $row[0];
+			$data[] = sec2str($row[0]);
 			$json['stat']['data'][] = $data;
 		}
 		$res->close();
@@ -912,13 +956,13 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT COUNT(DISTINCT `WiFiKey`) FROM `free`"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `WiFiKey`) FROM BASE_TABLE"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `WiFiKey`, COUNT(*) FROM free GROUP BY `WiFiKey` ORDER BY COUNT(*) DESC LIMIT $topWiFiKey"))
+	if ($res = QuerySql("SELECT `WiFiKey`, COUNT(*) FROM BASE_TABLE GROUP BY `WiFiKey` ORDER BY COUNT(*) DESC LIMIT $topWiFiKey"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -943,20 +987,20 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT COUNT(DISTINCT `WPSPIN`) FROM `free`"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `WPSPIN`) FROM BASE_TABLE WHERE NOT(`WPSPIN` IS NULL)"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `WPSPIN`, COUNT(*) FROM free GROUP BY `WPSPIN` ORDER BY COUNT(*) DESC LIMIT $topWPSPIN"))
+	if ($res = QuerySql("SELECT `WPSPIN`, COUNT(*) FROM BASE_TABLE WHERE NOT(`WPSPIN` IS NULL) GROUP BY `WPSPIN` ORDER BY COUNT(*) DESC LIMIT $topWPSPIN"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
 		{
 			$data = array();
 			$data[] = (int)$row[1];
-			$data[] = $row[0];
+			$data[] = str_pad($row[0], 8, '0', STR_PAD_LEFT);
 			$json['stat']['data'][] = $data;
 		}
 		$res->close();
@@ -974,20 +1018,21 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = $db->query("SELECT COUNT(DISTINCT `DNS`) FROM `free` WHERE `DNS`!=''"))
+	// Исправить на проверку всех полей DNS#
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `DNS1`) FROM BASE_TABLE WHERE `DNS1`!=0"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = $db->query("SELECT `DNS`, COUNT(*) FROM free WHERE `DNS`!='' GROUP BY `DNS` ORDER BY COUNT(*) DESC LIMIT $topDNS"))
+	if ($res = QuerySql("SELECT `DNS1`, COUNT(*) FROM BASE_TABLE WHERE `DNS1`!=0 GROUP BY `DNS1` ORDER BY COUNT(*) DESC LIMIT $topDNS"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
 		{
 			$data = array();
 			$data[] = (int)$row[1];
-			$data[] = $row[0];
+			$data[] = _long2ip($row[0]);
 			$json['stat']['data'][] = $data;
 		}
 		$res->close();
@@ -996,181 +1041,10 @@ switch ($action)
 	break;
 }
 
+session_write_close();
 $time = microtime(true) - $time;
 $json['time'] = $time;
 
 Header('Content-Type: application/json');
-if (!$daemonize)
-{
-	echo json_encode($json);
-	exit;
-}
-
-if ($daemonize)
-{
-	// Превращаемся в демона и обрабатываем данные в фоне
-	set_time_limit(0);
-	ignore_user_abort(true);
-	disable_gzip();
-	ob_start();
-	echo json_encode($json);
-	Header('Connection: close');
-	Header("Content-Encoding: none");
-	Header('Content-Length: ' . ob_get_length());
-	ob_end_flush();
-	ob_flush();
-	flush();
-	/* ------------------------------------------------- */
-	switch ($action)
-	{
-		case 'upload':
-		function APinDB($bssid, $essid, $key)
-		{
-			global $chkst;
-			$chkst->bind_param("sss", $bssid, $essid, $key);
-			$chkst->execute();
-			$chkst->store_result();
-			$result = $chkst->num_rows;
-			$chkst->free_result();
-			return $result > 0;
-		}
-		function addRow($row)
-		{
-			global $comment;
-			global $checkexist;
-			global $stmt;
-			global $aps;
-			// Отбираем только валидные точки доступа
-			$addr = $row[0];
-			$port = $row[1];
-			if ($addr == 'IP Address' && $port == 'Port')
-			{
-				return 1;
-			}
-			$bssid = $row[8];
-			$essid = $row[9];
-			$sec = $row[10];
-			$key = $row[11];
-			$wps = $row[12];
-			if ($bssid == '<no wireless>')
-			{
-				return 2;
-			}
-			if ((strpos($bssid, ':') === false || $wps == '')
-			&& ($essid == '' || $sec == '' || $sec == '-' || $key == '' || $key == '-'))
-			{
-				if (strpos($bssid, ':') !== false
-				|| $essid != ''
-				|| $sec != ''
-				|| $key != ''
-				|| $wps != '')
-				{ return 3; }
-				else { return 1; }
-			}
-			if ($checkexist)
-				if (APinDB($bssid, $essid, $key))
-				{
-					return 4;
-				}
-
-			$aps[] = $bssid;
-			$stmt->bind_param("ssssssssssssssssssssssssssssssssssss", // format
-					// INSERT
-					//    comment   IP        Port      Auth      Name      RadioOff  Hidden    BSSID     ESSID     Security   Key        WPS PIN    LAN IP     LAN Mask   WAN IP     WAN Mask   WAN Gate   DNS Serv
-						$comment, $row[0], $row[1], $row[4], $row[5], $row[6], $row[7], $row[8], $row[9], $row[10], $row[11], $row[12], $row[13], $row[14], $row[15], $row[16], $row[17], $row[18],
-					// UPDATE
-						$comment, $row[0], $row[1], $row[4], $row[5], $row[6], $row[7], $row[8], $row[9], $row[10], $row[11], $row[12], $row[13], $row[14], $row[15], $row[16], $row[17], $row[18]
-			);
-			$stmt->execute();
-			return 0;
-		}
-
-		if (!db_connect()) break;
-		$tid = $db->real_escape_string($tid);
-		$task = getTask($tid);
-		if ($task !== false)
-		{
-			$checkexist = $task['checkexist'];
-			if ($checkexist)
-				$chkst = $db->prepare("SELECT * FROM `free` WHERE `BSSID`=? AND `ESSID`=? AND `WiFiKey`=? LIMIT 1");
-
-			$warn = array();
-			$ext = $task['ext'];
-			$filename = 'uploads/'.$tid.$ext;
-			if (($handle = fopen($filename, 'r')) !== false)
-			{
-				$comment = $task['comment'];
-
-				$sql = 'INSERT INTO `free` (`comment`,`IP`,`Port`,`Authorization`,`name`,`RadioOff`,`Hidden`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`LANIP`,`LANMask`,`WANIP`,`WANMask`,`WANGateway`,`DNS`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE `comment`=?,`IP`=?,`Port`=?,`Authorization`=?,`name`=?,`RadioOff`=?,`Hidden`=?,`BSSID`=?,`ESSID`=?,`Security`=?,`WiFiKey`=?,`WPSPIN`=?,`LANIP`=?,`LANMask`=?,`WANIP`=?,`WANMask`=?,`WANGateway`=?,`DNS`=?;';
-				$stmt = $db->prepare($sql);
-
-				$i = 0;
-				$cnt = 0;
-				$aps = array();
-				$hangcheck = 5;
-				$time = microtime(true);
-				switch ($ext)
-				{
-					case '.csv':
-					while (($data = fgetcsv($handle, 1000, ';')) !== false)
-					{
-						$i++;
-						if ($i == 1) continue; // Пропуск заголовка CSV
-						$res = addRow($data);
-						($res == 0 ? $cnt++ : $warn[$i - 1] = $res);
-						if (microtime(true) - $time > $hangcheck)
-						{
-							$db->query("UPDATE `tasks` SET `lines`='$i',`accepted`='$cnt' WHERE `tid`='$tid'");
-							$time = microtime(true);
-						}
-					}
-					$i--;
-					break;
-					case '.txt':
-					while (($str = fgets($handle)) !== false)
-					{
-						$data = explode("\t", $str);
-						$i++;
-						$res = addRow($data);
-						($res == 0 ? $cnt++ : $warn[$i] = $res);
-						if (microtime(true) - $time > $hangcheck)
-						{
-							$db->query("UPDATE `tasks` SET `lines`='$i',`accepted`='$cnt' WHERE `tid`='$tid'");
-							$time = microtime(true);
-						}
-					}
-					break;
-				}
-				if ($checkexist) $chkst->close();
-				fclose($handle);
-				$stmt->close();
-			}
-			$warns = array();
-			foreach ($warn as $line => $wid)
-				$warns[] = implode('|', array($line, $wid));
-			$warns = implode(',', $warns);
-
-			unlink($filename);
-			$db->query("UPDATE `tasks` SET `lines`='$i',`accepted`='$cnt',`warns`='$warns',`tstate`='2' WHERE `tid`='$tid'");
-
-			if (!$nowait)
-			{
-				$db->close();
-
-				require 'chkxy.php';
-				if (!db_connect()) break;
-				$found = CheckLocation($db, $aps, $tid);
-				$db->close();
-
-				if (!db_connect()) break;
-				$db->query("UPDATE `tasks` SET `onmap`='$found',`tstate`='3' WHERE `tid`='$tid'");
-
-				sleep(60);
-			}
-			$db->query("DELETE FROM `tasks` WHERE `tid`='$tid'");
-			$db->close();
-		}
-		break;
-	}
-}
+echo json_encode($json);
 ?>

@@ -16,6 +16,7 @@ function cURL_Get($url)
 
 function QueryRangeFromRIPE($IP)
 {
+	$IP = long2ip($IP);
 	$data = cURL_Get("http://rest.db.ripe.net/search.json?type-filter=inetnum&flags=one-less&flags=no-irt&flags=no-referenced&query-string=$IP");
 	$json = json_decode($data);
 	if (is_null($json))
@@ -23,14 +24,14 @@ function QueryRangeFromRIPE($IP)
 		return;
 	}
 	$atribute = $json->objects->object[0]->attributes->attribute;
-	$inetnum = array_filter($atribute, function($obj){return $obj->name == 'inetnum';});
+	$inetnum = array_filter($atribute, function($obj) { return $obj->name == 'inetnum'; });
 	$inetnum = $inetnum[0]->value;
 	$inetnum = explode(" - ", $inetnum);
 	$descr = implode(
 		" | ",
 		array_map(
 			function($obj){return $obj->value;},
-			array_filter($atribute, function($obj){return $obj->name == 'descr';})
+			array_filter($atribute, function($obj) { return $obj->name == 'descr'; })
 		)
 	);
 	return array('startIP' => $inetnum[0],
@@ -41,14 +42,13 @@ function QueryRangeFromRIPE($IP)
 function GetIPRange($db, $IP)
 {
 	// If invalid
-	$ip_long = ip2long($IP);
-	if ($ip_long == False || $ip_long == -1)
+	if ($IP == false || $IP == -1)
 	{
 		return;
 	}
 
 	// If private IP
-	$ip_arr = explode('.', $IP);
+	$ip_arr = explode('.', long2ip($IP));
 	if ($ip_arr[0] == 10 ||
 		($ip_arr[0] == 100 && $ip_arr[1] >= 64 && $ip_arr[1] < 128) ||
 		($ip_arr[0] == 172 && $ip_arr[1] >= 16 && $ip_arr[1] < 32) ||
@@ -61,10 +61,10 @@ function GetIPRange($db, $IP)
 	}
 
 	// If stored in local db
-	$ip_long = sprintf('%u', $ip_long);
+	$uIP = sprintf('%u', $IP);
 	if ($res = $db->query(
 		"SELECT * FROM ranges
-		WHERE startIP <= $ip_long AND endIP >= $ip_long
+		WHERE startIP <= $uIP AND endIP >= $uIP
 		ORDER BY endIP-startIP
 		LIMIT 1"))
 	{
@@ -85,7 +85,7 @@ function GetIPRange($db, $IP)
 	}
 	$startIP = ip2long($ip_range["startIP"]);
 	$endIP = ip2long($ip_range["endIP"]);
-	if ($startIP == False || $startIP == -1 || $endIP == False || $endIP == -1)
+	if ($startIP == false || $startIP == -1 || $endIP == false || $endIP == -1)
 	{
 		return;
 	}
@@ -118,9 +118,9 @@ function pretty_range($IP1, $IP2)
 	$ip_long1 = ip2long($IP1);
 	$ip_long2 = ip2long($IP2);
 	$diff = decbin($ip_long1 ^ $ip_long2);
-	if (strpos($diff, '0')===False && ($ip_long1 & $ip_long2) == $ip_long1)
+	if (strpos($diff, '0') === false && ($ip_long1 & $ip_long2) == $ip_long1)
 	{
-		return $IP1.'/'.(32-strlen($diff));
+		return $IP1.'/'.(32 - strlen($diff));
 	}
 	return $IP1.'-'.$IP2;
 }
