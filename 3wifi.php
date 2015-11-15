@@ -290,8 +290,11 @@ switch ($action)
 			$json['page']['current'] = $cur_page;
 			$json['page']['count'] = $pages;
 		}
+		$FirstId = -1;
 		while ($row = $res->fetch_row())
 		{
+			if ($FirstId == -1) $FirstId = (int)$row[0];
+
 			$entry = array();
 			if ($level > 1) $entry['id'] = (int)$row[0];
 			$entry['time'] = $row[1];
@@ -334,11 +337,12 @@ switch ($action)
 			$json['data'][] = $entry;
 			unset($entry);
 		}
+		$LastId = (int)$row[0];
 		$res->close();
 		if(count($json['data']) > 0)
 		{
-			$_SESSION['Search']['FirstId'] = $json['data'][0]['id'];
-			$_SESSION['Search']['LastId'] = $json['data'][count($json['data']) - 1]['id'];
+			$_SESSION['Search']['FirstId'] = $FirstId;
+			$_SESSION['Search']['LastId'] = $LastId;
 		}
 	}
 	$db->close();
