@@ -273,25 +273,23 @@ function getCommentId($comment, $create = false)
 	$result = -1;
 	if ($comment == '') return $result;
 	global $db;
-	$db->real_escape_string($comment);
+	$comment = $db->real_escape_string($comment);
 	$res = QuerySql("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
-	if ($res->num_rows == 0)
+	$row = $res->fetch_row();
+	$res->close();
+	if ($row[0] == null)
 	{
 		if ($create)
 		{
-			$res->close();
 			QuerySql("INSERT INTO comments (`cmtval`) VALUES ('$comment')");
 			$res = QuerySql("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
 			$row = $res->fetch_row();
+			$res->close();
 			$result = (int)$row[0];
 		}
 	}
 	else
-	{
-		$row = $res->fetch_row();
 		$result = (int)$row[0];
-	}
-	$res->close();
 	return $result;
 }
 
