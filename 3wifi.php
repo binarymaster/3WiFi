@@ -190,8 +190,8 @@ switch ($action)
 			$_SESSION['Search']['LastPage'] = 1;
 		}
 
+		$Sign = '<';
 		$DiffPage = ((int)$Page-$_SESSION['Search']['LastPage']);
-		$DiffPage *= 100;
 
 		if($_SESSION['Search']['LastId'] == -1 || $_SESSION['Search']['FirstId'] == -1) 
 		{
@@ -199,13 +199,20 @@ switch ($action)
 		}
 		else
 		{
-			$NextPageStartId = ((int)$_SESSION['Search']['LastId'])-$DiffPage;
+			if($DiffPage < 0)
+			{
+				$Sign = '>';
+				$NextPageStartId = (int)$_SESSION['Search']['FirstId'];
+			}
+			else
+			{
+				$NextPageStartId = (int)$_SESSION['Search']['LastId'];
+			}
 		}
-		$sql .= ' AND `id` < '.$NextPageStartId.' LIMIT '.$Limit;
+		$sql .= ' AND `id` '.$Sign.' '.$NextPageStartId.' LIMIT '.abs($DiffPage*100).', '.$Limit;
 
-		$_SESSION['Search']['LastPage'] = $Page;
 		$_SESSION['Search']['ArgsHash'] = md5($BSSID.$ESSID.$Name);
-		$_SESSION['Search']['LastId'] = -1;
+		$_SESSION['Search']['LastPage'] = $Page;
 
 		return $sql;
 	}
@@ -328,10 +335,10 @@ switch ($action)
 			unset($entry);
 		}
 		$res->close();
-		if(sizeof($json['data'] > 0))
+		if(count($json['data']) > 0)
 		{
-			$_SESSION['Search']['FirstId'] = $json['data'][0];
-			$_SESSION['Search']['LastId'] = $json['data'][sizeof($json['data'])-1];
+			$_SESSION['Search']['FirstId'] = $json['data'][0]['id'];
+			$_SESSION['Search']['LastId'] = $json['data'][count($json['data']) - 1]['id'];
 		}
 	}
 	$db->close();
