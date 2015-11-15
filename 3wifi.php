@@ -170,7 +170,7 @@ switch ($action)
 		}
 		if ($ESSID != '')
 		{
-			if(StrInStr($ESSID, '%')) $sql .= ' AND `ESSID` LIKE \''.$ESSID.'\'';
+			if(StrInStr($ESSID, '%') || StrInStr($ESSID, '_')) $sql .= ' AND `ESSID` LIKE \''.$ESSID.'\'';
 			else $sql .= ' AND `ESSID` = \''.$ESSID.'\'';
 		}
 		if($Name != '')
