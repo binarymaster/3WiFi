@@ -270,7 +270,7 @@ function getCommentVal($cmtid)
 
 function getCommentId($comment, $create = false)
 {
-	$result = -1;
+	$result = null;
 	if ($comment == '') return $result;
 	global $db;
 	$comment = $db->real_escape_string($comment);

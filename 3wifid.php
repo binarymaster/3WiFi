@@ -112,7 +112,7 @@ switch ($argv[2])
 			}
 			$chkgeo->close();
 		}
-		if ($cmtid == -1) $cmtid = 'NULL';
+		if ($cmtid == null) $cmtid = 'NULL';
 		$addr = _ip2long($addr); // IP Address
 		if ($addr == 0 || $addr == -1) $addr = 'NULL';
 		$port = (($port == '') ? 'NULL' : (int)$port); // Port
