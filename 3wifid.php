@@ -123,7 +123,7 @@ switch ($argv[2])
 		$essid = '\''.$db->real_escape_string($essid).'\''; // ESSID
 		$sec = str2sec($sec); // Security
 		$key = '\''.$db->real_escape_string($key).'\''; // Wi-Fi Key
-		$wps = (($wps == '') ? 'NULL' : (int)$wps); // WPS PIN
+		$wps = (($wps == '') ? 1 : (int)$wps); // WPS PIN
 		$lanip = _ip2long($row[13]); // LAN IP
 		if ($lanip == 0 || $lanip == -1) $lanip = 'NULL';
 		$lanmsk = _ip2long($row[14]); // LAN Mask

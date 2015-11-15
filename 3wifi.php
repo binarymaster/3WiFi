@@ -62,7 +62,7 @@ switch ($action)
 	if ($res = QuerySql("SELECT `id`,`time`,`GEO_TABLE`.`BSSID`,`ESSID`,`WiFiKey`,`latitude`,`longitude` FROM `GEO_TABLE`, `BASE_TABLE` WHERE 
 						(`latitude` != 0 AND `longitude` != 0) 
 						AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) 
-						AND `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` LIMIT 2500"))
+						AND `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` LIMIT 1000"))
 	{
 		unset($json); // здесь используется JSON-P
 		$data = array();
@@ -310,7 +310,7 @@ switch ($action)
 			$entry['essid'] = $row[10];
 			$entry['sec'] = sec2str((int)$row[11]);
 			$entry['key'] = $row[12];
-			$entry['wps'] = ($row[13] == null ? '' : str_pad($row[13], 8, '0', STR_PAD_LEFT));
+			$entry['wps'] = ($row[13] == 1 ? '' : str_pad($row[13], 8, '0', STR_PAD_LEFT));
 			$entry['lat'] = 'none';
 			$entry['lon'] = 'none';
 			if ((int)$row[8] == 0)
@@ -987,13 +987,13 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(DISTINCT `WPSPIN`) FROM BASE_TABLE WHERE NOT(`WPSPIN` IS NULL)"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `WPSPIN`) FROM BASE_TABLE WHERE `WPSPIN` != 1"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `WPSPIN`, COUNT(*) FROM BASE_TABLE WHERE NOT(`WPSPIN` IS NULL) GROUP BY `WPSPIN` ORDER BY COUNT(*) DESC LIMIT $topWPSPIN"))
+	if ($res = QuerySql("SELECT `WPSPIN`, COUNT(*) FROM BASE_TABLE WHERE `WPSPIN` != 1 GROUP BY `WPSPIN` ORDER BY COUNT(*) DESC LIMIT $topWPSPIN"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())

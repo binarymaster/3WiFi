@@ -50,7 +50,7 @@ while($row = $res->fetch_assoc())
 	}
 	$row['Security'] = str2sec($row['Security']);
 	$row['WPSPIN'] = preg_replace('~\D+~', '', $row['WPSPIN']);
-	$row['WPSPIN'] = (($row['WPSPIN'] == '') ? null : (int)$row['WPSPIN']);
+	$row['WPSPIN'] = (($row['WPSPIN'] == '') ? 1 : (int)$row['WPSPIN']);
 	$row['LANIP'] = _ip2long($row['LANIP']);
 	if ($row['LANIP'] == 0 || $row['LANIP'] == -1) $row['LANIP'] = null;
 	$row['LANMask'] = _ip2long($row['LANMask']);
