@@ -1,5 +1,5 @@
 <?php
-$incscript = "<!-- your counter script here -->\n";
+$incscript = file_get_contents('counter.txt');
 
 if (!isset($page)) $page = (isset($_GET['page']) ? $_GET['page'] : '');
 if ($page == '') $page = 'index';
@@ -28,15 +28,7 @@ if ($page == 'index' ||
 	$content = str_replace('%var_lon%', $lon, $content);
 	$content = str_replace('%var_rad%', $rad, $content);
 
-	if (strpos($content, '</body>') !== false)
-	{
-		echo str_replace('</body>', $incscript.'</body>', $content);
-		exit();
-	}	
-	if (strpos($content, '</head>') !== false)
-	{
-		echo str_replace('</head>', $incscript.'</head>', $content);
-		exit();
-	}	
+	echo str_replace('</body>', $incscript.'</body>', $content);
+	exit();
 }
 ?>
