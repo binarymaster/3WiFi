@@ -1,12 +1,42 @@
 <?php
+$incscript = "<!-- your counter script here -->\n";
+
+if (!isset($page)) $page = (isset($_GET['page']) ? $_GET['page'] : '');
+if ($page == '') $page = 'index';
+
+if ($page == 'index' ||
+	$page == 'left' ||
+	$page == 'main' ||
+	$page == 'map' ||
+	$page == 'map2' ||
+	$page == 'find' ||
+	$page == 'find_ranges' ||
+	$page == 'devicemac' ||
+	$page == 'upload' ||
+	$page == 'stat')
+{
+	$lat = 55.76;
+	$lon = 37.64;
+	$rad = 2;
+	if (isset($_GET['lat'])) $lat = (float)$_GET['lat'];
+	if (isset($_GET['lon'])) $lon = (float)$_GET['lon'];
+	if (isset($_GET['rad'])) $rad = (float)$_GET['rad'];
+
+	$content = file_get_contents($page.'.html');
+
+	$content = str_replace('%var_lat%', $lat, $content);
+	$content = str_replace('%var_lon%', $lon, $content);
+	$content = str_replace('%var_rad%', $rad, $content);
+
+	if (strpos($content, '</body>') !== false)
+	{
+		echo str_replace('</body>', $incscript.'</body>', $content);
+		exit();
+	}	
+	if (strpos($content, '</head>') !== false)
+	{
+		echo str_replace('</head>', $incscript.'</head>', $content);
+		exit();
+	}	
+}
 ?>
-<html>
-<head>
-<title>3WiFi: Свободная база точек доступа</title>
-<meta http-equiv=Content-Type content="text/html;charset=UTF-8">
-</head>
-<frameset cols="200,*">
-	<frame src="left.html" name="leftFrame" noresize>
-	<frame src="main.html" name="mainFrame">
-</frameset>
-</html>

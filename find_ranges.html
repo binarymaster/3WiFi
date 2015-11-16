@@ -1,11 +1,3 @@
-<?php
-$lat = 46.224421;
-$lon = 39.834659;
-$rad = 7;
-if (isset($_GET['lat'])) $lat = (float)$_GET['lat'];
-if (isset($_GET['lon'])) $lon = (float)$_GET['lon'];
-if (isset($_GET['rad'])) $rad = (float)$_GET['rad'];
-?>
 <html>
 <head>
 <title>3WiFi: Поиск диапазонов IP</title>
@@ -96,9 +88,9 @@ function initpage()
 	<tbody id=fuserform>
 		<form enctype="multipart/form-data" method="POST">
 			<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
-			<tr><td>Latitude / Широта:</td><td><input name="latitude" type="number" value="<?php echo $lat; ?>" /></td><td>° [-90; 90]</td></tr>
-			<tr><td>Longitude / Долгота:</td><td><input name="longitude" type="number" value="<?php echo $lon; ?>" /></td><td>° [-180; 180]</td></tr>
-			<tr><td>Search radius / Радиус поиска:</td><td><input name="radius" type="number" value="<?php echo $rad; ?>" /></td><td>км (max 25)</td></tr>
+			<tr><td>Latitude / Широта:</td><td><input name="latitude" type="number" value="%var_lat%" /></td><td>° [-90; 90]</td></tr>
+			<tr><td>Longitude / Долгота:</td><td><input name="longitude" type="number" value="%var_lon%" /></td><td>° [-180; 180]</td></tr>
+			<tr><td>Search radius / Радиус поиска:</td><td><input name="radius" type="number" value="%var_rad%" /></td><td>км (max 25)</td></tr>
 		</form>
 	</tbody>
 	<tbody>

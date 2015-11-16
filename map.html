@@ -1,12 +1,3 @@
-<?php
-$lat = 55.76;
-$lon = 37.64;
-if (isset($_GET['lat']) && isset($_GET['lon']))
-{
-	$lat = (float)$_GET['lat'];
-	$lon = (float)$_GET['lon'];
-}
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,7 +13,7 @@ function init () {
 	if (pass == null) pass = '';
 
 	myMap = new ymaps.Map('map', {
-		center: [<?php echo $lat; ?>, <?php echo $lon; ?>],
+		center: [%var_lat%, %var_lon%],
 		zoom: 18
 	}),
 
