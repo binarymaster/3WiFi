@@ -7,14 +7,19 @@
 <script type="text/javascript">
 function find()
 {
+	var formdata = $($('form')[0]).serialize();
+	$('input').prop('disabled', true);
+	$('button').prop('disabled', true);
 	$('#tranges').css('display', 'none');
 	$('#fdata').empty();
 	$('#fhead').empty();
 	$('#fhead').append('<tr><th>IP Range</th><th>Description</th></tr>');
 	$('#fdata').append('<tr><td colspan=2><img src="img/loading.gif"></td></tr>');
 
-	$.post('3wifi.php?a=find_ranges', $($('form')[0]).serialize(), function(d)
+	$.post('3wifi.php?a=find_ranges', formdata, function(d)
 	{
+		$('input').prop('disabled', false);
+		$('button').prop('disabled', false);
 		if (!d.result)
 		{
 			$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');

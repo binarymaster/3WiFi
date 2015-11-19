@@ -97,13 +97,16 @@ function switchPage(num)
 }
 function find(page)
 {
+	var formdata = $($('form')[level-1]).serialize();
+	$('input').prop('disabled', true);
+	$('button').prop('disabled', true);
 	$('#found').empty();
 	$('#fdata').empty();
 	var cols = $('#fhead').children().children().length;
 	appendTable('fdata', '<td>', ['<img src="img/loading.gif">'], [{raw: true, mono: false, nowrap: false, over: false, cs: cols}]);
 	$($('input[name=page]')[level-1]).val(page);
 
-	$.post('3wifi.php?a=find', $($('form')[level-1]).serialize(), function(d)
+	$.post('3wifi.php?a=find', formdata, function(d)
 	{
 		if (d.result)
 		{
@@ -169,6 +172,8 @@ function find(page)
 		} else {
 			$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
 		}
+		$('input').prop('disabled', false);
+		$('button').prop('disabled', false);
 	});
 }
 function initpage()

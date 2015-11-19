@@ -19,10 +19,8 @@ define('STATS_TABLE', 'stats');
 define('STATS_DATABASE_STATUS', 1);
 define('STATS_LAST_MEMORY_BASE_TABLE_SYNS', 10);
 define('STATS_LAST_MEMORY_GEO_TABLE_SYNS', 11);
-define('STATS_BASE_MEMORY_ROWS_NUMS', 20);
-define('STATS_GEO_MEMORY_ROWS_NUMS', 21);
-define('STATS_BASE_ROWN_NUMS', 31);
-define('STATS_GEO_ROWN_NUMS', 32);
+define('STATS_BASE_ROWN_NUMS', 20);
+define('STATS_GEO_ROWN_NUMS', 21);
 
 // Database status
 define('DATABASE_PREPARE', 0);
@@ -188,7 +186,7 @@ function QuerySql($sql, &$affected_rows = NULL)
 				$RepeatSql = str_replace('BASE_TABLE', BASE_TABLE, $sql);
 				QuerySql($RepeatSql);
 			}
-			if($SqlType == SQL_BASE_INSERT) SetStatsValue(STATS_BASE_MEMORY_ROWS_NUMS, 'value+1');
+			if($SqlType == SQL_BASE_INSERT) SetStatsValue(STATS_BASE_ROWN_NUMS, 'value+1');
 			break;
 		case SQL_BASE_SELECT:
 			break;
@@ -199,7 +197,7 @@ function QuerySql($sql, &$affected_rows = NULL)
 				$RepeatSql = str_replace('GEO_TABLE', GEO_TABLE, $sql);
 				QuerySql($RepeatSql);
 			}
-			if($SqlType == SQL_GEO_INSERT) SetStatsValue(STATS_GEO_MEMORY_ROWS_NUMS, 'value+1');
+			if($SqlType == SQL_GEO_INSERT) SetStatsValue(STATS_GEO_ROWN_NUMS, 'value+1');
 			break;
 		case SQL_GEO_SELECT:
 			break;
@@ -328,7 +326,7 @@ function CheckRelevanceOfMemoryTables($UseFix)
 			QuerySql('TRUNCATE BASE_MEM_TABLE');
 			$AffectedRows = -1;
 			QuerySql('INSERT INTO BASE_MEM_TABLE SELECT * FROM BASE_TABLE_CONST ORDER BY time DESC', $AffectedRows);
-			SetStatsValue(STATS_BASE_MEMORY_ROWS_NUMS, $AffectedRows, true);
+			SetStatsValue(STATS_BASE_ROWN_NUMS, $AffectedRows, true);
 			SetStatsValue(STATS_LAST_MEMORY_BASE_TABLE_SYNS, (time()+MEMORY_TABLES_RELEVANCE_EXPIRES), true);
 			$Result['BaseLastFixTime'] = time();
 		}
@@ -358,7 +356,7 @@ function CheckRelevanceOfMemoryTables($UseFix)
 			QuerySql('TRUNCATE GEO_MEM_TABLE');
 			$AffectedRows = -1;
 			QuerySql('INSERT INTO GEO_MEM_TABLE SELECT * FROM GEO_TABLE_CONST', $AffectedRows);
-			SetStatsValue(STATS_GEO_MEMORY_ROWS_NUMS, $AffectedRows, true);
+			SetStatsValue(STATS_GEO_ROWN_NUMS, $AffectedRows, true);
 			SetStatsValue(STATS_LAST_MEMORY_GEO_TABLE_SYNS, (time()+MEMORY_TABLES_RELEVANCE_EXPIRES), true);
 			$Result['GeoLastFixTime'] = time();
 		}

@@ -712,6 +712,7 @@ switch ($action)
 	// Общая статистика
 	case 'stat':
 	$json['result'] = true;
+	date_default_timezone_set('UTC');
 	$json['stat']['date'] = date('Y.m.d H:i:s');
 	if (!db_connect())
 	{

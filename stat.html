@@ -6,147 +6,134 @@
 <script type="text/javascript">
 function appendRow(rowid, idx, p1, p2, tt, of)
 {
-	var st = '';
-	if (tt) st += 'font-family:monospace;';
-	if (of && (p2.length > 64)) st += 'max-width:700px;overflow-x:scroll;';
-
-	if (st != '') st = ' style="'+st+'"';
-
-	$('#'+rowid+' > tr').eq(idx).after('<tr><td>'+p1+'</td><td'+st+'></td></tr>');
-	$('#'+rowid+' > tr:last > :nth-child(2)').text(p2);
+	var td1 = $('<td>').text(p1);
+	var td2 = $('<td>').text(p2);
+	if (tt) td2.css('font-family', 'monospace');
+	if (of && (p2.length > 64))
+	{
+		td2.css('max-width', '700px');
+		td2.css('overflow-x', 'scroll');
+	}
+	var tr = $('<tr>');
+	tr.append(td1);
+	tr.append(td2);
+	$('#'+rowid).append(tr);
 }
-function loadstat()
+function parsestat(st, d)
 {
-	$.get('3wifi.php?a=stat', function(d)
+	if (typeof d.stat.top == 'number')
+	{
+		$('#sttot').text('('+d.stat.total+')');
+		$('#stcnt').text('(топ'+d.stat.top+')');
+	} else {
+		var total = 0;
+		for (var i = 0; i < d.stat.data.length; i++)
+		{
+			total += d.stat.data[i][0];
+		}
+		$('#sttot').text('('+total+')');
+		$('#stcnt').text('('+d.stat.data.length+')');
+	}
+	var tt = (st == 'stbss' || st == 'stwps');
+	var of = (st == 'stauth');
+	for (var i = 0; i < d.stat.data.length; i++)
+	{
+		appendRow('stat', i, d.stat.data[i][0], d.stat.data[i][1], tt, of);
+	}
+}
+function loadstat(st)
+{
+	$('button').prop('disabled', true);
+	$('#stval').text('Загрузка...');
+	$('#sttot').empty();
+	$('#stcnt').empty();
+	$('#stat').html('<tr><td></td><td><img src="img/loading.gif"></td></tr>');
+	$.get('3wifi.php?a=' + st, function(d)
 	{
 		if (d.result)
 		{
-			$('#stat_cap').text('Статистика от '+d.stat.date+' GMT.');
-			$('#stat').find('tr:gt(0)').remove();
-			appendRow('stat', 0, d.stat.total, 'Всего записей в базе');
-			appendRow('stat', 1, d.stat.bssids, 'С корректным BSSID');
-			appendRow('stat', 2, d.stat.onmap, 'Найдено на карте');
-			appendRow('stat', 3, d.stat.processing, 'В процессе обработки');
+			$('#stat').empty();
+			switch (st)
+			{
+				case 'stat':
+				$('#stat_cap').text('Статистика от '+d.stat.date+' UTC.');
+				$('#stval').text('Сводная таблица');
+				appendRow('stat', 0, d.stat.total, 'Всего записей в базе');
+				appendRow('stat', 1, d.stat.bssids, 'С корректным BSSID');
+				appendRow('stat', 2, d.stat.onmap, 'Найдено на карте');
+				appendRow('stat', 3, d.stat.processing, 'В процессе обработки');
+				break;
+				case 'stcmt':
+				$('#stval').text('Комментарии');
+				parsestat(st, d);
+				break;
+				case 'stdev':
+				$('#stval').text('Названия устройств / прошивок');
+				parsestat(st, d);
+				break;
+				case 'stport':
+				$('#stval').text('Порты');
+				parsestat(st, d);
+				break;
+				case 'stauth':
+				$('#stval').text('Данные авторизации');
+				parsestat(st, d);
+				break;
+				case 'stbss':
+				$('#stval').text('BSSID / MAC-адрес');
+				parsestat(st, d);
+				break;
+				case 'stess':
+				$('#stval').text('ESSID / Имя сети');
+				parsestat(st, d);
+				break;
+				case 'stsec':
+				$('#stval').text('Тип защиты');
+				parsestat(st, d);
+				break;
+				case 'stkey':
+				$('#stval').text('Ключ сети');
+				parsestat(st, d);
+				break;
+				case 'stwps':
+				$('#stval').text('Пин код WPS');
+				parsestat(st, d);
+				break;
+				case 'stdns':
+				$('#stval').text('Серверы доменных имён');
+				parsestat(st, d);
+				break;
+			}
 		} else {
 			$('#stat > tr:nth-child(2) > :nth-child(2)').text('Ошибка загрузки данных.');
 		}
-		// После загрузить остальное
-		loadtable('stcmt');
-	});
-}
-function loadtable(name, tt, of)
-{
-	$.get('3wifi.php?a='+name, function(d)
-	{
-		if (d.result)
-		{
-			$('#'+name).find('tr:gt(0)').remove();
-			if (typeof d.stat.top == 'number')
-			{
-				$('#'+name+'_total').text('('+d.stat.total+')');
-				$('#'+name+'_cnt').text('(топ'+d.stat.top+')');
-			} else {
-				var total = 0;
-				for (var i = 0; i < d.stat.data.length; i++)
-				{
-					total += d.stat.data[i][0];
-				}
-				$('#'+name+'_total').text('('+total+')');
-				$('#'+name+'_cnt').text('('+d.stat.data.length+')');
-			}
-			for (var i = 0; i < d.stat.data.length; i++)
-			{
-				appendRow(name, i, d.stat.data[i][0], d.stat.data[i][1], tt, of);
-			}
-		} else {
-			$('#'+name+' > tr:nth-child(2) > :nth-child(2)').text('Ошибка загрузки данных.');
-		}
-		// Загружать таблицы по очереди
-		switch (name)
-		{
-			case 'stcmt': loadtable('stdev');
-			break;
-			case 'stdev': loadtable('stport');
-			break;
-			case 'stport': loadtable('stauth', false, true);
-			break;
-			case 'stauth': loadtable('stbss', true);
-			break;
-			case 'stbss': loadtable('stess');
-			break;
-			case 'stess': loadtable('stsec');
-			break;
-			case 'stsec': loadtable('stkey');
-			break;
-			case 'stkey': loadtable('stwps', true);
-			break;
-			case 'stwps': loadtable('stdns');
-			break;
-		}
+		$('button').prop('disabled', false);
 	});
 }
 </script>
 </head>
 
-<body onload="loadstat()">
+<body onload="loadstat('stat')">
 <h2 align="center"><span id=stat_cap>Статистика загружается...</span></h2>
 <noscript>Включите JavaScript для отображения данных.</noscript>
 
+<p><button onclick="loadstat('stat')">Сводная</button>&nbsp;
+<button onclick="loadstat('stcmt')">Комментарии</button>&nbsp;
+<button onclick="loadstat('stdev')">Устройства</button>&nbsp;
+<button onclick="loadstat('stport')">Порты</button>&nbsp;
+<button onclick="loadstat('stauth')">Авторизация</button>&nbsp;
+<button onclick="loadstat('stbss')">BSSID</button>&nbsp;
+<button onclick="loadstat('stess')">ESSID</button>&nbsp;
+<button onclick="loadstat('stsec')">Защита</button>&nbsp;
+<button onclick="loadstat('stkey')">Ключи</button>&nbsp;
+<button onclick="loadstat('stwps')">WPS</button>&nbsp;
+<button onclick="loadstat('stdns')">DNS</button></p>
+
 <table class=st1>
-<tbody id=stat>
-<tr><th>Кол-во</th><th>Сводная таблица</th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
+<tbody>
+<tr><th>Кол-во <span id=sttot></span></th><th><span id=stval>Значение</span> <span id=stcnt></span></th></tr>
 </tbody>
-
-<tbody id=stcmt>
-<tr><th>Кол-во <span id=stcmt_total></span></th><th>Комментарии <span id=stcmt_cnt></span></th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
-</tbody>
-
-<tbody id=stdev>
-<tr><th>Кол-во <span id=stdev_total></span></th><th>Названия устройств / прошивок <span id=stdev_cnt></span></th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
-</tbody>
-
-<tbody id=stport>
-<tr><th>Кол-во <span id=stport_total></span></th><th>Порты <span id=stport_cnt></span></th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
-</tbody>
-
-<tbody id=stauth>
-<tr><th>Кол-во <span id=stauth_total></span></th><th>Данные авторизации <span id=stauth_cnt></span></th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
-</tbody>
-
-<tbody id=stbss>
-<tr><th>Кол-во <span id=stbss_total></span></th><th>BSSID / MAC-адрес <span id=stbss_cnt></span></th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
-</tbody>
-
-<tbody id=stess>
-<tr><th>Кол-во <span id=stess_total></span></th><th>ESSID / Имя сети <span id=stess_cnt></span></th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
-</tbody>
-
-<tbody id=stsec>
-<tr><th>Кол-во <span id=stsec_total></span></th><th>Тип защиты <span id=stsec_cnt></span></th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
-</tbody>
-
-<tbody id=stkey>
-<tr><th>Кол-во <span id=stkey_total></span></th><th>Ключ сети <span id=stkey_cnt></span></th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
-</tbody>
-
-<tbody id=stwps>
-<tr><th>Кол-во <span id=stwps_total></span></th><th>Пин код WPS <span id=stwps_cnt></span></th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
-</tbody>
-
-<tbody id=stdns>
-<tr><th>Кол-во <span id=stdns_total></span></th><th>Серверы доменных имён <span id=stdns_cnt></span></th></tr>
-<tr><td></td><td><img src="img/loading.gif"></td></tr>
-</tbody>
-
+<tbody id=stat></tbody>
 </table>
+
 </body></html>
