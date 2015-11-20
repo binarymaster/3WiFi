@@ -10,7 +10,7 @@ function GetFromYandex($bssid)
 {
 	$bssid = str_replace(":","",$bssid);
 	$bssid = str_replace("-","",$bssid);
-	$data = cURL_Get("http://mobile.maps.yandex.net/cellid_location/?clid=1866854&lac=-1&cellid=-1&operatorid=null&countrycode=null&signalstrength=-1&wifinetworks=$bssid:-65&app");
+	$data = cURL_Get("https://mobile.maps.yandex.net/cellid_location/?clid=1866854&lac=-1&cellid=-1&operatorid=null&countrycode=null&signalstrength=-1&wifinetworks=$bssid:-65&app");
 
 	$result = '';
 	$latitude = getStringBetween($data, ' latitude="', '"');
@@ -42,9 +42,11 @@ function GetFromAlterGeo($bssid)
 function GetFromMylnikov($bssid)
 {
 	$tries = 3;
-	while (!($data = cURL_Get("http://api.mylnikov.org/wifi/main.py/get?bssid=$bssid")) && ($tries > 0))
+	$proto = 'https:';
+	while (!($data = cURL_Get("$proto//api.mylnikov.org/wifi/main.py/get?bssid=$bssid")) && ($tries > 0))
 	{
 		$tries--;
+		$proto = ($tries % 2 == 0 ? 'http:' : 'https:');
 		sleep(2);
 	}
 
