@@ -113,6 +113,7 @@ function SetStatsValue($StatId, $Value, $Replace=false)
 	{
 		$res = QuerySql('UPDATE INTO STATS_TABLE SET value='.$Value.' WHERE StatId='.$StatId);
 	}
+
 	if(!$res) return false;
 	return true;
 }
@@ -167,7 +168,7 @@ function QuerySql($sql, &$affected_rows = NULL)
 	if(preg_match("/INSERT INTO (\"|'|`| |)STATS_TABLE/i", $sql) > 0)
 	{
 		$SqlType = SQL_STATS_INSERT;
-	}	
+	}
 	if(preg_match("/UPDATE (\"|'|`| |)GEO_TABLE/i", $sql) > 0)
 	{
 		$SqlType = SQL_GEO_UPDATE;

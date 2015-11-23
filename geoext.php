@@ -17,7 +17,7 @@ function GetFromYandex($bssid)
 	$longitude = getStringBetween($data, ' longitude="', '"');
 	if ($latitude != '' && $longitude != '')
 	{
-		$result = $latitude.';'.$longitude;
+		$result = $latitude.';'.$longitude.';yandex';
 	}
 	return $result;
 }
@@ -34,7 +34,7 @@ function GetFromAlterGeo($bssid)
 		{
 			$latitude = $json->location->lat;
 			$longitude = $json->location->lng;
-			$result = $latitude.';'.$longitude;
+			$result = $latitude.';'.$longitude.';altergeo';
 		}
 	}
 	return $result;
@@ -56,7 +56,7 @@ function GetFromMylnikov($bssid)
 	{
 		$latitude = $json->data->lat;
 		$longitude = $json->data->lon;
-		$result = $latitude.';'.$longitude;
+		$result = $latitude.';'.$longitude.';mylnikov';
 	}
 	return $result;
 }

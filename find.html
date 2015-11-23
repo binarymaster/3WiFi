@@ -97,6 +97,8 @@ function switchPage(num)
 }
 function find(page)
 {
+	$($('input[name=page]')[level-1]).val(page);
+
 	var formdata = $($('form')[level-1]).serialize();
 	$('input').prop('disabled', true);
 	$('button').prop('disabled', true);
@@ -104,7 +106,6 @@ function find(page)
 	$('#fdata').empty();
 	var cols = $('#fhead').children().children().length;
 	appendTable('fdata', '<td>', ['<img src="img/loading.gif">'], [{raw: true, mono: false, nowrap: false, over: false, cs: cols}]);
-	$($('input[name=page]')[level-1]).val(page);
 
 	$.post('3wifi.php?a=find', formdata, function(d)
 	{

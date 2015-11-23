@@ -134,8 +134,18 @@ switch ($action)
 		if(!isset($_SESSION['Search']['LastId'])) $_SESSION['Search']['LastId'] = -1;
 		if(!isset($_SESSION['Search']['LastPage'])) $_SESSION['Search']['LastPage'] = 1;
 
+		$isLimitedRequest = false;
 		$DiffPage = 0;
 		$NextPageStartId = 0;
+
+		$TestBSSID = preg_replace("/\*{2,}/", '*', $BSSID);
+		$SplitCount = substr_count($TestBSSID, ':') + substr_count($TestBSSID, '.')+ substr_count($TestBSSID, '-');
+		$UnkCount = substr_count($TestBSSID, '*');
+
+		if(($SplitCount < $UnkCount || $TestBSSID == '*' || $BSSID == '') && ($ESSID == '%' || $ESSID == ''))
+		{
+			$isLimitedRequest = true;
+		}
 
 		if($Page == 1) 
 		{
@@ -193,7 +203,7 @@ switch ($action)
 		$Sign = '<';
 		$DiffPage = ((int)$Page-$_SESSION['Search']['LastPage']);
 
-		if($_SESSION['Search']['LastId'] == -1 || $_SESSION['Search']['FirstId'] == -1) 
+		if($isLimitedRequest || $_SESSION['Search']['LastId'] == -1 || $_SESSION['Search']['FirstId'] == -1) 
 		{
 			$NextPageStartId = 4294967295;
 		}
@@ -209,7 +219,16 @@ switch ($action)
 				$NextPageStartId = (int)$_SESSION['Search']['LastId'];
 			}
 		}
-		$sql .= ' AND `id` '.$Sign.' '.$NextPageStartId.' LIMIT '.abs($DiffPage*100).', '.$Limit;
+
+		$DiffPage = abs($DiffPage);
+		if($DiffPage > 0) $DiffPage--;
+
+		if($isLimitedRequest)
+		{
+			$DiffPage = 0;
+		}
+
+		$sql .= ' AND `id` '.$Sign.' '.$NextPageStartId.' LIMIT '.($DiffPage*100).', '.$Limit;
 
 		$_SESSION['Search']['ArgsHash'] = md5($BSSID.$ESSID.$Name);
 		$_SESSION['Search']['LastPage'] = $Page;
@@ -290,10 +309,13 @@ switch ($action)
 			$json['page']['current'] = $cur_page;
 			$json['page']['count'] = $pages;
 		}
+
 		$FirstId = -1;
+		$LastId = -1;
 		while ($row = $res->fetch_row())
 		{
 			if ($FirstId == -1) $FirstId = (int)$row[0];
+			$LastId = (int)$row[0];
 
 			$entry = array();
 			if ($level > 1) $entry['id'] = (int)$row[0];
@@ -337,13 +359,10 @@ switch ($action)
 			$json['data'][] = $entry;
 			unset($entry);
 		}
-		$LastId = (int)$row[0];
 		$res->close();
-		if(count($json['data']) > 0)
-		{
-			$_SESSION['Search']['FirstId'] = $FirstId;
-			$_SESSION['Search']['LastId'] = $LastId;
-		}
+
+		$_SESSION['Search']['FirstId'] = $FirstId;
+		$_SESSION['Search']['LastId'] = $LastId;
 	}
 	$db->close();
 	break;
