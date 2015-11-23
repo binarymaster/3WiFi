@@ -739,11 +739,15 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(*) FROM BASE_TABLE"))
+	$json['stat']['total'] = GetStatsValue(STATS_BASE_ROWN_NUMS);
+	if($json['stat']['total'] == -1)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
+		if ($res = QuerySql("SELECT COUNT(*) FROM BASE_TABLE"))
+		{
+			$row = $res->fetch_row();
+			$json['stat']['total'] = (int)$row[0];
+			$res->close();
+		}
 	}
 	if ($res = QuerySql("SELECT COUNT(*) FROM BASE_TABLE WHERE `NoBSSID` = 0"))
 	{

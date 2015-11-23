@@ -21,6 +21,8 @@ define('STATS_LAST_MEMORY_BASE_TABLE_SYNS', 10);
 define('STATS_LAST_MEMORY_GEO_TABLE_SYNS', 11);
 define('STATS_BASE_ROWN_NUMS', 20);
 define('STATS_GEO_ROWN_NUMS', 21);
+define('STATS_BASE_DAYSTART_NUM', 22);
+define('STATS_GEO_DAYSTART_NUM', 23);
 
 // Database status
 define('DATABASE_PREPARE', 0);
@@ -111,7 +113,7 @@ function SetStatsValue($StatId, $Value, $Replace=false)
 	}
 	else
 	{
-		$res = QuerySql('UPDATE INTO STATS_TABLE SET value='.$Value.' WHERE StatId='.$StatId);
+		$res = QuerySql('UPDATE STATS_TABLE SET value='.$Value.' WHERE StatId='.$StatId);
 	}
 
 	if(!$res) return false;
