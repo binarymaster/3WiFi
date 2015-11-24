@@ -35,6 +35,19 @@ function _ip2long($arg)
 	if($res === false) return 'NULL';
 	return $res;
 }
+function isValidIP($addr)
+{
+	$ip_arr = explode('.', $addr);
+	return (count($ip_arr) == 4 && $ip_arr[0] > 0 && $ip_arr[0] < 255);
+}
+function isLocalIP($addr)
+{
+	$ip_arr = explode('.', $addr);
+	return ($ip_arr[0] == 10 ||
+			($ip_arr[0] == 100 && $ip_arr[1] >= 64 && $ip_arr[1] < 128) ||
+			($ip_arr[0] == 172 && $ip_arr[1] >= 16 && $ip_arr[1] < 32) ||
+			($ip_arr[0] == 192 && $ip_arr[1] == 168));
+}
 
 // MAC block
 function dec2hex($number)

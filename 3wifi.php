@@ -158,7 +158,7 @@ switch ($action)
 				`cmtid`,`cmtval`,
 				`IP`,`Port`,`Authorization`,`name`,
 				`NoBSSID`,`BSSID`,`ESSID`,`Security`,
-				`WiFiKey`,`WPSPIN`,
+				`WiFiKey`,`WPSPIN`,`WANIP`,
 				`latitude`,`longitude` 
 				FROM `BASE_TABLE` 
 				LEFT JOIN `comments` USING(cmtid) 
@@ -321,21 +321,38 @@ switch ($action)
 			if ($level > 1) $entry['id'] = (int)$row[0];
 			$entry['time'] = $row[1];
 			$entry['comment'] = ($row[2] == null ? '' : $row[3]);
+			$ip = _long2ip($row[4]);
+			$wanip = _long2ip($row[14]);
 			if ($level > 1)
 			{
-				$entry['ipport'] = '';
-				if ($row[4] != '') $entry['ipport'] = _long2ip($row[4]).':'.$row[5];
+				$entry['ipport'] = ($ip != '' ? $ip : ($wanip != '' ? $wanip : ''));
+				if (isLocalIP($entry['ipport'])
+				&& $entry['ipport'] != $wanip
+				&& isValidIP($wanip)
+				&& !isLocalIP($wanip))
+				{
+					$entry['ipport'] = $wanip;
+				}
+				if ($entry['ipport'] != '') $entry['ipport'] .= ':'.$row[5];
 				$entry['auth'] = $row[6];
 				$entry['name'] = $row[7];
 			} else {
-				$entry['range'] = '';
-				$oct = explode('.', _long2ip($row[4]));
-				if ((int)$row[4] != 0)
+				$entry['range'] = ($ip != '' ? $ip : ($wanip != '' ? $wanip : ''));
+				if (isLocalIP($entry['range'])
+				&& $entry['range'] != $wanip
+				&& isValidIP($wanip)
+				&& !isLocalIP($wanip))
 				{
+					$entry['range'] = $wanip;
+				}
+				if (isValidIP($entry['range']))
+				{
+					$oct = explode('.', $entry['range']);
 					array_pop($oct);
 					array_pop($oct);
 					$entry['range'] = implode('.', $oct).'.0.0/16';
-				}
+				} else
+					$entry['range'] = '';
 			}
 			$entry['bssid'] = '';
 			if ((int)$row[8] == 0) $entry['bssid'] = dec2mac($row[9]);
@@ -345,10 +362,10 @@ switch ($action)
 			$entry['wps'] = ($row[13] == 1 ? '' : str_pad($row[13], 8, '0', STR_PAD_LEFT));
 			$entry['lat'] = 'none';
 			$entry['lon'] = 'none';
-			if ((int)$row[8] == 0)
+			if ((int)$row[8] == 0 && $row[15] !== null)
 			{
-				$entry['lat'] = (float)$row[14];
-				$entry['lon'] = (float)$row[15];
+				$entry['lat'] = (float)$row[15];
+				$entry['lon'] = (float)$row[16];
 				if ($entry['lat'] == 0 && $entry['lon'] == 0)
 				{
 					$entry['lat'] = 'not found';
@@ -427,13 +444,22 @@ switch ($action)
 		break;
 	}
 	if ($res = QuerySql(
-		"SELECT DISTINCT IP 
+		"SELECT DISTINCT IP FROM 
+		(SELECT IP 
 		FROM `BASE_TABLE`, `GEO_TABLE` 
 		WHERE `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
 				AND (`GEO_TABLE`.`latitude` != 0 AND `GEO_TABLE`.`longitude` != 0 
 				AND `GEO_TABLE`.`latitude` IS NOT NULL AND `GEO_TABLE`.`longitude` IS NOT NULL) 
 				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2) 
-				AND IP != 0 ORDER BY CAST(IP AS UNSIGNED INTEGER)"));
+				AND (IP != 0 AND IP != -1) 
+		UNION SELECT WANIP 
+		FROM `BASE_TABLE`, `GEO_TABLE` 
+		WHERE `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
+				AND (`GEO_TABLE`.`latitude` != 0 AND `GEO_TABLE`.`longitude` != 0 
+				AND `GEO_TABLE`.`latitude` IS NOT NULL AND `GEO_TABLE`.`longitude` IS NOT NULL) 
+				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2) 
+				AND (WANIP != 0 AND WANIP != -1)
+		) IPTable ORDER BY CAST(IP AS UNSIGNED INTEGER)"));
 	{
 		require 'ipext.php';
 		$last_upper = '0.0.0.0';
@@ -740,7 +766,7 @@ switch ($action)
 		break;
 	}
 	$json['stat']['total'] = GetStatsValue(STATS_BASE_ROWN_NUMS);
-	if($json['stat']['total'] == -1)
+	if(1)
 	{
 		if ($res = QuerySql("SELECT COUNT(*) FROM BASE_TABLE"))
 		{
