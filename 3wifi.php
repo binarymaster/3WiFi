@@ -1079,14 +1079,32 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	// Исправить на проверку всех полей DNS#
+	$json['stat']['total'] = 0;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT `DNS1`) FROM BASE_TABLE WHERE `DNS1`!=0"))
 	{
 		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
+		$json['stat']['total'] += (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `DNS1`, COUNT(*) FROM BASE_TABLE WHERE `DNS1`!=0 GROUP BY `DNS1` ORDER BY COUNT(*) DESC LIMIT $topDNS"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `DNS2`) FROM BASE_TABLE WHERE `DNS2`!=0"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] += (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT COUNT(DISTINCT `DNS3`) FROM BASE_TABLE WHERE `DNS3`!=0"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] += (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT DNS, COUNT(DNS) FROM (
+	SELECT DNS1 AS DNS FROM BASE_TABLE WHERE DNS1 != 0 
+	UNION ALL 
+	SELECT DNS2 AS DNS FROM BASE_TABLE WHERE DNS2 != 0 
+	UNION ALL 
+	SELECT DNS3 AS DNS FROM BASE_TABLE WHERE DNS3 != 0) DNSTable 
+	GROUP BY DNS ORDER BY COUNT(DNS) DESC LIMIT $topDNS"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
