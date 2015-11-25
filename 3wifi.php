@@ -45,6 +45,84 @@ switch ($action)
 
 	// Координаты точек на карте
 	case 'map':
+	$bbox = explode(',', $_GET['bbox']);
+	$callback = $_GET['callback'];
+
+	$lat1 = (float)$bbox[0];
+	$lon1 = (float)$bbox[1];
+	$lat2 = (float)$bbox[2];
+	$lon2 = (float)$bbox[3];
+
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
+
+	if ($res = QuerySql("SELECT `id`,`time`,`GEO_TABLE`.`BSSID`,`ESSID`,`WiFiKey`,`latitude`,`longitude` FROM `GEO_TABLE`, `BASE_TABLE` WHERE 
+							(`latitude` != 0 AND `longitude` != 0) 
+							AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) 
+							AND `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` LIMIT 1000"))
+	{
+		unset($json); // здесь используется JSON-P
+		$data = array();
+		while ($row = $res->fetch_row())
+		{
+			$xlatitude = $row[5];
+			$xlongitude = $row[6];
+
+			if (!isset($data[$xlatitude][$xlongitude])) $data[$xlatitude][$xlongitude] = array();
+			$i = count($data[$xlatitude][$xlongitude]);
+			$data[$xlatitude][$xlongitude][$i]['id'] = (int)$row[0];
+			$data[$xlatitude][$xlongitude][$i]['time'] = $row[1];
+			$data[$xlatitude][$xlongitude][$i]['bssid'] = dec2mac($row[2]);
+			$data[$xlatitude][$xlongitude][$i]['essid'] = $row[3];
+			$data[$xlatitude][$xlongitude][$i]['key'] = $row[4];
+		}
+		$res->close();
+		$db->close();
+
+		Header("Content-Type: application/json-p");
+		$json['error'] = null;
+		$json['data']['type'] = 'FeatureCollection';
+		$json['data']['features'] = array();
+
+		$ap['type'] = 'Feature';
+		foreach($data as $xlatitude => $xlongitude)
+		foreach($xlongitude as $xlongitude => $apdata)
+		{
+			$ap['id'] = $apdata[0]['id'];
+			$ap['geometry']['type'] = 'Point';
+			$ap['geometry']['coordinates'][0] = (float)$xlatitude;
+			$ap['geometry']['coordinates'][1] = (float)$xlongitude;
+			
+			$hint = array();
+			for ($i = 0; $i < count($apdata); $i++)
+			{
+				$aphint = array();
+
+				$xtime = $apdata[$i]['time'];
+				$xbssid = htmlspecialchars($apdata[$i]['bssid']);
+				$xessid = htmlspecialchars($apdata[$i]['essid']);
+				$xwifikey = htmlspecialchars($apdata[$i]['key']);
+
+				if ($level > 0) $aphint[] = $xtime;
+				$aphint[] = $xbssid;
+				$aphint[] = $xessid;
+				if ($level > 0) $aphint[] = $xwifikey;
+				$hint[] = implode('<br>', $aphint);
+			}
+			$ap['properties']['hintContent'] = implode('<hr>', $hint);
+			$json['data']['features'][] = $ap;
+		}
+		echo "typeof $callback === 'function' && $callback(".json_encode($json).");";
+		exit;
+	}
+	break;
+
+	// Координаты точек на карте (с кластеризацией)
+	case 'cmap':
 	$bbox = explode(",", $_GET['bbox']); // координаты запрашиваемой области
 	$callback = $_GET['callback']; // имя функции, которую нужно вернуть
 
@@ -71,12 +149,12 @@ switch ($action)
 		$lonj = $loni + $lonx;
 
 		// Проверяем кол-во точек в секторе
-		$res = QuerySql("SELECT COUNT(*) FROM `GEO_TABLE` WHERE
-						(`latitude` != 0 AND `longitude` != 0)
+		$res = QuerySql("SELECT COUNT(*) FROM `GEO_TABLE` WHERE 
+						(`latitude` != 0 AND `longitude` != 0 AND `latitude` IS NOT NULL AND `longitude` IS NOT NULL) 
 						AND (`latitude` BETWEEN $lati AND $latj AND `longitude` BETWEEN $loni AND $lonj)");
 		$row = $res->fetch_row();
 		$res->close();
-		if ($row[0]>3) // если в секторе точек больше X, то делаем кластер. Иначе делаем точки.
+		if ($row[0] > 3) // если в секторе точек больше X, то делаем кластер. Иначе делаем точки.
 		{
 			$latz = $lati + ($latx/2); // координаты кластера = середина сектора
 			$lonz = $loni + ($lonx/2);
@@ -91,7 +169,7 @@ switch ($action)
 			if ($res = QuerySql("SELECT `id`,`time`,`GEO_TABLE`.`BSSID`,`ESSID`,`WiFiKey`,`latitude`,`longitude` FROM `GEO_TABLE`, `BASE_TABLE` WHERE 
 								(`latitude` != 0 AND `longitude` != 0) 
 								AND (`latitude` BETWEEN $lati AND $latj AND `longitude` BETWEEN $loni AND $lonj) 
-								AND `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID`"))
+								AND `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` LIMIT 1000"))
 			{
 				while ($row = $res->fetch_row())
 				{
@@ -132,7 +210,7 @@ switch ($action)
 			$ap['geometry']['coordinates'][1] = (float)$xlongitude;
 			$ap['properties']['iconContent'] = $apdata['number'];
 		}
-		else //иначе это точка
+		else // иначе это точка
 		{
 			$ap['type'] = 'Feature'; // подготавливаем запись точки
 			$ap['id'] = $apdata[0]['id'];
