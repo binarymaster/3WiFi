@@ -4,10 +4,10 @@
 <link rel=stylesheet href="css/style.css" type="text/css">
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 <script type="text/javascript">
-function appendRow(rowid, idx, p1, p2, tt, of)
+function appendRow(rowid, idx, p1, p2, tt, of, th)
 {
-	var td1 = $('<td>').text(p1);
-	var td2 = $('<td>').text(p2);
+	var td1 = $((th ? '<th>' : '<td>')).text(p1);
+	var td2 = $((th ? '<th>' : '<td>')).text(p2);
 	if (tt) td2.css('font-family', 'monospace');
 	if (of && (p2.length > 64))
 	{
@@ -60,8 +60,14 @@ function loadstat(st)
 				$('#stval').text('Сводная таблица');
 				appendRow('stat', 0, d.stat.total, 'Всего записей в базе');
 				appendRow('stat', 1, d.stat.bssids, 'С корректным BSSID');
-				appendRow('stat', 2, d.stat.onmap, 'Найдено на карте');
-				appendRow('stat', 3, d.stat.processing, 'В процессе обработки');
+				appendRow('stat', 2, d.stat.uniqbss, 'С уникальным BSSID');
+				appendRow('stat', 3, d.stat.onmap, 'Найдено на карте');
+				appendRow('stat', 4, 'Кол-во', 'Состояние заданий', false, false, true);
+				appendRow('stat', 5, d.stat.tasks.uploading, 'Заданий на загрузке', true);
+				appendRow('stat', 6, d.stat.tasks.processing, 'Заданий в обработке', true);
+				if (d.stat.tasks.comment != null)
+					appendRow('stat', 7, '✓', 'Сейчас обрабатывается: ' + d.stat.tasks.comment + '', true);
+				appendRow('stat', 8, d.stat.geoloc, 'Определение координат', true);
 				break;
 				case 'stcmt':
 				$('#stval').text('Комментарии');

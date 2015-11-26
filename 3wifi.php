@@ -890,30 +890,54 @@ switch ($action)
 	$json['stat']['total'] = GetStatsValue(STATS_BASE_ROWN_NUMS);
 	if(1)
 	{
-		if ($res = QuerySql("SELECT COUNT(*) FROM BASE_TABLE"))
+		if ($res = QuerySql('SELECT COUNT(id) FROM BASE_TABLE'))
 		{
 			$row = $res->fetch_row();
 			$json['stat']['total'] = (int)$row[0];
 			$res->close();
 		}
 	}
-	if ($res = QuerySql("SELECT COUNT(*) FROM BASE_TABLE WHERE `NoBSSID` = 0"))
+	if ($res = QuerySql('SELECT COUNT(id) FROM BASE_TABLE WHERE NoBSSID = 0'))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['bssids'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT COUNT(*) FROM GEO_TABLE WHERE (`latitude` IS NOT NULL AND `longitude` IS NOT NULL) 
-																AND (`latitude` != 0 AND `longitude` != 0)"))
+	if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE'))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['uniqbss'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE (`latitude` IS NOT NULL AND `longitude` IS NOT NULL) 
+																AND (`latitude` != 0 AND `longitude` != 0)'))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['onmap'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT COUNT(*) FROM GEO_TABLE WHERE `latitude` IS NULL"))
+	if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE latitude IS NULL'))
 	{
 		$row = $res->fetch_row();
-		$json['stat']['processing'] = (int)$row[0];
+		$json['stat']['geoloc'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql('SELECT COUNT(tid) FROM tasks WHERE tstate = 0'))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['tasks']['uploading'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql('SELECT COUNT(tid) FROM tasks WHERE tstate > 0 AND tstate < 3'))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['tasks']['processing'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql('SELECT comment FROM tasks WHERE tstate > 0 AND tstate < 3 ORDER BY created LIMIT 1'))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['tasks']['comment'] = $row[0];
 		$res->close();
 	}
 	$db->close();
