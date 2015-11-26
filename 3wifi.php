@@ -876,6 +876,51 @@ switch ($action)
 		$json['upstat']['state'] = -1;
 	break;
 
+	// Подсказка по комментарию
+	case 'commhint':
+	$json['result'] = true;
+	$json['hint'] = array();
+
+	$comm = '';
+	if (isset($_GET['comm'])) $comm = trim(preg_replace('/\s+/', ' ', $_GET['comm']));
+	if ($comm == '' || strlen($comm) > 127) break;
+	$html = false;
+	if (isset($_GET['html'])) $html = $_GET['html'] == '1';
+
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
+	$sql = 'SELECT cmtval FROM comments WHERE 1 ';
+	$comm = array_unique(explode(' ', $comm));
+
+	foreach ($comm as $cval)
+		$sql .= ' AND cmtval LIKE \'%'.$db->real_escape_string($cval).'%\'';
+
+	$sql .= ' ORDER BY cmtval';
+	if ($res = QuerySql($sql))
+	{
+		while ($row = $res->fetch_row())
+			$json['hint'][] = $row[0];
+
+		$res->close();
+	}
+	$db->close();
+
+	function highlightWords($text, array $words)
+	{
+		$words = array_map(preg_quote, $words);
+		return preg_replace('/('. implode('|', $words) .')/isu', '<b>$1</b>', $text);
+	}
+	if ($html)
+		for ($i = 0; $i < count($json['hint']); $i++)
+		{
+			$json['hint'][$i] = highlightWords(htmlspecialchars($json['hint'][$i]), $comm);
+		}
+	break;
+
 	// Общая статистика
 	case 'stat':
 	$json['result'] = true;

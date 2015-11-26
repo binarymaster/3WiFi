@@ -4,9 +4,50 @@
 <link rel=stylesheet href="css/style.css" type="text/css">
 <style>
 td { white-space: nowrap; text-align: left !important }
+.wrapper { position: relative }
+.hint {
+	position: absolute; left: 0px; top: 0px; z-index: 1;
+	border-style: solid;
+	border-width: thin;
+	border-color: darkgray;
+	background-color: white;
+}
+.hval { cursor: pointer }
+.hval:hover { background-color: #ffff90 }
 </style>
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 <script type="text/javascript">
+function selectComm(e)
+{
+	var el = (e.target.tagName == 'B' ? e.target.parentNode : e.target);
+	$('input[type=text]').val($(el).text());
+	$('.hint').hide();
+}
+function showHint()
+{
+	var query = 'a=commhint';
+	query += '&comm=' + encodeURIComponent($('input[type=text]').val());
+	query += '&html=1';
+	$.get('3wifi.php?' + query, function(data)
+	{
+		$('.hint').empty();
+		if (data.hint.length > 0)
+		{
+			$('.hint').css('top', ($('.wrapper input').height() + 6) + 'px');
+			for (var i = 0; i < data.hint.length; i++)
+			{
+				var div = $('<div>');
+				div.prop('class', 'hval');
+				div.html(data.hint[i]);
+				div.click(selectComm);
+				$('.hint').append(div);
+			}
+			$('.hint').show();
+		}
+		else
+			$('.hint').hide();
+	});
+}
 function filePart(file, from, len)
 {
 	if (typeof file.slice == "function") {
@@ -396,7 +437,10 @@ function initpage()
 
 <table>
 <tr><td>Отчёт Router Scan:</td><td><input name="userfile" type="file" accept=".csv,.txt" onchange="checkFile(this)" /> &nbsp;(в формате <b>CSV</b> или <b>TXT</b>)</td></tr>
-<tr><td>Ваш комментарий:</td><td><input name="comment" type="text" /></td></tr>
+<tr><td>Ваш комментарий:</td><td><span class=wrapper>
+<input name="comment" type="text" placeholder="Город, провайдер, и т.п." autocomplete="off" onkeyup="showHint()" />
+<span class=hint style="display: none"></span>
+</span></td></tr>
 <tr><td style="vertical-align: top">Дополнительно:</td><td><input type="checkbox" name="checkexist" value="1">Не обновлять существующие в базе точки<br>(поставьте галку, если загружаете устаревшие данные, либо точки из других баз)</td></tr>
 <tr><td>Ход загрузки:</td><td><span class=perc></span><b id=percnum></b></td></tr>
 <tr><td><input type="submit" value="Отправить файл" onclick="startProcess()" disabled></td><td></td></tr>
