@@ -926,66 +926,98 @@ switch ($action)
 	$json['result'] = true;
 	date_default_timezone_set('UTC');
 	$json['stat']['date'] = date('Y.m.d H:i:s');
+	$mode = (isset($_GET['mode']) ? (int)$_GET['mode'] : 0);
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat']['total'] = GetStatsValue(STATS_BASE_ROWN_NUMS);
-	if(1)
+	if ($mode == 0 || $mode == 1)
 	{
-		if ($res = QuerySql('SELECT COUNT(id) FROM BASE_TABLE'))
+		$json['stat']['total'] = GetStatsValue(STATS_BASE_ROWN_NUMS);
+		if(1)
+		{
+			if ($res = QuerySql('SELECT COUNT(id) FROM BASE_TABLE'))
+			{
+				$row = $res->fetch_row();
+				$json['stat']['total'] = (int)$row[0];
+				$res->close();
+			}
+		}
+		if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE (`latitude` IS NOT NULL AND `longitude` IS NOT NULL) 
+																	AND (`latitude` != 0 AND `longitude` != 0)'))
 		{
 			$row = $res->fetch_row();
-			$json['stat']['total'] = (int)$row[0];
+			$json['stat']['onmap'] = (int)$row[0];
 			$res->close();
 		}
 	}
-	if ($res = QuerySql('SELECT COUNT(id) FROM BASE_TABLE WHERE NoBSSID = 0'))
+	if ($mode == 0)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['bssids'] = (int)$row[0];
-		$res->close();
+		if ($res = QuerySql('SELECT COUNT(id) FROM BASE_TABLE WHERE NoBSSID = 0'))
+		{
+			$row = $res->fetch_row();
+			$json['stat']['bssids'] = (int)$row[0];
+			$res->close();
+		}
+		if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE'))
+		{
+			$row = $res->fetch_row();
+			$json['stat']['uniqbss'] = (int)$row[0];
+			$res->close();
+		}
 	}
-	if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE'))
+	if ($mode == 0 || $mode == 2)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['uniqbss'] = (int)$row[0];
-		$res->close();
+		if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE latitude IS NULL'))
+		{
+			$row = $res->fetch_row();
+			$json['stat']['geoloc'] = (int)$row[0];
+			$res->close();
+		}
+		if ($res = QuerySql('SELECT COUNT(tid) FROM tasks WHERE tstate = 0'))
+		{
+			$row = $res->fetch_row();
+			$json['stat']['tasks']['uploading'] = (int)$row[0];
+			$res->close();
+		}
+		if ($res = QuerySql('SELECT COUNT(tid) FROM tasks WHERE tstate > 0 AND tstate < 3'))
+		{
+			$row = $res->fetch_row();
+			$json['stat']['tasks']['processing'] = (int)$row[0];
+			$res->close();
+		}
+		if ($res = QuerySql('SELECT comment FROM tasks WHERE tstate > 0 AND tstate < 3 ORDER BY created LIMIT 1'))
+		{
+			$row = $res->fetch_row();
+			$json['stat']['tasks']['comment'] = $row[0];
+			$res->close();
+		}
 	}
-	if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE (`latitude` IS NOT NULL AND `longitude` IS NOT NULL) 
-																AND (`latitude` != 0 AND `longitude` != 0)'))
+	$db->close();
+	break;
+
+	// Динамика загрузок
+	case 'loads':
+	$json['result'] = true;
+	date_default_timezone_set('UTC');
+	if (!db_connect())
 	{
-		$row = $res->fetch_row();
-		$json['stat']['onmap'] = (int)$row[0];
-		$res->close();
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
-	if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE latitude IS NULL'))
+	$json['data'] = array();
+	if ($res = QuerySql('SELECT DATE_FORMAT(time,\'%Y.%m.%d\'), COUNT(id) FROM BASE_TABLE GROUP BY DATE_FORMAT(time,\'%Y%m%d\') ORDER BY id DESC LIMIT 30'))
 	{
-		$row = $res->fetch_row();
-		$json['stat']['geoloc'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql('SELECT COUNT(tid) FROM tasks WHERE tstate = 0'))
-	{
-		$row = $res->fetch_row();
-		$json['stat']['tasks']['uploading'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql('SELECT COUNT(tid) FROM tasks WHERE tstate > 0 AND tstate < 3'))
-	{
-		$row = $res->fetch_row();
-		$json['stat']['tasks']['processing'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql('SELECT comment FROM tasks WHERE tstate > 0 AND tstate < 3 ORDER BY created LIMIT 1'))
-	{
-		$row = $res->fetch_row();
-		$json['stat']['tasks']['comment'] = $row[0];
+		while ($row = $res->fetch_row())
+			$json['data'][] = array($row[0], (int)$row[1]);
+
 		$res->close();
 	}
 	$db->close();
+	$json['data'] = array_reverse($json['data']);
 	break;
 
 	// Комментарии

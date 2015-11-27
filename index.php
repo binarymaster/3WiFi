@@ -13,6 +13,7 @@ if ($page == 'index' ||
 	$page == 'find_ranges' ||
 	$page == 'devicemac' ||
 	$page == 'upload' ||
+	$page == 'graph' ||
 	$page == 'stat')
 {
 	$lat = 55.76;

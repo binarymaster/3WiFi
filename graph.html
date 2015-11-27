@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>3WiFi: Динамика состояния</title>
+<link rel=stylesheet href="css/style.css" type="text/css">
+<style type="text/css">
+.container {
+	display: inline-block;
+	box-sizing: border-box;
+	padding: 20px 15px 15px 15px;
+	margin: 15px auto 30px auto;
+	border: 1px solid #ddd;
+	background: #fff;
+	background: linear-gradient(#f6f6f6 0, #fff 50px);
+	background: -o-linear-gradient(#f6f6f6 0, #fff 50px);
+	background: -ms-linear-gradient(#f6f6f6 0, #fff 50px);
+	background: -moz-linear-gradient(#f6f6f6 0, #fff 50px);
+	background: -webkit-linear-gradient(#f6f6f6 0, #fff 50px);
+	box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+	-o-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+	-ms-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+	-moz-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+	-webkit-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+.graph {
+	width: 100%;
+	height: 95%;
+	font-size: 14px;
+	line-height: 1.2em;
+}
+</style>
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="http://www.flotcharts.org/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript"  src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script language="javascript" type="text/javascript" src="jquery.flot.min.js"></script>
+<script language="javascript" type="text/javascript" src="jquery.flot.categories.min.js"></script>
+<script type="text/javascript">
+function showLoads()
+{
+	$.get('3wifi.php?a=loads', function(d)
+	{
+		var lo = 0, hi = 0, dt = 0;
+		for (var i = 0; i < d.data.length; i++)
+		{
+			d.data[i][2] = d.data[i][0];
+			dt = d.data[i][0].split('.');
+			if (lo == 0) lo = dt[0] + '.' + dt[1];
+			hi = dt[0] + '.' + dt[1];
+			d.data[i][0] = dt[2];
+		}
+		d.label = (lo == hi ? lo : lo + '-' + hi);
+		$('#stat').text('Сегодня загружено: ');
+		var dyn = (d.data[d.data.length - 1][1] > d.data[d.data.length - 2][1] ? 1 : -1);
+		$('#today').html(d.data[d.data.length - 1][1] + ' <font color="#'+(dyn > 0 ? '0f0">▲' : 'f00">▼')+'</font>');
+
+		gl_data.pop();
+		gl_data.push(d);
+		$.plot('#graphload', gl_data, gl_opts);
+		setTimeout(showLoads, 600000); // 10 min
+	});
+}
+function zip(arr)
+{
+	var result = [];
+	for (var i = 0; i < arr.length; i++) result.push([i,arr[i]]);
+	return result;
+}
+function showTasks()
+{
+	$.get('3wifi.php?a=stat&mode=2', function(d)
+	{
+		$('#task').text(d.stat.tasks.comment == null ? 'Нет активных заданий' : 'Сейчас обрабатывается: ' + d.stat.tasks.comment);
+		gtv_load.splice(0,1);
+		gtv_load.push(d.stat.tasks.uploading);
+		gt_load.data = zip(gtv_load);
+		gtv_proc.splice(0,1);
+		gtv_proc.push(d.stat.tasks.processing);
+		gt_proc.data = zip(gtv_proc);
+		gtv_geo.splice(0,1);
+		gtv_geo.push(d.stat.geoloc);
+		gt_geo.data = zip(gtv_geo);
+		$.plot('#graphtask', [gt_geo,gt_load,gt_proc], gt_opts);
+		setTimeout(showTasks, 1000);
+	});
+}
+function init()
+{
+	$("<div id='tooltip'></div>").css({
+		position: 'absolute',
+		display: 'none',
+		border: '1px solid #ffd',
+		padding: '2px',
+		'background-color': '#ffe',
+		opacity: 0.80
+	}).appendTo('body');
+	var wid = Math.round(screen.width / 1.75);
+	$('.container').css('width', wid);
+	$('.container').css('height', Math.round(wid / 1.8));
+	gl_opts = {
+		series: {
+			color: '#9d7',
+			lines: { show: true, fill: true, lineWidth: 1 },
+			points: { show: true }
+		},
+		grid: { hoverable: true },
+		xaxis: {
+			mode: 'categories',
+			tickDecimals: 0,
+			tickSize: 1
+		},
+		yaxis: { min: 0, tickDecimals: 0 }
+	};
+	gl_data = [];
+	$.plot('#graphload', gl_data, gl_opts);
+	$('#graphload').bind('plothover', function (event, pos, item)
+	{
+		if (item) {
+			var x = item.series.data[item.dataIndex][2],
+				y = item.datapoint[1];
+
+			$('#tooltip').html(y + ' загружено ' + x)
+				.css({top: item.pageY+5, left: item.pageX+5})
+				.fadeIn(200);
+		} else
+			$('#tooltip').hide();
+	});
+	$('#today').empty();
+	$('#stat').text('Обновление...');
+	showLoads();
+
+	gtv_load = [];
+	for (var i = 0; i < 60; i++) gtv_load.push(0);
+	gt_load = {};
+	gt_load.data = zip(gtv_load);
+	gt_load.label = 'Задания на загрузке';
+
+	gtv_proc = [];
+	for (var i = 0; i < 60; i++) gtv_proc.push(0);
+	gt_proc = {};
+	gt_proc.data = zip(gtv_proc);
+	gt_proc.label = 'Задания в обработке';
+
+	gtv_geo = [];
+	for (var i = 0; i < 60; i++) gtv_geo.push(0);
+	gt_geo = {};
+	gt_geo.data = zip(gtv_geo);
+	gt_geo.label = 'Определение координат';
+
+	gt_opts = {
+		series: { bars: { show: true, fill: true, lineWidth: 1 } },
+		xaxis: {
+			show: false,
+			tickDecimals: 0,
+			tickSize: 1
+		},
+		yaxis: { min: 0, tickDecimals: 0 }
+	};
+	$.plot('#graphtask', [gt_geo,gt_load,gt_proc], gt_opts);
+
+	showTasks();
+}
+</script>
+</head>
+<body onload="init()" align=center>
+<h2>Динамика состояния 3WiFi</h2>
+<div class=container>
+	<div id=graphload class=graph></div>
+	<div align=left><span id=stat></span><span id=today></span></div>
+</div>
+
+<div class=container>
+	<div id=graphtask class=graph></div>
+	<div align=left><span id=task></span></div>
+</div>
+</body>
+</html>
