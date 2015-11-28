@@ -119,7 +119,7 @@ function init()
 				y = item.datapoint[1];
 
 			$('#tooltip').html(y + ' загружено ' + x)
-				.css({top: item.pageY+5, left: item.pageX+5})
+				.css({top: item.pageY - $('#tooltip').height() - 9, left: item.pageX - $('#tooltip').width()/2})
 				.fadeIn(200);
 		} else
 			$('#tooltip').hide();
