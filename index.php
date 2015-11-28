@@ -21,7 +21,7 @@ if ($page == 'index' ||
 	$rad = 2;
 	if (isset($_GET['lat'])) $lat = (float)$_GET['lat'];
 	if (isset($_GET['lon'])) $lon = (float)$_GET['lon'];
-	if (isset($_GET['rad'])) $rad = (float)$_GET['rad'];
+	if (isset($_GET['rad'])) $rad = (int)$_GET['rad'];
 
 	$content = file_get_contents($page.'.html');
 

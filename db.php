@@ -65,11 +65,14 @@ function db_connect()
 			$result = true;
 		}
 	}
+	define('BASE_USE_MEMORY', false);
+	define('GEO_USE_MEMORY', false);
 
 	$DataBaseStatus = GetStatsValue(STATS_DATABASE_STATUS);
 	if($DataBaseStatus == DATABASE_PREPARE) // Database not avaible
 	{
 		$db = NULL;
+		$result = false;
 	}
 
 	if($DataBaseStatus == -1) // Service table not initialized
@@ -80,17 +83,10 @@ function db_connect()
 	{
 		MemoryDataBaseInit();
 	}
-	else
-	{
-		define('BASE_USE_MEMORY', false);
-		define('GEO_USE_MEMORY', false);
-	}
-
 	if($DataBaseStatus != DATABASE_ACTIVE)
 	{
 		SetStatsValue(STATS_DATABASE_STATUS, DATABASE_ACTIVE, true);
 	}
-
 	return $result;
 }
 
@@ -105,7 +101,7 @@ function GetStatsValue($StatId)
 	return $row[0];
 }
 
-function SetStatsValue($StatId, $Value, $Replace=false)
+function SetStatsValue($StatId, $Value, $Replace = false)
 {
 	if($Replace)
 	{
@@ -115,9 +111,7 @@ function SetStatsValue($StatId, $Value, $Replace=false)
 	{
 		$res = QuerySql('UPDATE STATS_TABLE SET value='.$Value.' WHERE StatId='.$StatId);
 	}
-
-	if(!$res) return false;
-	return true;
+	return (bool)$res;
 }
 
 function FixSql($sql)
