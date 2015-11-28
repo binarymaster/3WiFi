@@ -45,85 +45,7 @@ switch ($action)
 
 	// Координаты точек на карте
 	case 'map':
-	$bbox = explode(',', $_GET['bbox']);
-	$callback = $_GET['callback'];
-
-	$lat1 = (float)$bbox[0];
-	$lon1 = (float)$bbox[1];
-	$lat2 = (float)$bbox[2];
-	$lon2 = (float)$bbox[3];
-
-	if (!db_connect())
-	{
-		$json['result'] = false;
-		$json['error'] = 'database';
-		break;
-	}
-
-	if ($res = QuerySql("SELECT `id`,`time`,`GEO_TABLE`.`BSSID`,`ESSID`,`WiFiKey`,`latitude`,`longitude` FROM `GEO_TABLE`, `BASE_TABLE` WHERE 
-							(`latitude` != 0 AND `longitude` != 0) 
-							AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) 
-							AND `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` LIMIT 1000"))
-	{
-		unset($json); // здесь используется JSON-P
-		$data = array();
-		while ($row = $res->fetch_row())
-		{
-			$xlatitude = $row[5];
-			$xlongitude = $row[6];
-
-			if (!isset($data[$xlatitude][$xlongitude])) $data[$xlatitude][$xlongitude] = array();
-			$i = count($data[$xlatitude][$xlongitude]);
-			$data[$xlatitude][$xlongitude][$i]['id'] = (int)$row[0];
-			$data[$xlatitude][$xlongitude][$i]['time'] = $row[1];
-			$data[$xlatitude][$xlongitude][$i]['bssid'] = dec2mac($row[2]);
-			$data[$xlatitude][$xlongitude][$i]['essid'] = $row[3];
-			$data[$xlatitude][$xlongitude][$i]['key'] = $row[4];
-		}
-		$res->close();
-		$db->close();
-
-		Header("Content-Type: application/json-p");
-		$json['error'] = null;
-		$json['data']['type'] = 'FeatureCollection';
-		$json['data']['features'] = array();
-
-		$ap['type'] = 'Feature';
-		foreach($data as $xlatitude => $xlongitude)
-		foreach($xlongitude as $xlongitude => $apdata)
-		{
-			$ap['id'] = $apdata[0]['id'];
-			$ap['geometry']['type'] = 'Point';
-			$ap['geometry']['coordinates'][0] = (float)$xlatitude;
-			$ap['geometry']['coordinates'][1] = (float)$xlongitude;
-			
-			$hint = array();
-			for ($i = 0; $i < count($apdata); $i++)
-			{
-				$aphint = array();
-
-				$xtime = $apdata[$i]['time'];
-				$xbssid = htmlspecialchars($apdata[$i]['bssid']);
-				$xessid = htmlspecialchars($apdata[$i]['essid']);
-				$xwifikey = htmlspecialchars($apdata[$i]['key']);
-
-				if ($level > 0) $aphint[] = $xtime;
-				$aphint[] = $xbssid;
-				$aphint[] = $xessid;
-				if ($level > 0) $aphint[] = $xwifikey;
-				$hint[] = implode('<br>', $aphint);
-			}
-			$ap['properties']['hintContent'] = implode('<hr>', $hint);
-			$json['data']['features'][] = $ap;
-		}
-		echo "typeof $callback === 'function' && $callback(".json_encode($json).");";
-		exit;
-	}
-	break;
-
-	// Координаты точек на карте (с кластеризацией)
-	case 'cmap':
-	$bbox = explode(",", $_GET['bbox']); // координаты запрашиваемой области
+	$bbox = explode(',', $_GET['bbox']); // координаты запрашиваемой области
 	$callback = $_GET['callback']; // имя функции, которую нужно вернуть
 
 	$lat1 = (float)$bbox[0]; // извлекаем координаты области
@@ -138,79 +60,129 @@ switch ($action)
 		break;
 	}
 
-	$latx = ($lat2 - $lat1)/10; // разбиваем область на сектора
-	$lonx = ($lon2 - $lon1)/10; // определяем размер сектора
-	$data = array(); // массив данных о точках\кластерах
-
-	for ($lati=$lat1;$lati<$lat2;$lati=$lati+$latx) // проходим все сектора
-	for ($loni=$lon1;$loni<$lon2;$loni=$loni+$lonx) // lati и loni - нижняя граница проверяемого сектора 
+	// Получаем все точки в области
+	$data = array();
+	if ($res = QuerySql("SELECT `id`,`time`,`GEO_TABLE`.`BSSID`,`ESSID`,`WiFiKey`,`latitude`,`longitude` FROM `GEO_TABLE`, `BASE_TABLE` WHERE 
+							(`latitude` != 0 AND `longitude` != 0) 
+							AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) 
+							AND `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` LIMIT 10000"))
 	{
-		$latj = $lati + $latx; // latj и lonj - верхняя граница проверяемого сектора 
-		$lonj = $loni + $lonx;
-
-		// Проверяем кол-во точек в секторе
-		$res = QuerySql("SELECT COUNT(*) FROM `GEO_TABLE` WHERE 
-						(`latitude` != 0 AND `longitude` != 0 AND `latitude` IS NOT NULL AND `longitude` IS NOT NULL) 
-						AND (`latitude` BETWEEN $lati AND $latj AND `longitude` BETWEEN $loni AND $lonj)");
-		$row = $res->fetch_row();
-		$res->close();
-		if ($row[0] > 3) // если в секторе точек больше X, то делаем кластер. Иначе делаем точки.
+		while ($row = $res->fetch_row())
 		{
-			$latz = $lati + ($latx/2); // координаты кластера = середина сектора
-			$lonz = $loni + ($lonx/2);
+			// Получаем координаты точки
+			$xlatitude = $row[5];
+			$xlongitude = $row[6];
 
-			// сохраняем в массив данные о кластере
-			$data[(string)$latz][(string)$lonz]['id'] = uniqid(); // кластер динамический объект, в базе его нет, значит id формируем сами
-			$data[(string)$latz][(string)$lonz]['number'] = (int)$row[0]; // кол-во точек в кластере
-			$data[(string)$latz][(string)$lonz]['bbox'] = array(array($lati,$loni),array($latj,$lonj)); // покрываемый сектор
+			// В одних координатах возможно множество точек. Помещаем в двумерный массив
+			if (!isset($data[$xlatitude][$xlongitude])) $data[$xlatitude][$xlongitude] = array();
+			$i = count($data[$xlatitude][$xlongitude]);
+			$data[$xlatitude][$xlongitude][$i]['id'] = (int)$row[0];
+			$data[$xlatitude][$xlongitude][$i]['time'] = $row[1];
+			$data[$xlatitude][$xlongitude][$i]['bssid'] = dec2mac($row[2]);
+			$data[$xlatitude][$xlongitude][$i]['essid'] = $row[3];
+			$data[$xlatitude][$xlongitude][$i]['key'] = $row[4];
 		}
-		else // Не кластер, заполняем точками
-		{	// выбираем все точки в секторе
-			if ($res = QuerySql("SELECT `id`,`time`,`GEO_TABLE`.`BSSID`,`ESSID`,`WiFiKey`,`latitude`,`longitude` FROM `GEO_TABLE`, `BASE_TABLE` WHERE 
-								(`latitude` != 0 AND `longitude` != 0) 
-								AND (`latitude` BETWEEN $lati AND $latj AND `longitude` BETWEEN $loni AND $lonj) 
-								AND `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` LIMIT 1000"))
-			{
-				while ($row = $res->fetch_row())
-				{
-					$xlatitude = $row[5];  //получаем координаты точки
-					$xlongitude = $row[6];
-					// в одних координатах возможно множество точек. Помещаем в массив
-					if (!isset($data[$xlatitude][$xlongitude])) $data[$xlatitude][$xlongitude] = array();
-					$i = count($data[$xlatitude][$xlongitude]);
-					$data[$xlatitude][$xlongitude][$i]['id'] = (int)$row[0];
-					$data[$xlatitude][$xlongitude][$i]['time'] = $row[1];
-					$data[$xlatitude][$xlongitude][$i]['bssid'] = dec2mac($row[2]);
-					$data[$xlatitude][$xlongitude][$i]['essid'] = $row[3];
-					$data[$xlatitude][$xlongitude][$i]['key'] = $row[4];
-				}
-				$res->close();
-			}
-		}  
+		$res->close();
 	}
 	$db->close();
 
 	unset($json); // здесь используется JSON-P
-	Header("Content-Type: application/json-p"); // формируем стандартный заголовок
+	Header('Content-Type: application/json-p'); // устанавливаем стандартный заголовок
 	$json['error'] = null;
 	$json['data']['type'] = 'FeatureCollection';
 	$json['data']['features'] = array();
 
-	foreach($data as $xlatitude => $xlongitude) // перебираем массив
-	foreach($xlongitude as $xlongitude => $apdata)
+	$coef = 0.01; // используем кластеризацию, если средняя сторон превышает коэффициент
+	$cluster = (($lat2 - $lat1) + ($lon2 - $lon1))/2 > $coef;
+	if ($cluster)
 	{
-		if (isset($apdata['number'])) // если это кластер
+		$part = 10; // разбиваем область на секторы
+		$latx = ($lat2 - $lat1)/$part; // определяем размер сектора
+		$lonx = ($lon2 - $lon1)/$part;
+
+		$sectors = array(); // массив секторов с точками
+		for ($si = 0; $si < $part; $si++) // проходим все секторы по индексам
+		for ($sj = 0; $sj < $part; $sj++)
 		{
-			$ap['type'] = 'Cluster'; // подготавливаем запись кластера
-			$ap['id'] = $apdata['id'];
-			$ap['bbox'] = $apdata['bbox'];
-			$ap['number'] = $apdata['number'];
-			$ap['geometry']['type'] = 'Point';
-			$ap['geometry']['coordinates'][0] = (float)$xlatitude;
-			$ap['geometry']['coordinates'][1] = (float)$xlongitude;
-			$ap['properties']['iconContent'] = $apdata['number'];
+			$top = $lat2 - $latx * $si; // границы сектора по широте
+			$btm = $lat2 - $latx * ($si + 1);
+			$lft = $lon1 + $lonx * $sj; // границы сектора по долготе
+			$rgt = $lon1 + $lonx * ($sj + 1);
+			$sc = count($sectors);
+			foreach($data as $xlatitude => $xlongitude) // смотрим, какие точки попали в сектор
+			foreach($xlongitude as $xlongitude => $apdata)
+			{
+				$xlatitude = (float)$xlatitude;
+				$xlongitude = (float)$xlongitude;
+				if ($xlatitude <= $top && $xlatitude > $btm
+				&& $xlongitude >= $lft && $xlongitude < $rgt) // попадание в прямоугольник
+				{
+					// запоминаем координаты точки
+					$apdata[0]['lat'] = $xlatitude;
+					$apdata[0]['lon'] = $xlongitude;
+					$sectors[$sc]['aps'][] = $apdata; // заносим точки в сектор
+					$i = count($sectors[$sc]['aps']) - 1;
+					// инкрементно усредняем местоположение сектора
+					$sectors[$sc]['lat'] = ($sectors[$sc]['lat'] * $i + $xlatitude)/($i + 1);
+					$sectors[$sc]['lon'] = ($sectors[$sc]['lon'] * $i + $xlongitude)/($i + 1);
+					// запоминаем границы сектора
+					$sectors[$sc]['bbox'] = array(array($top,$lft),array($btm,$rgt));
+				}
+			}
 		}
-		else // иначе это точка
+		foreach ($sectors as $sector)
+		{
+			if (count($sector['aps']) > 3)
+			{ // больше трёх точек - кластер
+				$ap['type'] = 'Cluster'; // подготавливаем запись кластера
+				$ap['id'] = rand(15000000, 20000000)*2999; // кластер динамический объект, в базе его нет, значит id формируем сами
+				$ap['bbox'] = $sector['bbox']; // покрываемый сектор
+				$ap['number'] = count($sector['aps']);
+				$ap['geometry']['type'] = 'Point';
+				$ap['geometry']['coordinates'][0] = $sector['lat'];
+				$ap['geometry']['coordinates'][1] = $sector['lon'];
+				$ap['properties']['iconContent'] = $ap['number'];
+				$json['data']['features'][] = $ap; // запишем запись в ответ
+				unset($ap); // уничтожим переменную, чтобы не было накладок
+			}
+			else
+			{ // небольшой набор точек
+				foreach ($sector['aps'] as $apdata)
+				{
+					$ap['type'] = 'Feature'; // подготавливаем запись точки
+					$ap['id'] = $apdata[0]['id'];
+					$ap['geometry']['type'] = 'Point';
+					$ap['geometry']['coordinates'][0] = $apdata[0]['lat'];
+					$ap['geometry']['coordinates'][1] = $apdata[0]['lon'];
+
+					// все точки записываем в одну подсказку
+					$hint = array(); // подсказка для точки
+					for ($i = 0; $i < count($apdata); $i++)
+					{
+						$aphint = array();
+
+						$xtime = $apdata[$i]['time'];
+						$xbssid = htmlspecialchars($apdata[$i]['bssid']);
+						$xessid = htmlspecialchars($apdata[$i]['essid']);
+						$xwifikey = htmlspecialchars($apdata[$i]['key']);
+
+						if ($level > 0) $aphint[] = $xtime; // если авторизован, укажем время добавления точки в базу
+						$aphint[] = $xbssid;
+						$aphint[] = $xessid;
+						if ($level > 0) $aphint[] = $xwifikey; // если авторизован, укажем пароль
+						$hint[] = implode('<br>', $aphint); // расставим переносы строк
+					}
+					$ap['properties']['hintContent'] = implode('<hr>', $hint); // расставим разделители строк
+					$json['data']['features'][] = $ap; // запишем запись в ответ
+					unset($ap); // уничтожим переменную, чтобы не было накладок
+				}
+			}
+		}
+	}
+	else
+	{	// без кластеризации выводим все точки
+		foreach($data as $xlatitude => $xlongitude) // перебираем массив координат
+		foreach($xlongitude as $xlongitude => $apdata)
 		{
 			$ap['type'] = 'Feature'; // подготавливаем запись точки
 			$ap['id'] = $apdata[0]['id'];
@@ -218,14 +190,17 @@ switch ($action)
 			$ap['geometry']['coordinates'][0] = (float)$xlatitude;
 			$ap['geometry']['coordinates'][1] = (float)$xlongitude;
 
+			// все точки с совпадающими координатами записываем в одну подсказку
 			$hint = array(); // подсказка для точки
-			for ($i = 0; $i < count($apdata); $i++) // все точки с совпадающими координатами записываем в одну подсказку
+			for ($i = 0; $i < count($apdata); $i++)
 			{
 				$aphint = array();
+
 				$xtime = $apdata[$i]['time'];
 				$xbssid = htmlspecialchars($apdata[$i]['bssid']);
 				$xessid = htmlspecialchars($apdata[$i]['essid']);
 				$xwifikey = htmlspecialchars($apdata[$i]['key']);
+
 				if ($level > 0) $aphint[] = $xtime; // если авторизован, укажем время добавления точки в базу
 				$aphint[] = $xbssid;
 				$aphint[] = $xessid;
@@ -233,12 +208,12 @@ switch ($action)
 				$hint[] = implode('<br>', $aphint); // расставим переносы строк
 			}
 			$ap['properties']['hintContent'] = implode('<hr>', $hint); // расставим разделители строк
+			$json['data']['features'][] = $ap; // запишем запись в ответ
+			unset($ap); // уничтожим переменную, чтобы не было накладок
 		}
-		$json['data']['features'][] = $ap; // запишем запись в ответ
-		unset($ap); // уничтожим переменную, чтобы не было накладок
 	}
-	echo "typeof $callback === 'function' && $callback(".json_encode($json).");"; // вернем результат в формате JSON-P
-	exit;
+	// вернем результат в формате JSON-P
+	die("typeof $callback === 'function' && $callback(".json_encode($json).");");
 	break;
 
 	// Поиск по базе
