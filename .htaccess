@@ -1,9 +1,9 @@
 Options -Indexes
 
 RewriteEngine on
-RewriteRule ^(['_A-Za-z]+).html /index.php?page=$1 [NC,L,QSA]
-RewriteRule ^(map[0-9]*+).php /index.php?page=$1 [NC,L,QSA]
-RewriteRule find_ranges.php /index.php?page=find_ranges [NC,L,QSA]
+RewriteRule ^(['_A-Za-z]+).html index.php?page=$1 [NC,L,QSA]
+RewriteRule ^(map[0-9]*+).php index.php?page=$1 [NC,L,QSA]
+RewriteRule find_ranges.php index.php?page=find_ranges [NC,L,QSA]
 
 <ifModule mod_deflate.c>
 AddOutputFilterByType DEFLATE text/html text/xml application/xml application/xhtml+xml text/css text/javascript application/javascript application/x-javascript application/json application/json-p

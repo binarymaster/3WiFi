@@ -339,6 +339,7 @@ switch ($argv[2])
 	// Получение координат для новых добавленных BSSID
 	case 'geolocate':
 	require 'geoext.php';
+        require 'quadkey.php';
 
 	while (true)
 	{
@@ -361,6 +362,7 @@ switch ($argv[2])
 				$bssid = $row[0];
 				$latitude = 0;
 				$longitude = 0;
+                                $quadkey = 'NULL';
 				$coords = GeoLocateAP(dec2mac($bssid));
 				if ($coords != '')
 				{
@@ -368,8 +370,9 @@ switch ($argv[2])
 					$coords = explode(';', $coords);
 					$latitude = (float)$coords[0];
 					$longitude = (float)$coords[1];
+                                        $quadkey = bindec(latlon_to_quadkey($latitude, $longitude, MAX_ZOOM_LEVEL));
 				}
-				QuerySql("UPDATE GEO_TABLE SET `latitude`=$latitude,`longitude`=$longitude WHERE `BSSID`=$bssid");
+				QuerySql("UPDATE GEO_TABLE SET `latitude`=$latitude,`longitude`=$longitude, `quadkey`=$quadkey WHERE `BSSID`=$bssid");
 				if (microtime(true) - $time > $hangcheck)
 				{
 					logt("Status: $done of $total, $found found on map (Working)");

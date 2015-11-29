@@ -8,6 +8,7 @@ if (!isset($_GET['a']))
 require 'auth.php';
 require 'utils.php';
 require 'db.php';
+require 'quadkey.php';
 session_start();
 
 $topPort = 10;
@@ -43,177 +44,72 @@ switch ($action)
 	}
 	break;
 
-	// Координаты точек на карте
+	// Координаты точек на карте (с кластеризацией)
 	case 'map':
-	$bbox = explode(',', $_GET['bbox']); // координаты запрашиваемой области
-	$callback = $_GET['callback']; // имя функции, которую нужно вернуть
+	list($tile_x1, $tile_y1, $tile_x2, $tile_y2) = explode(",", $_GET['tileNumber']);
+	$zoom = $_GET['zoom'];
+	$callback = $_GET['callback'];
 
-	$lat1 = (float)$bbox[0]; // извлекаем координаты области
-	$lon1 = (float)$bbox[1]; // и преобразуем тип
-	$lat2 = (float)$bbox[2];
-	$lon2 = (float)$bbox[3];
-
-	if (!db_connect()) // пробуем соединиться с базой
+	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
 
-	// Получаем все точки в области
-	$data = array();
-	if ($res = QuerySql("SELECT `id`,`time`,`GEO_TABLE`.`BSSID`,`ESSID`,`WiFiKey`,`latitude`,`longitude` FROM `GEO_TABLE`, `BASE_TABLE` WHERE 
-							(`latitude` != 0 AND `longitude` != 0) 
-							AND (`latitude` BETWEEN $lat1 AND $lat2 AND `longitude` BETWEEN $lon1 AND $lon2) 
-							AND `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` LIMIT 10000"))
+        $bssid = 0;
+        $get_info_stmt = $db->prepare("SELECT time, ESSID, WiFiKey FROM " . BASE_TABLE . " WHERE `BSSID`=?");
+        $get_info_stmt->bind_param("i", $bssid);
+	if (($res = get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)))
 	{
-		while ($row = $res->fetch_row())
-		{
-			// Получаем координаты точки
-			$xlatitude = $row[5];
-			$xlongitude = $row[6];
+            unset($json); // здесь используется JSON-P
 
-			// В одних координатах возможно множество точек. Помещаем в двумерный массив
-			if (!isset($data[$xlatitude][$xlongitude])) $data[$xlatitude][$xlongitude] = array();
-			$i = count($data[$xlatitude][$xlongitude]);
-			$data[$xlatitude][$xlongitude][$i]['id'] = (int)$row[0];
-			$data[$xlatitude][$xlongitude][$i]['time'] = $row[1];
-			$data[$xlatitude][$xlongitude][$i]['bssid'] = dec2mac($row[2]);
-			$data[$xlatitude][$xlongitude][$i]['essid'] = $row[3];
-			$data[$xlatitude][$xlongitude][$i]['key'] = $row[4];
+            Header("Content-Type: application/json-p");
+            $json['error'] = null;
+            $json['data']['type'] = 'FeatureCollection';
+            $json['data']['features'] = array();
+            foreach ($res as $quadkey=>$cluster) {
+		if ($cluster['count'] == 1) {
+			$ap['type'] = 'Feature';
+		} else {
+			$ap['type'] = 'Cluster';
+			$ap['number'] = (int)$cluster['count'];
 		}
-		$res->close();
+		$ap['id'] = $quadkey;
+		$ap['geometry']['type'] = 'Point';
+		$ap['geometry']['coordinates'][0] = (float)$cluster["lat"];
+		$ap['geometry']['coordinates'][1] = (float)$cluster["lon"];
+                
+                $ap['properties']['hintContent'] = '';
+                if (!empty($cluster["bssids"]))
+                {
+                    $hints = array();
+                    foreach ($cluster["bssids"] as $bssid)
+                    {
+                        if (!$get_info_stmt->execute()) {continue;} 
+                        foreach ($get_info_stmt->get_result() as $row) {
+                            $aphint = array();
+
+                            $xtime = $row['time'];
+                            $xbssid = htmlspecialchars(dec2mac($bssid));
+                            $xessid = htmlspecialchars($row['ESSID']);
+                            $xwifikey = htmlspecialchars($row['WiFiKey']);
+
+                            if ($level > 0) {$aphint[] = $xtime;}
+                            $aphint[] = $xbssid;
+                            $aphint[] = $xessid;
+                            if ($level > 0) {$aphint[] = $xwifikey;}
+                            $hints[] = implode('<br>', $aphint);
+                        }
+                    }
+                    $ap['properties']['hintContent'] = implode('<hr>', $hints);
+                }
+	
+		$json['data']['features'][] = $ap;
 	}
-	$db->close();
-
-	unset($json); // здесь используется JSON-P
-	Header('Content-Type: application/json-p'); // устанавливаем стандартный заголовок
-	$json['error'] = null;
-	$json['data']['type'] = 'FeatureCollection';
-	$json['data']['features'] = array();
-
-	$coef = 0.01; // используем кластеризацию, если средняя сторон превышает коэффициент
-	$cluster = (($lat2 - $lat1) + ($lon2 - $lon1))/2 > $coef;
-	if ($cluster)
-	{
-		$part = 10; // разбиваем область на секторы
-		$latx = ($lat2 - $lat1)/$part; // определяем размер сектора
-		$lonx = ($lon2 - $lon1)/$part;
-
-		$sectors = array(); // массив секторов с точками
-		for ($si = 0; $si < $part; $si++) // проходим все секторы по индексам
-		for ($sj = 0; $sj < $part; $sj++)
-		{
-			$top = $lat2 - $latx * $si; // границы сектора по широте
-			$btm = $lat2 - $latx * ($si + 1);
-			$lft = $lon1 + $lonx * $sj; // границы сектора по долготе
-			$rgt = $lon1 + $lonx * ($sj + 1);
-			$sc = count($sectors);
-			foreach($data as $xlatitude => $xlongitude) // смотрим, какие точки попали в сектор
-			foreach($xlongitude as $xlongitude => $apdata)
-			{
-				$xlatitude = (float)$xlatitude;
-				$xlongitude = (float)$xlongitude;
-				if ($xlatitude <= $top && $xlatitude > $btm
-				&& $xlongitude >= $lft && $xlongitude < $rgt) // попадание в прямоугольник
-				{
-					// запоминаем координаты точки
-					$apdata[0]['lat'] = $xlatitude;
-					$apdata[0]['lon'] = $xlongitude;
-					$sectors[$sc]['aps'][] = $apdata; // заносим точки в сектор
-					$i = count($sectors[$sc]['aps']) - 1;
-					// инкрементно усредняем местоположение сектора
-					$sectors[$sc]['lat'] = ($sectors[$sc]['lat'] * $i + $xlatitude)/($i + 1);
-					$sectors[$sc]['lon'] = ($sectors[$sc]['lon'] * $i + $xlongitude)/($i + 1);
-					// запоминаем границы сектора
-					$sectors[$sc]['bbox'] = array(array($top,$lft),array($btm,$rgt));
-				}
-			}
-		}
-		foreach ($sectors as $sector)
-		{
-			if (count($sector['aps']) > 3)
-			{ // больше трёх точек - кластер
-				$ap['type'] = 'Cluster'; // подготавливаем запись кластера
-				$ap['id'] = rand(15000000, 20000000)*2999; // кластер динамический объект, в базе его нет, значит id формируем сами
-				$ap['bbox'] = $sector['bbox']; // покрываемый сектор
-				$ap['number'] = count($sector['aps']);
-				$ap['geometry']['type'] = 'Point';
-				$ap['geometry']['coordinates'][0] = $sector['lat'];
-				$ap['geometry']['coordinates'][1] = $sector['lon'];
-				$ap['properties']['iconContent'] = $ap['number'];
-				$json['data']['features'][] = $ap; // запишем запись в ответ
-				unset($ap); // уничтожим переменную, чтобы не было накладок
-			}
-			else
-			{ // небольшой набор точек
-				foreach ($sector['aps'] as $apdata)
-				{
-					$ap['type'] = 'Feature'; // подготавливаем запись точки
-					$ap['id'] = $apdata[0]['id'];
-					$ap['geometry']['type'] = 'Point';
-					$ap['geometry']['coordinates'][0] = $apdata[0]['lat'];
-					$ap['geometry']['coordinates'][1] = $apdata[0]['lon'];
-
-					// все точки записываем в одну подсказку
-					$hint = array(); // подсказка для точки
-					for ($i = 0; $i < count($apdata); $i++)
-					{
-						$aphint = array();
-
-						$xtime = $apdata[$i]['time'];
-						$xbssid = htmlspecialchars($apdata[$i]['bssid']);
-						$xessid = htmlspecialchars($apdata[$i]['essid']);
-						$xwifikey = htmlspecialchars($apdata[$i]['key']);
-
-						if ($level > 0) $aphint[] = $xtime; // если авторизован, укажем время добавления точки в базу
-						$aphint[] = $xbssid;
-						$aphint[] = $xessid;
-						if ($level > 0) $aphint[] = $xwifikey; // если авторизован, укажем пароль
-						$hint[] = implode('<br>', $aphint); // расставим переносы строк
-					}
-					$ap['properties']['hintContent'] = implode('<hr>', $hint); // расставим разделители строк
-					$json['data']['features'][] = $ap; // запишем запись в ответ
-					unset($ap); // уничтожим переменную, чтобы не было накладок
-				}
-			}
-		}
+	echo "typeof $callback === 'function' && $callback(".json_encode($json).");";
+	exit;
 	}
-	else
-	{	// без кластеризации выводим все точки
-		foreach($data as $xlatitude => $xlongitude) // перебираем массив координат
-		foreach($xlongitude as $xlongitude => $apdata)
-		{
-			$ap['type'] = 'Feature'; // подготавливаем запись точки
-			$ap['id'] = $apdata[0]['id'];
-			$ap['geometry']['type'] = 'Point';
-			$ap['geometry']['coordinates'][0] = (float)$xlatitude;
-			$ap['geometry']['coordinates'][1] = (float)$xlongitude;
-
-			// все точки с совпадающими координатами записываем в одну подсказку
-			$hint = array(); // подсказка для точки
-			for ($i = 0; $i < count($apdata); $i++)
-			{
-				$aphint = array();
-
-				$xtime = $apdata[$i]['time'];
-				$xbssid = htmlspecialchars($apdata[$i]['bssid']);
-				$xessid = htmlspecialchars($apdata[$i]['essid']);
-				$xwifikey = htmlspecialchars($apdata[$i]['key']);
-
-				if ($level > 0) $aphint[] = $xtime; // если авторизован, укажем время добавления точки в базу
-				$aphint[] = $xbssid;
-				$aphint[] = $xessid;
-				if ($level > 0) $aphint[] = $xwifikey; // если авторизован, укажем пароль
-				$hint[] = implode('<br>', $aphint); // расставим переносы строк
-			}
-			$ap['properties']['hintContent'] = implode('<hr>', $hint); // расставим разделители строк
-			$json['data']['features'][] = $ap; // запишем запись в ответ
-			unset($ap); // уничтожим переменную, чтобы не было накладок
-		}
-	}
-	// вернем результат в формате JSON-P
-	die("typeof $callback === 'function' && $callback(".json_encode($json).");");
 	break;
 
 	// Поиск по базе
@@ -430,7 +326,7 @@ switch ($action)
 				{
 					$entry['ipport'] = $wanip;
 				}
-				if ($entry['ipport'] != '' && $row[5] != null) $entry['ipport'] .= ':'.$row[5];
+                                if ($entry['ipport'] != '' && $row[5] != null) $entry['ipport'] .= ':'.$row[5];
 				$entry['auth'] = $row[6];
 				$entry['name'] = $row[7];
 			} else {
@@ -533,6 +429,12 @@ switch ($action)
 	$lat2 = min(max($lat + $radius / $lat_km, -90), 90);
 	$lon1 = min(max($lon - $radius / $lon_km, -180), 180);
 	$lon2 = min(max($lon + $radius / $lon_km, -180), 180);
+        $tile_x1 = lon_to_tile_x($lon1, 7);
+        $tile_y1 = lat_to_tile_y($lat2, 7);
+        $tile_x2 = lon_to_tile_x($lon2, 7);
+        $tile_y2 = lat_to_tile_y($lat1, 7);
+        $quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, 7);
+        $quadkeys = '(' . implode(',', array_map("bindec", $quadkeys)) . ')';
 	$json['data'] = array();
 	if (!db_connect())
 	{
@@ -544,16 +446,16 @@ switch ($action)
 		"SELECT DISTINCT IP FROM 
 		(SELECT IP 
 		FROM `BASE_TABLE`, `GEO_TABLE` 
-		WHERE `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
-				AND (`GEO_TABLE`.`latitude` != 0 AND `GEO_TABLE`.`longitude` != 0 
-				AND `GEO_TABLE`.`latitude` IS NOT NULL AND `GEO_TABLE`.`longitude` IS NOT NULL) 
+		WHERE (`GEO_TABLE`.`quadkey` >> 32) IN $quadkeys AND
+                                `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
+				AND (`GEO_TABLE`.`quadkey` IS NOT NULL) 
 				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2) 
 				AND (IP != 0 AND IP != -1) 
 		UNION SELECT WANIP 
 		FROM `BASE_TABLE`, `GEO_TABLE` 
-		WHERE `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
-				AND (`GEO_TABLE`.`latitude` != 0 AND `GEO_TABLE`.`longitude` != 0 
-				AND `GEO_TABLE`.`latitude` IS NOT NULL AND `GEO_TABLE`.`longitude` IS NOT NULL) 
+		WHERE (`GEO_TABLE`.`quadkey` >> 32) IN $quadkeys AND
+                                `BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
+				AND (`GEO_TABLE`.`quadkey` IS NOT NULL) 
 				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2) 
 				AND (WANIP != 0 AND WANIP != -1)
 		) IPTable ORDER BY CAST(IP AS UNSIGNED INTEGER)"));
@@ -920,8 +822,7 @@ switch ($action)
 				$res->close();
 			}
 		}
-		if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE (`latitude` IS NOT NULL AND `longitude` IS NOT NULL) 
-																	AND (`latitude` != 0 AND `longitude` != 0)'))
+		if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE (`quadkey` IS NOT NULL) '))
 		{
 			$row = $res->fetch_row();
 			$json['stat']['onmap'] = (int)$row[0];
