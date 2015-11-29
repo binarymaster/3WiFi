@@ -22,14 +22,17 @@ require 'db.php';
 
 set_time_limit(0);
 
-if (!db_connect())
-	die("Error: MySQL connection failed.\n");
-
 function logt($str)
 {
 	echo '['.date('H:i:s').'] '.$str."\n";
 }
 
+while (!db_connect())
+{
+	logt('Error: MySQL connection failed. Retrying in 5 seconds...');
+	sleep(5);
+}
+logt('MySQL database connected.');
 logt("Running `$argv[2]' task...");
 
 switch ($argv[2])

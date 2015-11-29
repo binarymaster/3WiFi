@@ -430,7 +430,7 @@ switch ($action)
 				{
 					$entry['ipport'] = $wanip;
 				}
-				if ($entry['ipport'] != '') $entry['ipport'] .= ':'.$row[5];
+				if ($entry['ipport'] != '' && $row[5] != null) $entry['ipport'] .= ':'.$row[5];
 				$entry['auth'] = $row[6];
 				$entry['name'] = $row[7];
 			} else {

@@ -47,6 +47,7 @@ function db_connect()
 	$db_user = 'root';
 	$db_pass = '';
 	global $db;
+	global $dbUseMemory;
 
 	$result = false;
 	$tries = 3;
@@ -65,9 +66,8 @@ function db_connect()
 			$result = true;
 		}
 	}
-	define('BASE_USE_MEMORY', false);
-	define('GEO_USE_MEMORY', false);
 
+	$dbUseMemory = false;
 	$DataBaseStatus = GetStatsValue(STATS_DATABASE_STATUS);
 	if($DataBaseStatus == DATABASE_PREPARE) // Database not avaible
 	{
@@ -133,11 +133,12 @@ function FixSql($sql)
 function QuerySql($sql, &$affected_rows = NULL)
 {
 	global $db;
+	global $dbUseMemory;
 	if(!isset($db)) return false;
 
 	$SqlType = SQL_UNKNOWN;
-	$BaseTable = BASE_USE_MEMORY ? BASE_MEM_TABLE : BASE_TABLE;
-	$GeoTable = GEO_USE_MEMORY ? GEO_MEM_TABLE : GEO_TABLE;
+	$BaseTable = $dbUseMemory ? BASE_MEM_TABLE : BASE_TABLE;
+	$GeoTable = $dbUseMemory ? GEO_MEM_TABLE : GEO_TABLE;
 
 	$sql = FixSql($sql);
 
@@ -178,7 +179,7 @@ function QuerySql($sql, &$affected_rows = NULL)
 	{
 		case SQL_BASE_UPDATE:
 		case SQL_BASE_INSERT:
-			if(BASE_USE_MEMORY)
+			if($dbUseMemory)
 			{
 				$RepeatSql = str_replace('BASE_TABLE', BASE_TABLE, $sql);
 				QuerySql($RepeatSql);
@@ -189,7 +190,7 @@ function QuerySql($sql, &$affected_rows = NULL)
 			break;
 		case SQL_GEO_UPDATE:
 		case SQL_GEO_INSERT:
-			if(GEO_USE_MEMORY)
+			if($dbUseMemory)
 			{
 				$RepeatSql = str_replace('GEO_TABLE', GEO_TABLE, $sql);
 				QuerySql($RepeatSql);
@@ -290,9 +291,9 @@ function getCommentId($comment, $create = false)
 
 function MemoryDataBaseInit()
 {
+	global $dbUseMemory;
 	$MemTablesStatus = CheckRelevanceOfMemoryTables(true);
-	define('BASE_USE_MEMORY', $MemTablesStatus['Base']);
-	define('GEO_USE_MEMORY', $MemTablesStatus['Geo']);
+	$dbUseMemory = ($MemTablesStatus['Base'] && $MemTablesStatus['Geo']);
 }
 
 function CheckRelevanceOfMemoryTables($UseFix)
