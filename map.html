@@ -17,11 +17,12 @@ function init () {
 		zoom: 18
 	}),
 
-	remoteObjectManager = new ymaps.RemoteObjectManager('3wifi.php?a=map&pass='+pass+'&bbox=%b',
+	remoteObjectManager = new ymaps.RemoteObjectManager('3wifi.php?a=map&pass='+pass+'&tileNumber=%t&zoom=%z',
 	{	// Разбивать запросы по тайлам
 		splitRequests: false,
 		// Опции кластеров задаются с префиксом cluster.
 		clusterHasBalloon: false,
+		clusterHasHint: true,
 		// Опции объектов задаются с префиксом geoObject
 		geoObjectOpenBalloonOnClick: false
 	});
