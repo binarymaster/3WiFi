@@ -46,7 +46,7 @@ switch ($action)
 
 	// Координаты точек на карте (с кластеризацией)
 	case 'map':
-	list($tile_x1, $tile_y1, $tile_x2, $tile_y2) = explode(",", $_GET['tileNumber']);
+	list($tile_x1, $tile_y1, $tile_x2, $tile_y2) = explode(',', $_GET['tileNumber']);
 	$zoom = $_GET['zoom'];
 	$callback = $_GET['callback'];
 
@@ -61,13 +61,13 @@ switch ($action)
 
 	unset($json); // здесь используется JSON-P
 
-	Header("Content-Type: application/json-p");
+	Header('Content-Type: application/json-p');
 	$json['error'] = null;
 	$json['data']['type'] = 'FeatureCollection';
 	$json['data']['features'] = array();
 	$bssid = 0;
-	$get_info_stmt = $db->prepare("SELECT time, ESSID, WiFiKey FROM " . BASE_TABLE . " WHERE `BSSID`=?");
-	$get_info_stmt->bind_param("i", $bssid);
+	$get_info_stmt = $db->prepare('SELECT time, ESSID, WiFiKey FROM ' . BASE_TABLE . ' WHERE `BSSID`=?');
+	$get_info_stmt->bind_param('i', $bssid);
 	foreach ($res as $quadkey=>$cluster) {
 		if ($cluster['count'] == 1) {
 			$ap['type'] = 'Feature';
@@ -77,14 +77,14 @@ switch ($action)
 		}
 		$ap['id'] = $quadkey;
 		$ap['geometry']['type'] = 'Point';
-		$ap['geometry']['coordinates'][0] = (float)$cluster["lat"];
-		$ap['geometry']['coordinates'][1] = (float)$cluster["lon"];
+		$ap['geometry']['coordinates'][0] = (float)$cluster['lat'];
+		$ap['geometry']['coordinates'][1] = (float)$cluster['lon'];
 
 		$ap['properties']['hintContent'] = '';
-		if (!empty($cluster["bssids"]))
+		if (!empty($cluster['bssids']))
 		{
 			$hints = array();
-			foreach ($cluster["bssids"] as $bssid)
+			foreach ($cluster['bssids'] as $bssid)
 			{
 				if (!$get_info_stmt->execute()) {continue;} 
 				foreach ($get_info_stmt->get_result() as $row) {
@@ -290,7 +290,7 @@ switch ($action)
 	{
 		if($_SESSION['Search']['LastRowsNum'] == -1)
 		{
-			$res_rows = QuerySql("SELECT FOUND_ROWS()");
+			$res_rows = QuerySql('SELECT FOUND_ROWS()');
 			$t = $res_rows->fetch_row();
 			$_SESSION['Search']['LastRowsNum'] = (int)$t[0];
 		}
@@ -411,7 +411,7 @@ switch ($action)
 
 	$radius = '';
 	if (isset($_POST['radius'])) $radius = $_POST['radius'];
-	if ($radius == "")
+	if ($radius == '')
 	{
 		$json['error'] = 'Введите значение радиуса поиска';
 		break;
@@ -659,7 +659,7 @@ switch ($action)
 				switch ($ext)
 				{
 					case '.csv':
-					if (($row = fgetcsv($handle, 1000, ";")) !== false)
+					if (($row = fgetcsv($handle, 1000, ';')) !== false)
 						$valid = ValidHeaderCSV($row);
 					if (!$valid) $error[] = 6; // Неправильный CSV
 					break;
@@ -822,7 +822,7 @@ switch ($action)
 				$res->close();
 			}
 		}
-		if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE (`quadkey` IS NOT NULL) '))
+		if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE (`quadkey` IS NOT NULL)'))
 		{
 			$row = $res->fetch_row();
 			$json['stat']['onmap'] = (int)$row[0];
@@ -905,7 +905,7 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT `cmtid`, COUNT(*) FROM BASE_TABLE GROUP BY `cmtid` ORDER BY COUNT(*) DESC"))
+	if ($res = QuerySql('SELECT `cmtid`, COUNT(*) FROM BASE_TABLE GROUP BY `cmtid` ORDER BY COUNT(*) DESC'))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())

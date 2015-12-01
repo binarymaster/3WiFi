@@ -373,7 +373,7 @@ switch ($argv[2])
 					$quadkey = base_convert(latlon_to_quadkey($latitude, $longitude, MAX_ZOOM_LEVEL), 2, 10);
 				}
 				QuerySql("UPDATE GEO_TABLE SET `latitude`=$latitude,`longitude`=$longitude, `quadkey`=$quadkey WHERE `BSSID`=$bssid");
-				if (microtime(true) - $time > $hangcheck)
+				if ((microtime(true) - $time > $hangcheck) && ($done < $total))
 				{
 					logt("Status: $done of $total, $found found on map (Working)");
 					$time = microtime(true);
