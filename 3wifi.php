@@ -60,18 +60,21 @@ switch ($action)
 	$res = get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom);
 
 	unset($json); // здесь используется JSON-P
-
 	Header('Content-Type: application/json-p');
 	$json['error'] = null;
 	$json['data']['type'] = 'FeatureCollection';
 	$json['data']['features'] = array();
-	$bssid = 0;
+	$bssid = '';
 	$get_info_stmt = $db->prepare('SELECT time, ESSID, WiFiKey FROM ' . BASE_TABLE . ' WHERE `BSSID`=?');
-	$get_info_stmt->bind_param('i', $bssid);
-	foreach ($res as $quadkey=>$cluster) {
-		if ($cluster['count'] == 1) {
+	$get_info_stmt->bind_param('s', $bssid);
+	foreach ($res as $quadkey => $cluster)
+	{
+		if ($cluster['count'] == 1)
+		{
 			$ap['type'] = 'Feature';
-		} else {
+		}
+		else
+		{
 			$ap['type'] = 'Cluster';
 			$ap['number'] = (int)$cluster['count'];
 		}
@@ -87,7 +90,9 @@ switch ($action)
 			foreach ($cluster['bssids'] as $bssid)
 			{
 				if (!$get_info_stmt->execute()) {continue;} 
-				foreach ($get_info_stmt->get_result() as $row) {
+				$res = $get_info_stmt->get_result();
+				while ($row = $res->fetch_assoc())
+				{
 					$aphint = array();
 
 					$xtime = $row['time'];

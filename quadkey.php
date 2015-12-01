@@ -124,7 +124,7 @@ function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
 	}
 
 	// group subsequent quadkeys
-	sort($quadkeys);
+	sort($quadkeys, SORT_STRING);
 	$done = false;
 	while (!$done)
 	{
@@ -132,7 +132,7 @@ function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
 		for ($i = 0; $i < count($quadkeys) - 1; $i++)
 		{
 			$parent = substr($quadkeys[$i], 0, strlen($quadkeys[$i]) - 1);
-			if ($quadkeys[$i + 1] == $parent . '1')
+			if ($quadkeys[$i + 1] === $parent . '1')
 			{
 				$quadkeys[$i] = $parent;
 				array_splice($quadkeys, $i + 1, 1);
@@ -206,7 +206,7 @@ function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=false)
 
 		if (($res = $db->query($sql)))
 		{
-			foreach ($res as $row)
+			while ($row = $res->fetch_assoc())
 			{
 				$cluster_qk = base_convert($row['cluster_qk'], 10, 2);
 				$cluster_qk = str_pad($cluster_qk, 2*$group_level, "0", STR_PAD_LEFT);
@@ -227,7 +227,7 @@ function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=false)
 
 		if (($res = $db->query($sql)))
 		{
-			foreach ($res as $row)
+			while ($row = $res->fetch_assoc())
 			{
 				$cluster_qk = base_convert($row['cluster_qk'], 10, 2);
 				$cluster_qk = str_pad($cluster_qk, 2*$group_level, "0", STR_PAD_LEFT);
