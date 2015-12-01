@@ -57,18 +57,18 @@ switch ($action)
 		break;
 	}
 
-        $bssid = 0;
-        $get_info_stmt = $db->prepare("SELECT time, ESSID, WiFiKey FROM " . BASE_TABLE . " WHERE `BSSID`=?");
-        $get_info_stmt->bind_param("i", $bssid);
-	if (($res = get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)))
-	{
-            unset($json); // здесь используется JSON-P
+	$res = get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom);
 
-            Header("Content-Type: application/json-p");
-            $json['error'] = null;
-            $json['data']['type'] = 'FeatureCollection';
-            $json['data']['features'] = array();
-            foreach ($res as $quadkey=>$cluster) {
+	unset($json); // здесь используется JSON-P
+
+	Header("Content-Type: application/json-p");
+	$json['error'] = null;
+	$json['data']['type'] = 'FeatureCollection';
+	$json['data']['features'] = array();
+	$bssid = 0;
+	$get_info_stmt = $db->prepare("SELECT time, ESSID, WiFiKey FROM " . BASE_TABLE . " WHERE `BSSID`=?");
+	$get_info_stmt->bind_param("i", $bssid);
+	foreach ($res as $quadkey=>$cluster) {
 		if ($cluster['count'] == 1) {
 			$ap['type'] = 'Feature';
 		} else {
@@ -79,37 +79,37 @@ switch ($action)
 		$ap['geometry']['type'] = 'Point';
 		$ap['geometry']['coordinates'][0] = (float)$cluster["lat"];
 		$ap['geometry']['coordinates'][1] = (float)$cluster["lon"];
-                
-                $ap['properties']['hintContent'] = '';
-                if (!empty($cluster["bssids"]))
-                {
-                    $hints = array();
-                    foreach ($cluster["bssids"] as $bssid)
-                    {
-                        if (!$get_info_stmt->execute()) {continue;} 
-                        foreach ($get_info_stmt->get_result() as $row) {
-                            $aphint = array();
 
-                            $xtime = $row['time'];
-                            $xbssid = htmlspecialchars(dec2mac($bssid));
-                            $xessid = htmlspecialchars($row['ESSID']);
-                            $xwifikey = htmlspecialchars($row['WiFiKey']);
+		$ap['properties']['hintContent'] = '';
+		if (!empty($cluster["bssids"]))
+		{
+			$hints = array();
+			foreach ($cluster["bssids"] as $bssid)
+			{
+				if (!$get_info_stmt->execute()) {continue;} 
+				foreach ($get_info_stmt->get_result() as $row) {
+					$aphint = array();
 
-                            if ($level > 0) {$aphint[] = $xtime;}
-                            $aphint[] = $xbssid;
-                            $aphint[] = $xessid;
-                            if ($level > 0) {$aphint[] = $xwifikey;}
-                            $hints[] = implode('<br>', $aphint);
-                        }
-                    }
-                    $ap['properties']['hintContent'] = implode('<hr>', $hints);
-                }
-	
+					$xtime = $row['time'];
+					$xbssid = htmlspecialchars(dec2mac($bssid));
+					$xessid = htmlspecialchars($row['ESSID']);
+					$xwifikey = htmlspecialchars($row['WiFiKey']);
+
+					if ($level > 0) {$aphint[] = $xtime;}
+					$aphint[] = $xbssid;
+					$aphint[] = $xessid;
+					if ($level > 0) {$aphint[] = $xwifikey;}
+					$hints[] = implode('<br>', $aphint);
+				}
+			}
+			$ap['properties']['hintContent'] = implode('<hr>', $hints);
+		}
+
 		$json['data']['features'][] = $ap;
 	}
+	$get_info_stmt->close();
 	echo "typeof $callback === 'function' && $callback(".json_encode($json).");";
 	exit;
-	}
 	break;
 
 	// Поиск по базе
@@ -434,7 +434,7 @@ switch ($action)
         $tile_x2 = lon_to_tile_x($lon2, 7);
         $tile_y2 = lat_to_tile_y($lat1, 7);
         $quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, 7);
-        $quadkeys = '(' . implode(',', array_map("bindec", $quadkeys)) . ')';
+        $quadkeys = '(' . implode(',', array_map(function($x){return base_convert($x, 2, 10);}, $quadkeys)) . ')';
 	$json['data'] = array();
 	if (!db_connect())
 	{

@@ -44,8 +44,10 @@ foreach (['geo', 'mem_geo'] as $geo_table) {
     }
     while ($coord_row = $coord_res->fetch_row()) {
         $bssid = $coord_row[0];
-        $quadkey = bindec(
-                latlon_to_quadkey($coord_row[1], $coord_row[2], MAX_ZOOM_LEVEL));
+        $quadkey = base_convert(
+                latlon_to_quadkey($coord_row[1], $coord_row[2], MAX_ZOOM_LEVEL),
+                2,
+                10);
         $stmt->execute();
     }
     $stmt->close();
