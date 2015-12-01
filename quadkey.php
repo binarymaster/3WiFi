@@ -177,8 +177,8 @@ function get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom) {
  * is array ['count' => (int), 'lat' => (float), 'lon' => (float)/, bssids => []/]
  */
 function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=False) {
-    $q1 = bindec(str_pad($quadkey, 2 * MAX_ZOOM_LEVEL, "0"));
-    $q2 = bindec(str_pad($quadkey, 2 * MAX_ZOOM_LEVEL, "1"));
+    $q1 = base_convert(str_pad($quadkey, 2 * MAX_ZOOM_LEVEL, "0"), 2, 10);
+    $q2 = base_convert(str_pad($quadkey, 2 * MAX_ZOOM_LEVEL, "1"), 2, 10);
     $mask = 2 * (MAX_ZOOM_LEVEL - $group_level);
 
     $clusters = [];
@@ -186,7 +186,7 @@ function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=False)
         $sql = "SELECT (`quadkey` >> $mask) as `cluster_qk`, BSSID,
                     COUNT(BSSID) AS count, AVG(longitude) AS lon_avg,
                     AVG(latitude) AS lat_avg 
-                FROM `geo2` 
+                FROM " . GEO_TABLE . "
                 WHERE `quadkey` BETWEEN $q1 AND $q2 
                 GROUP BY (`cluster_qk`) ";
 
@@ -203,9 +203,9 @@ function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=False)
         }
     } else { // fetch all appropriate records and group them manually
         $sql = "SELECT (`quadkey` >> $mask) as `cluster_qk`, BSSID, longitude, latitude 
-                FROM `geo2` 
+                FROM " . GEO_TABLE . "
                 WHERE `quadkey` BETWEEN $q1 AND $q2";
-        
+
         if (($res = $db->query($sql))) {
             foreach ($res as $row) {
                 $cluster_qk = base_convert($row['cluster_qk'], 10, 2);

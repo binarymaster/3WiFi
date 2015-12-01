@@ -370,7 +370,7 @@ switch ($argv[2])
 					$coords = explode(';', $coords);
 					$latitude = (float)$coords[0];
 					$longitude = (float)$coords[1];
-                                        $quadkey = bindec(latlon_to_quadkey($latitude, $longitude, MAX_ZOOM_LEVEL));
+                                        $quadkey = base_convert(latlon_to_quadkey($latitude, $longitude, MAX_ZOOM_LEVEL), 2, 10);
 				}
 				QuerySql("UPDATE GEO_TABLE SET `latitude`=$latitude,`longitude`=$longitude, `quadkey`=$quadkey WHERE `BSSID`=$bssid");
 				if (microtime(true) - $time > $hangcheck)
