@@ -331,7 +331,7 @@ switch ($argv[2])
 			$slp = 0;
 		}
 		else
-			logt('No task was fetched.');			
+			logt('No task was fetched.');
 		if ($slp > 0) sleep($slp);
 	}
 	break;
@@ -339,7 +339,7 @@ switch ($argv[2])
 	// Получение координат для новых добавленных BSSID
 	case 'geolocate':
 	require 'geoext.php';
-        require 'quadkey.php';
+	require 'quadkey.php';
 
 	while (true)
 	{
@@ -362,7 +362,7 @@ switch ($argv[2])
 				$bssid = $row[0];
 				$latitude = 0;
 				$longitude = 0;
-                                $quadkey = 'NULL';
+				$quadkey = 'NULL';
 				$coords = GeoLocateAP(dec2mac($bssid));
 				if ($coords != '')
 				{
@@ -370,7 +370,7 @@ switch ($argv[2])
 					$coords = explode(';', $coords);
 					$latitude = (float)$coords[0];
 					$longitude = (float)$coords[1];
-                                        $quadkey = base_convert(latlon_to_quadkey($latitude, $longitude, MAX_ZOOM_LEVEL), 2, 10);
+					$quadkey = base_convert(latlon_to_quadkey($latitude, $longitude, MAX_ZOOM_LEVEL), 2, 10);
 				}
 				QuerySql("UPDATE GEO_TABLE SET `latitude`=$latitude,`longitude`=$longitude, `quadkey`=$quadkey WHERE `BSSID`=$bssid");
 				if (microtime(true) - $time > $hangcheck)

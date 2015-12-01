@@ -1,5 +1,4 @@
 <?php
-
 define('MAX_ZOOM_LEVEL', 23);
 define('MAX_YANDEX_ZOOM', 18);
 
@@ -12,8 +11,9 @@ define('MAX_YANDEX_ZOOM', 18);
  * 
  * @return The clipped value.
  */
-function clip($n, $min_value, $max_value) {
-    return min(max($n, $min_value), $max_value);
+function clip($n, $min_value, $max_value)
+{
+	return min(max($n, $min_value), $max_value);
 }
 
 /**
@@ -27,14 +27,15 @@ function clip($n, $min_value, $max_value) {
  * 
  * @return int The tile Y coordinate.
  */
-function lat_to_tile_y($latitude, $zoom) {
-    $latitude = clip($latitude, -85.05112878, 85.05112878);
-    $sin_lat = sin(deg2rad($latitude));
-    //$y = 0.5 - log((1 + $sin_lat) / (1 - $sin_lat)) / (4 * pi());
-    $e = 0.0818191908426; // eccentricity of the Earth
-    $y = 0.5 - (atanh($sin_lat) - $e * atanh($e * $sin_lat)) / (2 * pi());
-    $size_in_tiles = 1 << $zoom;
-    return min((int) ($y * $size_in_tiles), $size_in_tiles - 1);
+function lat_to_tile_y($latitude, $zoom)
+{
+	$latitude = clip($latitude, -85.05112878, 85.05112878);
+	$sin_lat = sin(deg2rad($latitude));
+	//$y = 0.5 - log((1 + $sin_lat) / (1 - $sin_lat)) / (4 * pi());
+	$e = 0.0818191908426; // eccentricity of the Earth
+	$y = 0.5 - (atanh($sin_lat) - $e * atanh($e * $sin_lat)) / (2 * pi());
+	$size_in_tiles = 1 << $zoom;
+	return min((int) ($y * $size_in_tiles), $size_in_tiles - 1);
 }
 
 /**
@@ -48,11 +49,12 @@ function lat_to_tile_y($latitude, $zoom) {
  * 
  * @return int The tile X coordinate.
  */
-function lon_to_tile_x($longitude, $zoom) {
-    $longitude = clip($longitude, -180, 180);
-    $x = ($longitude + 180) / 360;
-    $size_in_tiles = 1 << $zoom;
-    return min((int) ($x * $size_in_tiles), $size_in_tiles - 1);
+function lon_to_tile_x($longitude, $zoom)
+{
+	$longitude = clip($longitude, -180, 180);
+	$x = ($longitude + 180) / 360;
+	$size_in_tiles = 1 << $zoom;
+	return min((int) ($x * $size_in_tiles), $size_in_tiles - 1);
 }
 
 /**
@@ -65,18 +67,18 @@ function lon_to_tile_x($longitude, $zoom) {
  * 
  * @return string A string containing the QuadKey in binary form.
  */
-function tile_to_quadkey($tile_x, $tile_y, $zoom) {
-    if ($zoom == 0) {
-        return 0;
-    }
+function tile_to_quadkey($tile_x, $tile_y, $zoom)
+{
+	if ($zoom == 0) return 0;
 
-    $quadkey = '';
-    for ($i = 0; $i < $zoom; $i++) {
-        $quadkey = ($tile_y & 1) . ($tile_x & 1) . $quadkey;
-        $tile_x >>= 1;
-        $tile_y >>= 1;
-    }
-    return $quadkey;
+	$quadkey = '';
+	for ($i = 0; $i < $zoom; $i++)
+	{
+		$quadkey = ($tile_y & 1) . ($tile_x & 1) . $quadkey;
+		$tile_x >>= 1;
+		$tile_y >>= 1;
+	}
+	return $quadkey;
 }
 
 /**
@@ -91,14 +93,13 @@ function tile_to_quadkey($tile_x, $tile_y, $zoom) {
 
  * @return string A string containing the QuadKey in binary form.
  */
-function latlon_to_quadkey($latitude, $longitude, $zoom) {
-    if ($zoom == 0) {
-        return 0;
-    }
+function latlon_to_quadkey($latitude, $longitude, $zoom)
+{
+	if ($zoom == 0) return 0;
 
-    $tile_x = lon_to_tile_x($longitude, $zoom);
-    $tile_y = lat_to_tile_y($latitude, $zoom);
-    return tile_to_quadkey($tile_x, $tile_y, $zoom);
+	$tile_x = lon_to_tile_x($longitude, $zoom);
+	$tile_y = lat_to_tile_y($latitude, $zoom);
+	return tile_to_quadkey($tile_x, $tile_y, $zoom);
 }
 
 /**
@@ -111,30 +112,36 @@ function latlon_to_quadkey($latitude, $longitude, $zoom) {
  * @param int $zoom Level of detail
  * @return array Rerutn array of quadkeys.
  */
-function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom) {
-    $quadkeys = [];
-    for ($j = $tile_y1; $j <= $tile_y2; $j++) {
-        for ($i = $tile_x1; $i <= $tile_x2; $i++) {
-            $quadkeys[] = tile_to_quadkey($i, $j, $zoom);
-        }
-    }
+function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
+{
+	$quadkeys = array();
+	for ($j = $tile_y1; $j <= $tile_y2; $j++)
+	{
+		for ($i = $tile_x1; $i <= $tile_x2; $i++)
+		{
+			$quadkeys[] = tile_to_quadkey($i, $j, $zoom);
+		}
+	}
 
-    // group subsequent quadkeys
-    sort($quadkeys);
-    $done = False;
-    while (!$done) {
-        $done = True;
-        for ($i = 0; $i < count($quadkeys) - 1; $i++) {
-            $parent = substr($quadkeys[$i], 0, strlen($quadkeys[$i]) - 1);
-            if ($quadkeys[$i + 1] == $parent . '1') {
-                $quadkeys[$i] = $parent;
-                array_splice($quadkeys, $i + 1, 1);
-                $done = False;
-            }
-        }
-    }
-    
-    return $quadkeys;
+	// group subsequent quadkeys
+	sort($quadkeys);
+	$done = false;
+	while (!$done)
+	{
+		$done = true;
+		for ($i = 0; $i < count($quadkeys) - 1; $i++)
+		{
+			$parent = substr($quadkeys[$i], 0, strlen($quadkeys[$i]) - 1);
+			if ($quadkeys[$i + 1] == $parent . '1')
+			{
+				$quadkeys[$i] = $parent;
+				array_splice($quadkeys, $i + 1, 1);
+				$done = false;
+			}
+		}
+	}
+
+	return $quadkeys;
 }
 
 /**
@@ -149,20 +156,25 @@ function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom) {
  * @return array Rerutn array of clusters: [quadkey => cluster], where cluster
  * is array ['count' => (int), 'lat' => (float), 'lon' => (float)/, bssids => []/]
  */
-function get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom) {
-    $quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom);
-    
-    $clusters = [];
-    $group_level = $zoom + 2;
-    if ($zoom >= MAX_YANDEX_ZOOM) {
-        $fetch_all = True;
-    } else {
-        $fetch_all = False; 
-    }
-    foreach ($quadkeys as $quadkey) {
-        $clusters += find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all);
-    }
-    return $clusters;
+function get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
+{
+	$quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom);
+
+	$clusters = array();
+	$group_level = $zoom + 2;
+	if ($zoom >= MAX_YANDEX_ZOOM)
+	{
+		$fetch_all = true;
+	}
+	else
+	{
+		$fetch_all = false; 
+	}
+	foreach ($quadkeys as $quadkey)
+	{
+		$clusters += find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all);
+	}
+	return $clusters;
 }
 
 /**
@@ -176,51 +188,61 @@ function get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom) {
  * @return array Rerutn array of clusters: [quadkey => cluster], where cluster
  * is array ['count' => (int), 'lat' => (float), 'lon' => (float)/, bssids => []/]
  */
-function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=False) {
-    $q1 = base_convert(str_pad($quadkey, 2 * MAX_ZOOM_LEVEL, "0"), 2, 10);
-    $q2 = base_convert(str_pad($quadkey, 2 * MAX_ZOOM_LEVEL, "1"), 2, 10);
-    $mask = 2 * (MAX_ZOOM_LEVEL - $group_level);
+function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=false)
+{
+	$q1 = base_convert(str_pad($quadkey, 2 * MAX_ZOOM_LEVEL, "0"), 2, 10);
+	$q2 = base_convert(str_pad($quadkey, 2 * MAX_ZOOM_LEVEL, "1"), 2, 10);
+	$mask = 2 * (MAX_ZOOM_LEVEL - $group_level);
 
-    $clusters = [];
-    if (!$fetch_all) {
-        $sql = "SELECT (`quadkey` >> $mask) as `cluster_qk`, BSSID,
-                    COUNT(BSSID) AS count, AVG(longitude) AS lon_avg,
-                    AVG(latitude) AS lat_avg 
-                FROM " . GEO_TABLE . "
-                WHERE `quadkey` BETWEEN $q1 AND $q2 
-                GROUP BY (`cluster_qk`) ";
+	$clusters = array();
+	if (!$fetch_all)
+	{
+		$sql = "SELECT (`quadkey` >> $mask) as `cluster_qk`, BSSID,
+					COUNT(BSSID) AS count, AVG(longitude) AS lon_avg,
+					AVG(latitude) AS lat_avg 
+				FROM " . GEO_TABLE . "
+				WHERE `quadkey` BETWEEN $q1 AND $q2 
+				GROUP BY (`cluster_qk`) ";
 
-        if (($res = $db->query($sql))) {
-            foreach ($res as $row) {
-                $cluster_qk = base_convert($row['cluster_qk'], 10, 2);
-                $cluster_qk = str_pad($cluster_qk, 2*$group_level, "0", STR_PAD_LEFT);
-                $clusters[$cluster_qk] = ['count' => $row['count'],
-                            'lat' => $row['lat_avg'], 'lon' => $row['lon_avg']];
-                if ($row['count'] == 1) {
-                    $clusters[$cluster_qk]['bssids'] = [$row['BSSID']];
-                }
-            }
-        }
-    } else { // fetch all appropriate records and group them manually
-        $sql = "SELECT (`quadkey` >> $mask) as `cluster_qk`, BSSID, longitude, latitude 
-                FROM " . GEO_TABLE . "
-                WHERE `quadkey` BETWEEN $q1 AND $q2";
+		if (($res = $db->query($sql)))
+		{
+			foreach ($res as $row)
+			{
+				$cluster_qk = base_convert($row['cluster_qk'], 10, 2);
+				$cluster_qk = str_pad($cluster_qk, 2*$group_level, "0", STR_PAD_LEFT);
+				$clusters[$cluster_qk] = array('count' => $row['count'],
+							'lat' => $row['lat_avg'], 'lon' => $row['lon_avg']);
+				if ($row['count'] == 1)
+				{
+					$clusters[$cluster_qk]['bssids'] = array($row['BSSID']);
+				}
+			}
+		}
+	}
+	else
+	{ // fetch all appropriate records and group them manually
+		$sql = "SELECT (`quadkey` >> $mask) as `cluster_qk`, BSSID, longitude, latitude 
+				FROM " . GEO_TABLE . "
+				WHERE `quadkey` BETWEEN $q1 AND $q2";
 
-        if (($res = $db->query($sql))) {
-            foreach ($res as $row) {
-                $cluster_qk = base_convert($row['cluster_qk'], 10, 2);
-                $cluster_qk = str_pad($cluster_qk, 2*$group_level, "0", STR_PAD_LEFT);
-                if(empty($clusters[$cluster_qk])) {
-                    $clusters[$cluster_qk] = ['count' => 0, 'lat' => 0.0, 'lon' => 0.0, 'bssids'=>[]];
-                }
-                $count = ++$clusters[$cluster_qk]['count'];
-                $clusters[$cluster_qk]['lat'] = 
-                        ($clusters[$cluster_qk]['lat'] * ($count - 1) + $row['latitude']) / $count;
-                $clusters[$cluster_qk]['lon'] = 
-                        ($clusters[$cluster_qk]['lon'] * ($count - 1) + $row['longitude']) / $count;
-                $clusters[$cluster_qk]['bssids'][] = $row['BSSID'];
-            }
-        }
-    }
-    return $clusters;
+		if (($res = $db->query($sql)))
+		{
+			foreach ($res as $row)
+			{
+				$cluster_qk = base_convert($row['cluster_qk'], 10, 2);
+				$cluster_qk = str_pad($cluster_qk, 2*$group_level, "0", STR_PAD_LEFT);
+				if(empty($clusters[$cluster_qk]))
+				{
+					$clusters[$cluster_qk] = array('count' => 0, 'lat' => 0.0, 'lon' => 0.0, 'bssids'=>array());
+				}
+				$count = ++$clusters[$cluster_qk]['count'];
+				$clusters[$cluster_qk]['lat'] = 
+						($clusters[$cluster_qk]['lat'] * ($count - 1) + $row['latitude']) / $count;
+				$clusters[$cluster_qk]['lon'] = 
+						($clusters[$cluster_qk]['lon'] * ($count - 1) + $row['longitude']) / $count;
+				$clusters[$cluster_qk]['bssids'][] = $row['BSSID'];
+			}
+		}
+	}
+	return $clusters;
 }
