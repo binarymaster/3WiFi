@@ -246,3 +246,92 @@ function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=false)
 	}
 	return $clusters;
 }
+
+/**
+* Converts (using elliptic Mercator projection) tile Y coordinate into latitude
+* (in degrees) of the left upper corner of the tile at a specified level of zoom.
+*
+* @param int The tile Y coordinate.
+* @param int $zoom Level of detail, from 0 (the whole map as single tile)
+* to 23 (highest detail).
+*
+* @return float Latitude of the tile left upper corner, in degrees.
+*/
+function tile_y_to_lat($tile_y, $zoom)
+{
+	$eps = 1e-7; // precision
+	$e = 0.0818191908426; // eccentricity of the Earth
+
+	$y = pi() * (1 - 2 * $tile_y / (1 << $zoom)); //  -pi <= $y <= pi
+	$lat_n1 = atan(sinh($y));
+	do
+	{
+		$lat_n = $lat_n1;
+		$sin_lat = sin($lat_n);
+		$lat_n1 = asin(1 - (1 + $sin_lat) * pow((1 - $e * $sin_lat) / (1 + $e * $sin_lat), $e) / exp(2 * $y));
+	} while(abs($lat_n1 - $lat_n) > $eps);
+	return rad2deg($lat_n1);
+}
+
+/**
+* Converts (using elliptic Mercator projection) tile X coordinate into longitude
+* (in degrees) of the left upper corner of the tile at a specified level of zoom.
+*
+* @param int The tile X coordinate.
+* @param int $zoom Level of detail, from 0 (the whole map as single tile)
+* to 23 (highest detail).
+*
+* @return float Longitude of the tile left upper corner, in degrees.
+*/
+function tile_x_to_lon($tile_x, $zoom)
+{
+	return rad2deg(pi() * (2 * $tile_x / (1 << $zoom) - 1));
+}
+
+/**
+* Converts QuadKey into tile XY coordinates.
+*
+* @param string $quadkey A string containing the QuadKey in binary form.
+* @param int& $tile_x [out] Tile X coordinate.
+* @param int& $tile_y [out] Tile Y coordinate.
+*/
+function quadkey_to_tile($quadkey, &$tile_x, &$tile_y)
+{
+	$tile_x = 0;
+	$tile_y = 0;
+	if ($quadkey === '0') return;
+
+	$len = strlen($quadkey);
+	$quadkey = str_split($quadkey);
+	for ($i = 0; $i < $len; $i += 2)
+	{
+		$tile_y = ($tile_y << 1) | $quadkey[$i];
+	}
+	for ($i = 1; $i < $len; $i += 2)
+	{
+		$tile_x = ($tile_x << 1) | $quadkey[$i];
+	}
+}
+
+/**
+* Get bbox for the tile identified via QuadKey.
+*
+* @param string $quadkey A string containing the QuadKey in binary form.
+*
+* @return array [[lat1, lon1], [lat2, lon2]].
+*/
+function get_tile_bbox($quadkey)
+{
+	$tile_x = 0;
+	$tile_y = 0;
+	quadkey_to_tile($quadkey, $tile_x, $tile_y);
+
+	$zoom = (int) (strlen($quadkey) / 2);
+
+	$lat1 = tile_y_to_lat($tile_y + 1, $zoom);
+	$lat2 = tile_y_to_lat($tile_y, $zoom);
+	$lon1 = tile_x_to_lon($tile_x, $zoom);
+	$lon2 = tile_x_to_lon($tile_x + 1, $zoom);
+
+	return array(array($lat1, $lon1), array($lat2, $lon2));
+}

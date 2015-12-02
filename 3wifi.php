@@ -77,6 +77,7 @@ switch ($action)
 		{
 			$ap['type'] = 'Cluster';
 			$ap['number'] = (int)$cluster['count'];
+			$ap['bbox'] = get_tile_bbox($quadkey);
 		}
 		$ap['id'] = $quadkey;
 		$ap['geometry']['type'] = 'Point';
@@ -89,7 +90,8 @@ switch ($action)
 			$hints = array();
 			foreach ($cluster['bssids'] as $bssid)
 			{
-				if (!$get_info_stmt->execute()) {continue;} 
+				if (!$get_info_stmt->execute()) continue;
+
 				$res = $get_info_stmt->get_result();
 				while ($row = $res->fetch_assoc())
 				{
