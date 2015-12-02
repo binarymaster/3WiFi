@@ -125,7 +125,7 @@ switch ($action)
 	$json['auth'] = $level > 0;
 	if ($level == 0) break;
 
-	function GenerateFindQuery($comment, $BSSID, $ESSID, $Name, $Page, $Limit)
+	function GenerateFindQuery($comment, $BSSID, $ESSID, $Name, $Key, $Page, $Limit)
 	{
 		if(!isset($_SESSION['Search'])) $_SESSION['Search'] = array();
 		if(!isset($_SESSION['Search']['ArgsHash'])) $_SESSION['Search']['ArgsHash'] = '';
@@ -180,15 +180,21 @@ switch ($action)
 		}
 		if ($ESSID != '')
 		{
-			if(StrInStr($ESSID, '%') || StrInStr($ESSID, '_')) $sql .= ' AND `ESSID` LIKE \''.$ESSID.'\'';
+			if (StrInStr($ESSID, '%') || StrInStr($ESSID, '_')) $sql .= ' AND `ESSID` LIKE \''.$ESSID.'\'';
 			else $sql .= ' AND `ESSID` = \''.$ESSID.'\'';
 		}
-		if($Name != '')
+		if ($Name != '')
 		{
-			$sql .= ' AND `name` LIKE \''.$Name.'\'';
+			if (StrInStr($Name, '%') || StrInStr($Name, '_')) $sql .= ' AND `name` LIKE \''.$Name.'\'';
+			else $sql .= ' AND `name` = \''.$Name.'\'';
+		}
+		if ($Key != '')
+		{
+			if (StrInStr($Key, '%') || StrInStr($Key, '_')) $sql .= ' AND `WiFiKey` LIKE \''.$Key.'\'';
+			else $sql .= ' AND `WiFiKey` = \''.$Key.'\'';
 		}
 
-		if($_SESSION['Search']['ArgsHash'] == md5($BSSID.$ESSID.$Name))
+		if($_SESSION['Search']['ArgsHash'] == md5($comment.$BSSID.$ESSID.$Name.$Key))
 		{
 			$sql = str_replace('SQL_CALC_FOUND_ROWS', '', $sql);
 		}
@@ -292,7 +298,7 @@ switch ($action)
 	if (isset($_POST['page'])) $cur_page = (int)$_POST['page'];
 	if ($cur_page < 1) $cur_page = 1;
 
-	$sql = GenerateFindQuery($comment, $bssid, $essid, $name, $cur_page, $per_page);
+	$sql = GenerateFindQuery($comment, $bssid, $essid, $name, $key, $cur_page, $per_page);
 	if ($res = QuerySql($sql))
 	{
 		if($_SESSION['Search']['LastRowsNum'] == -1)
