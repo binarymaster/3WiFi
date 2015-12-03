@@ -125,7 +125,7 @@ switch ($action)
 	$json['auth'] = $level > 0;
 	if ($level == 0) break;
 
-	function GenerateFindQuery($comment, $BSSID, $ESSID, $Name, $Key, $Page, $Limit)
+	function GenerateFindQuery($cmtid, $BSSID, $ESSID, $Name, $Key, $Page, $Limit)
 	{
 		if(!isset($_SESSION['Search'])) $_SESSION['Search'] = array();
 		if(!isset($_SESSION['Search']['ArgsHash'])) $_SESSION['Search']['ArgsHash'] = '';
@@ -164,9 +164,9 @@ switch ($action)
 				LEFT JOIN `comments` USING(cmtid) 
 				LEFT JOIN `GEO_TABLE` USING(BSSID) 
 				WHERE 1';
-		if ($comment != '*')
+		if ($cmtid != -1)
 		{
-			$sql .= ' AND (`cmtid` '.($comment == '' ? 'IS NULL)' : "= $comment)");
+			$sql .= ' AND (`cmtid` '.($cmtid == 0 ? 'IS NULL)' : "= $cmtid)");
 		}
 		if ($BSSID != '')
 		{
@@ -194,7 +194,7 @@ switch ($action)
 			else $sql .= ' AND `WiFiKey` = \''.$Key.'\'';
 		}
 
-		if($_SESSION['Search']['ArgsHash'] == md5($comment.$BSSID.$ESSID.$Name.$Key))
+		if($_SESSION['Search']['ArgsHash'] == md5($cmtid.$BSSID.$ESSID.$Name.$Key))
 		{
 			$sql = str_replace('SQL_CALC_FOUND_ROWS', '', $sql);
 		}
@@ -242,6 +242,7 @@ switch ($action)
 		return $sql;
 	}
 	$comment = '*';
+	$cmtid = -1;
 	$ipaddr = '';
 	$auth = '%';
 	$name = '%';
@@ -269,21 +270,27 @@ switch ($action)
 	}
 	$json['data'] = array();
 
-	if ($comment != '' && $comment != '*')
+	if ($comment != '*')
 	{
-		$comment = $db->real_escape_string($comment);
-		$res = QuerySql("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
-		if ($res->num_rows > 0)
+		if ($comment == '')
 		{
-			$row = $res->fetch_row();
-			$cmtid = $row[0];
+			$cmtid = 0;
 		}
 		else
 		{
+			$comment = $db->real_escape_string($comment);
+			$res = QuerySql("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
+			if ($res->num_rows > 0)
+			{
+				$row = $res->fetch_row();
+				$cmtid = (int)$row[0];
+			}
+			else
+			{
+				$cmtid = -2;
+			}
 			$res->close();
-			break;
 		}
-		$res->close();
 	}
 	$ipaddr = _ip2long($db->real_escape_string($ipaddr));
 	$auth = $db->real_escape_string($auth);
@@ -298,7 +305,7 @@ switch ($action)
 	if (isset($_POST['page'])) $cur_page = (int)$_POST['page'];
 	if ($cur_page < 1) $cur_page = 1;
 
-	$sql = GenerateFindQuery($comment, $bssid, $essid, $name, $key, $cur_page, $per_page);
+	$sql = GenerateFindQuery($cmtid, $bssid, $essid, $name, $key, $cur_page, $per_page);
 	if ($res = QuerySql($sql))
 	{
 		if($_SESSION['Search']['LastRowsNum'] == -1)
