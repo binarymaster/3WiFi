@@ -5,10 +5,10 @@ if (!isset($_GET['a']))
 	Header('Location: /');
 	exit;
 }
-require 'auth.php';
-require 'utils.php';
-require 'db.php';
-require 'quadkey.php';
+require_once 'auth.php';
+require_once 'utils.php';
+require_once 'db.php';
+require_once 'quadkey.php';
 session_start();
 
 $topPort = 10;

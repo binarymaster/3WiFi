@@ -1,5 +1,6 @@
 <?php
 Header('Content-Type: text/plain');
+require_once 'auth.php';
 echo "3WiFi Daemon Script\n\n";
 
 if ($argv[0] != basename(__FILE__))
@@ -14,11 +15,10 @@ if (count($argv) < 3)
 	exit();
 }
 
-require 'auth.php';
 if ($level != 2) die("Error: Not authorized.\n");
 
-require 'utils.php';
-require 'db.php';
+require_once 'utils.php';
+require_once 'db.php';
 
 set_time_limit(0);
 
@@ -338,8 +338,8 @@ switch ($argv[2])
 
 	// Получение координат для новых добавленных BSSID
 	case 'geolocate':
-	require 'geoext.php';
-	require 'quadkey.php';
+	require_once 'geoext.php';
+	require_once 'quadkey.php';
 
 	while (true)
 	{
@@ -388,7 +388,7 @@ switch ($argv[2])
 
 	// Обновление ранее не найденных точек
 	case 'recheck':
-	require 'geoext.php';
+	require_once 'geoext.php';
 	// TODO
 	break;
 

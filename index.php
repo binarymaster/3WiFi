@@ -1,4 +1,5 @@
 <?php
+require_once 'auth.php';
 $incscript = file_get_contents('counter.txt');
 
 if (!isset($page)) $page = (isset($_GET['page']) ? $_GET['page'] : '');
@@ -8,7 +9,7 @@ if ($page == 'index' ||
 	$page == 'left' ||
 	$page == 'main' ||
 	$page == 'map' ||
-	$page == 'map2' ||
+	$page == 'login' ||
 	$page == 'find' ||
 	$page == 'find_ranges' ||
 	$page == 'devicemac' ||
@@ -16,6 +17,15 @@ if ($page == 'index' ||
 	$page == 'graph' ||
 	$page == 'stat')
 {
+	global $level, $login, $nick;
+	if ($login == '') {
+		$action = 'login';
+		$action_name = 'Войти';
+	}else {
+		$action = 'logout';
+		$action_name = 'Выйти';
+	}	
+	
 	$lat = 55.76;
 	$lon = 37.64;
 	$rad = 2;
@@ -28,6 +38,10 @@ if ($page == 'index' ||
 	$content = str_replace('%var_lat%', $lat, $content);
 	$content = str_replace('%var_lon%', $lon, $content);
 	$content = str_replace('%var_rad%', $rad, $content);
+	$content = str_replace('%login%', $login, $content);
+	$content = str_replace('%nick%', $nick, $content);
+	$content = str_replace('%action%', $action, $content);
+	$content = str_replace('%action_name%', $action_name, $content);
 
 	echo str_replace('</body>', $incscript.'</body>', $content);
 	exit();

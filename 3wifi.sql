@@ -31,6 +31,7 @@ CREATE TABLE `base` (
 	`DNS1` INT(10) NULL DEFAULT NULL,
 	`DNS2` INT(10) NULL DEFAULT NULL,
 	`DNS3` INT(10) NULL DEFAULT NULL,
+	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	INDEX `BSSID` (`BSSID`),
 	INDEX `ESSID` (`ESSID`),
@@ -115,6 +116,7 @@ CREATE TABLE `mem_base` (
 	`DNS1` INT(10) NULL DEFAULT NULL,
 	`DNS2` INT(10) NULL DEFAULT NULL,
 	`DNS3` INT(10) NULL DEFAULT NULL,
+	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	INDEX `BSSID` (`BSSID`),
 	INDEX `ESSID` (`ESSID`),
@@ -130,3 +132,22 @@ CREATE TABLE `mem_geo` (
 	PRIMARY KEY (`BSSID`),
 	INDEX `Coords` (`latitude`, `longitude`)
 ) COLLATE='utf8_general_ci' ENGINE=MEMORY ROW_FORMAT=FIXED;
+
+-- Дамп структуры для таблицы 3wifi.users
+CREATE TABLE `users` (
+  `uid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `login` varchar(30) NOT NULL,
+  `nick` varchar(30) NOT NULL,
+  `pass_hash` char(32) NOT NULL,
+  `autologin` char(32) NOT NULL,
+  `salt` char(32) NOT NULL,
+  `level` int(10) unsigned NOT NULL DEFAULT '0',
+  `ip_hash` char(32) NOT NULL,
+  PRIMARY KEY (`uid`),
+  UNIQUE KEY `login` (`login`),
+  UNIQUE KEY `nick` (`nick`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Дамп данных таблицы 3wifi.users
+INSERT INTO `users` (`uid`, `login`, `nick`, `pass_hash`, `autologin`, `salt`, `level`, `ip_hash`) VALUES
+	(1, 'admin', 'Administrator', 'SET {md5(pass.salt)} HERE!', 'SET {md5(\'bla-bla-bla\')} HERE!', 'SET {salt} HERE!', 2, 'DO NOT CHANGE THIS!');
