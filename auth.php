@@ -168,6 +168,15 @@ class AuthClass {
 		}else return '';
 	}
 
+	/**
+	 * Метод возвращает uid пользователя 
+	 */
+	public function getUID() {
+		if ($this->getLevel()>0) { //Если пользователь авторизован
+			return $_SESSION["uid"]; //Возвращаем uid, который записан в сессию
+		}else return 'NULL';
+	}
+
 	public function out() {
 		$_SESSION = array(); // Очищаем сессию
 		session_destroy(); // Уничтожаем
@@ -175,11 +184,12 @@ class AuthClass {
 	}
 }
 
-global $auth, $level, $login, $nick;
+global $auth, $level, $login, $nick, $uid;
 $auth = new AuthClass();
 $level = $auth->getLevel();
 $login = $auth->getLogin();
 $nick = $auth->getNick();
+$uid = $auth->getUID();
 
 if ($level == 0) {
 	$pass = '';

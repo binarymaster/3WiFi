@@ -1,6 +1,8 @@
 <?php
-Header('Content-Type: text/plain');
 require_once 'auth.php';
+require_once 'utils.php';
+require_once 'db.php';
+Header('Content-Type: text/plain');
 echo "3WiFi Daemon Script\n\n";
 
 if ($argv[0] != basename(__FILE__))
@@ -16,9 +18,6 @@ if (count($argv) < 3)
 }
 
 if ($level != 2) die("Error: Not authorized.\n");
-
-require_once 'utils.php';
-require_once 'db.php';
 
 set_time_limit(0);
 
@@ -53,7 +52,7 @@ switch ($argv[2])
 		}
 		return $result > 0;
 	}
-	function addRow($row, $cmtid)
+	function addRow($row, $cmtid, $uid)
 	{
 		global $checkexist;
 		global $db;
@@ -147,10 +146,10 @@ switch ($argv[2])
 			if (!isset($DNS[$i])) $DNS[$i] = 'NULL';
 
 		QuerySql("INSERT INTO BASE_TABLE 
-				(`cmtid`,`IP`,`Port`,`Authorization`,`name`,`RadioOff`,`Hidden`,`NoBSSID`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`LANIP`,`LANMask`,`WANIP`,`WANMask`,`WANGateway`,`DNS1`,`DNS2`,`DNS3`) 
-				VALUES ($cmtid, $addr, $port, $auth, $name, $radio, $hide, $NoBSSID, $bssid, $essid, $sec, $key, $wps, $lanip, $lanmsk, $wanip, $wanmsk, $gate, $DNS[0], $DNS[1], $DNS[2]) 
+				(`cmtid`,`IP`,`Port`,`Authorization`,`name`,`RadioOff`,`Hidden`,`NoBSSID`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`LANIP`,`LANMask`,`WANIP`,`WANMask`,`WANGateway`,`DNS1`,`DNS2`,`DNS3`,`uid`) 
+				VALUES ($cmtid, $addr, $port, $auth, $name, $radio, $hide, $NoBSSID, $bssid, $essid, $sec, $key, $wps, $lanip, $lanmsk, $wanip, $wanmsk, $gate, $DNS[0], $DNS[1], $DNS[2], $uid) 
 				ON DUPLICATE KEY UPDATE 
-				`cmtid`=$cmtid,`IP`=$addr,`Port`=$port,`Authorization`=$auth,`name`=$name,`RadioOff`=$radio,`Hidden`=$hide,`NoBSSID`=$NoBSSID,`BSSID`=$bssid,`ESSID`=$essid,`Security`=$sec,`WiFiKey`=$key,`WPSPIN`=$wps,`LANIP`=$lanip,`LANMask`=$lanmsk,`WANIP`=$wanip,`WANMask`=$wanmsk,`WANGateway`=$gate,`DNS1`=$DNS[0],`DNS2`=$DNS[1],`DNS3`=$DNS[2];");
+				`cmtid`=$cmtid,`IP`=$addr,`Port`=$port,`Authorization`=$auth,`name`=$name,`RadioOff`=$radio,`Hidden`=$hide,`NoBSSID`=$NoBSSID,`BSSID`=$bssid,`ESSID`=$essid,`Security`=$sec,`WiFiKey`=$key,`WPSPIN`=$wps,`LANIP`=$lanip,`LANMask`=$lanmsk,`WANIP`=$wanip,`WANMask`=$wanmsk,`WANGateway`=$gate,`DNS1`=$DNS[0],`DNS2`=$DNS[1],`DNS3`=$DNS[2],`uid`=$uid;");
 		return 0;
 	}
 	while (true)
@@ -168,6 +167,7 @@ switch ($argv[2])
 			$checkexist = $task['checkexist'];
 			$nowait = $task['nowait'];
 			$warn = array();
+			$uid = $task['uid'];
 			$ext = $task['ext'];
 			$filename = 'uploads/'.$tid.$ext;
 			$hangcheck = 5;
@@ -185,7 +185,7 @@ switch ($argv[2])
 					{
 						$i++;
 						if ($i == 1) continue; // Пропуск заголовка CSV
-						$res = addRow($data, $cmtid);
+						$res = addRow($data, $cmtid, $uid);
 						($res == 0 ? $cnt++ : $warn[$i - 1] = $res);
 						if (microtime(true) - $time > $hangcheck)
 						{
@@ -201,7 +201,7 @@ switch ($argv[2])
 					{
 						$data = explode("\t", $str);
 						$i++;
-						$res = addRow($data, $cmtid);
+						$res = addRow($data, $cmtid, $uid);
 						($res == 0 ? $cnt++ : $warn[$i] = $res);
 						if (microtime(true) - $time > $hangcheck)
 						{

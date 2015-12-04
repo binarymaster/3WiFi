@@ -249,6 +249,7 @@ function getTask($tid)
 			$result['accepted'] = (int)$row[9];
 			$result['onmap'] = (int)$row[10];
 			$result['warns'] = $row[11];
+			$result['uid'] = $row[12];
 		}
 		$res->close();
 	}

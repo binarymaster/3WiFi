@@ -9,7 +9,8 @@ require_once 'auth.php';
 require_once 'utils.php';
 require_once 'db.php';
 require_once 'quadkey.php';
-session_start();
+session_start(); // Сессия уже запущена в auth.php
+global $uid;
 
 $topPort = 10;
 $topauth = 100;
@@ -694,7 +695,7 @@ switch ($action)
 			if ($valid)
 			{
 				$comment = $db->real_escape_string($comment);
-				if (QuerySql("INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`) VALUES ('$tid',now(),now(),'$ext','$comment',$checkexist,$nowait)"))
+				if (QuerySql("INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`,`uid`) VALUES ('$tid',now(),now(),'$ext','$comment',$checkexist,$nowait,$uid)"))
 				{
 					$json['upload']['state'] = true;
 					$json['upload']['tid'] = $tid;

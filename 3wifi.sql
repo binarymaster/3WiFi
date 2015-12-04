@@ -70,6 +70,7 @@ CREATE TABLE `tasks` (
 	`accepted` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	`onmap` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	`warns` TEXT NOT NULL,
+	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
 	PRIMARY KEY (`tid`)
 ) COLLATE='utf8_general_ci' ENGINE=InnoDB;
 
