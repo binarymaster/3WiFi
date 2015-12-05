@@ -177,6 +177,26 @@ class AuthClass {
 		}else return 'NULL';
 	}
 
+	/**
+	 * Метод возвращает ник пользователя по его uID
+	 */
+	public function getUserNick($uid) {
+		global $db;
+		if (!db_connect()) {die("Ошибка подключения к БД");}
+		$res = QuerySql("SELECT `nick` FROM users WHERE `uid`='$uid'");
+		$db->close();
+	
+		if ($res->num_rows == 1) // Если пользователь существует
+		{
+			$row = $res->fetch_row();
+			$nick = $row[0];
+			return $nick;
+		} else {
+			return false;
+		}
+		$res->close();
+	}
+
 	public function out() {
 		$_SESSION = array(); // Очищаем сессию
 		session_destroy(); // Уничтожаем

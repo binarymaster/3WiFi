@@ -109,6 +109,10 @@ function loadstat(st)
 				$('#stval').text('Серверы доменных имён');
 				parsestat(st, d);
 				break;
+				case 'stsid':
+				$('#stval').text('Активные участники');
+				parsestat(st, d);
+				break;
 			}
 		} else {
 			$('#stat > tr:nth-child(2) > :nth-child(2)').text('Ошибка загрузки данных.');
@@ -133,7 +137,8 @@ function loadstat(st)
 <button onclick="loadstat('stsec')">Защита</button>&nbsp;
 <button onclick="loadstat('stkey')">Ключи</button>&nbsp;
 <button onclick="loadstat('stwps')">WPS</button>&nbsp;
-<button onclick="loadstat('stdns')">DNS</button></p>
+<button onclick="loadstat('stdns')">DNS</button>&nbsp;
+<button onclick="loadstat('stsid')">Сиды</button></p>
 
 <table class=st1>
 <tbody>

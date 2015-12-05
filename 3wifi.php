@@ -21,6 +21,7 @@ $topSecurity = 30;
 $topWiFiKey = 30;
 $topWPSPIN = 30;
 $topDNS = 30;
+$topSid = 10;
 
 $action = $_GET['a'];
 
@@ -1224,6 +1225,40 @@ switch ($action)
 			$data = array();
 			$data[] = (int)$row[1];
 			$data[] = _long2ip($row[0]);
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$db->close();
+	break;
+	
+	// Активные участники (Сидеры)
+	case 'stsid':
+	$json['result'] = true;
+	$json['stat']['top'] = $topSid;
+	
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
+	
+	if ($res = QuerySql("SELECT COUNT(*) FROM users"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] = (int)$row[0];
+		$res->close();
+	}
+	
+	if ($res = QuerySql("SELECT u.nick, COUNT(b.id) FROM BASE_TABLE as b, users as u where b.uid=u.uid GROUP BY u.uid ORDER BY COUNT(b.id) DESC LIMIT $topSid"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = $row[0];
 			$json['stat']['data'][] = $data;
 		}
 		$res->close();
