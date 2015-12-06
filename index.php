@@ -20,9 +20,9 @@ if ($page == 'index' ||
 	global $level, $login, $nick;
 
 	$action_login = ($login == '' ? 'login' : 'logout');
-	$action_login_name = ($login == '' ? 'Войти' : 'Выйти');
+	$action_login_name = ($login == '' ? 'Вход' : 'Выход');
 	$action_reg = ($login == '' ? 'reg' : 'inv');
-	$action_reg_name = ($login == '' ? 'Зарегистрироваться' : 'Пригласить');
+	$action_reg_name = ($login == '' ? 'Регистрация' : 'Пригласить');
 
 	$lat = 55.76;
 	$lon = 37.64;
