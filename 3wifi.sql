@@ -48,6 +48,16 @@ CREATE TABLE `geo` (
 	INDEX `Coords` (`latitude`, `longitude`)
 ) COLLATE='utf8_general_ci' ENGINE=MyISAM ROW_FORMAT=FIXED;
 
+-- Дамп структуры для таблицы 3wifi.invites
+CREATE TABLE IF NOT EXISTS `invites` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `invite` char(32) NOT NULL,
+  `uid1` int(11) unsigned NOT NULL,
+  `uid2` int(11) unsigned DEFAULT NULL,
+  `level` int(10) unsigned DEFAULT '1',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 -- Дамп структуры таблицы 3wifi.comments
 CREATE TABLE `comments` (
 	`cmtid` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -144,11 +154,12 @@ CREATE TABLE `users` (
   `salt` char(32) NOT NULL,
   `level` int(10) unsigned NOT NULL DEFAULT '0',
   `ip_hash` char(32) NOT NULL,
+  `maxInvites` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `login` (`login`),
   UNIQUE KEY `nick` (`nick`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Дамп данных таблицы 3wifi.users
-INSERT INTO `users` (`uid`, `login`, `nick`, `pass_hash`, `autologin`, `salt`, `level`, `ip_hash`) VALUES
-	(1, 'admin', 'Administrator', 'SET {md5(pass.salt)} HERE!', 'SET {md5(\'bla-bla-bla\')} HERE!', 'SET {salt} HERE!', 2, 'DO NOT CHANGE THIS!');
+INSERT INTO `users` (`uid`, `login`, `nick`, `pass_hash`, `autologin`, `salt`, `level`, `ip_hash`, `maxInvites`) VALUES
+	(1, 'admin', 'Administrator', 'SET {md5(pass.salt)} HERE!', 'SET {md5(\'bla-bla-bla\')} HERE!', 'SET {salt} HERE!', '2', 'DO NOT CHANGE THIS!', '65535');

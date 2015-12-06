@@ -303,4 +303,15 @@ function sec2str($sec)
 	}
 	return $str;
 }
+
+function getParam($param, $default = null)
+{
+	return (isset($_GET[$param]) ? $_GET[$param] : (isset($_POST[$param]) ? $_POST[$param] : $default));
+}
+
+function MessageRed ($message)
+// Выводит сообщение в стиле H2 RED
+{
+	echo "<h2 style=\"color:red;\">$message</h2>";
+}
 ?>

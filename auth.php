@@ -7,45 +7,41 @@ $magic = '3wifi-magic-word';
 $pass_level1 = 'antichat';
 $pass_level2 = 'secret_password';
 
+class AuthClass {
 /** 
  * Класс для авторизации
  */ 
-class AuthClass {
-	
+
+	public function setAutoLogin($login) {
 	/**
 	 * Устанавливает хэш для автоматической авторизации по кукам
 	 * Возвращает новый хэш
 	 * @return string 
 	 */
-	public function setAutoLogin($login) {
 		$newhash = md5(uniqid(rand(),true));
 		global $db;
-		if (!db_connect()) {die("Ошибка подключения к БД");}
-		QuerySql("UPDATE `users` SET `autologin`='$newhash' WHERE  `login`='$login';");
-		$db->close();
+		QuerySql("UPDATE `users` SET `autologin`='".quote($newhash)."' WHERE  `login`='".quote($login)."';");
 		return $newhash;
 	}
 	
+	public function setAutoIP($login,$ip, $salt) {
 	/**
 	 * Устанавливает хэш ip для автоматической авторизации по кукам
 	 * Возвращает новый хэш
 	 * @return string 
 	 */
-	public function setAutoIP($login,$ip, $salt) {
 		$newhash = md5($ip.$salt);
 		global $db;
-		if (!db_connect()) {die("Ошибка подключения к БД");}
-		QuerySql("UPDATE `users` SET `ip_hash`='$newhash' WHERE  `login`='$login';");
-		$db->close();
+		QuerySql("UPDATE `users` SET `ip_hash`='.".quote($newhash)."' WHERE  `login`='".quote($login)."';");
 		return $newhash;
 	}
 	
+	public function getLevel() {
 	/**
 	 * Проверяет, авторизован пользователь или нет
 	 * Возвращает уровень доступа если авторизован, иначе 0 (гость)
 	 * @return int 
 	 */
-	public function getLevel() {
 		if (isset($_SESSION["level"])) { //Если сессия существует
 			return $_SESSION["level"]; //Возвращаем значение переменной сессии level (хранит уровень доступа, 0 - гость, 1 - пользователь, 2 - админ)
 		}
@@ -56,16 +52,15 @@ class AuthClass {
 		else return 0; //Пользователь не авторизован, т.к. переменная level не создана
 	}
 	
+	public function auth($login, $password) {
 	/**
 	 * Авторизация пользователя по паролю
 	 * @param string $login
 	 * @param string $passwors 
+	 * @return bool 
 	 */
-	public function auth($login, $password) {
 		global $db;
-		if (!db_connect()) {die("Ошибка подключения к БД");}
 		$res = QuerySql("SELECT * FROM users WHERE `login`='$login'");
-		$db->close();
 		
 		if ($res->num_rows == 1) // Если логин существует
 		{
@@ -103,16 +98,15 @@ class AuthClass {
 		$res->close();
 	}
 
+	public function auto_auth($login, $hash, $ip_hash_c) {
 	/**
 	 * Автоматическая авторизация пользователя по кукам
 	 * @param string $login
 	 * @param string $hash 
+	 * @return bool
 	 */
-	public function auto_auth($login, $hash, $ip_hash_c) {
 		global $db;
-		if (!db_connect()) {die("Ошибка подключения к БД");}
-		$res = QuerySql("SELECT * FROM users WHERE `login`='$login'");
-		$db->close();
+		$res = QuerySql("SELECT * FROM users WHERE `login`='".quote($login)."'");
 		
 		if ($res->num_rows == 1) // Если логин существует
 		{
@@ -150,28 +144,31 @@ class AuthClass {
 		$res->close();
 	}
 	
+	public function getLogin() {
 	/**
 	 * Метод возвращает логин авторизованного пользователя 
+	 * @return string $login
 	 */
-	public function getLogin() {
 		if ($this->getLevel()>0) { //Если пользователь авторизован
 			return $_SESSION["login"]; //Возвращаем логин, который записан в сессию
 		}else return '';
 	}
  
+	public function getNick() {
 	/**
 	 * Метод возвращает ник авторизованного пользователя 
+	 * @return string $nick
 	 */
-	public function getNick() {
 		if ($this->getLevel()>0) { //Если пользователь авторизован
 			return $_SESSION["nick"]; //Возвращаем ник, который записан в сессию
 		}else return '';
 	}
 
-	/**
-	 * Метод возвращает uid пользователя 
-	 */
 	public function getUID() {
+	/**
+	 * Метод возвращает uid авторизованного пользователя 
+	 * @return string $uid
+	 */
 		if ($this->getLevel()>0) { //Если пользователь авторизован
 			return $_SESSION["uid"]; //Возвращаем uid, который записан в сессию
 		}else return 'NULL';
@@ -179,12 +176,12 @@ class AuthClass {
 
 	/**
 	 * Метод возвращает ник пользователя по его uID
+	 * @param string $uid
+	 * @return bool $nick
 	 */
 	public function getUserNick($uid) {
 		global $db;
-		if (!db_connect()) {die("Ошибка подключения к БД");}
-		$res = QuerySql("SELECT `nick` FROM users WHERE `uid`='$uid'");
-		$db->close();
+		$res = QuerySql("SELECT `nick` FROM users WHERE `uid`='".quote($uid)."'");
 	
 		if ($res->num_rows == 1) // Если пользователь существует
 		{
@@ -197,10 +194,54 @@ class AuthClass {
 		$res->close();
 	}
 
+	/**
+	 * Метод проверяет существование пользователя по логину
+	 * @param string $login
+	 * @return bool
+	 */
+	public function isUserLogin($login) {
+		global $db;
+		$res = QuerySql("SELECT `uid` FROM users WHERE `login`='".quote($login)."'");
+		$result = ($res->num_rows == 1);// Если пользователь существует
+		$res->close();
+		return $result; 
+	}
+
+	public function isUserNick($nick) {
+	/**
+	 * Метод проверяет существование пользователя по нику
+	 * @param string $nick
+	 * @return bool
+	 */
+		global $db;
+		$res = QuerySql("SELECT `uid` FROM users WHERE `nick`='".quote($nick)."'");
+		$result = ($res->num_rows == 1); // Если пользователь существует
+		$res->close();
+		return $result;
+	}
+
 	public function out() {
+	/**
+	 * Метод осуществляет выход
+	 * @return true
+	 */
 		$_SESSION = array(); // Очищаем сессию
 		session_destroy(); // Уничтожаем
 		setcookie("auth","",time()-3600); // Удаляем авто авторизацию
+		return true;
+	}
+	
+	public function isValidInvite($invite) {
+	/**
+	 * Метод проверяет действует ли код приглашения
+	 * @param string $invite
+	 * @return bool
+	 */
+		global $db;
+		$res = QuerySql("SELECT `id` FROM `invites` WHERE `invite`='".quote($invite)."' AND `uid2` IS NULL LIMIT 1;");
+		$result = ($res->num_rows == 1); // Если код существует и действителен
+		$res->close();
+		return $result;
 	}
 }
 
