@@ -18,11 +18,6 @@ if (count($argv) < 3)
 }
 if ($level != 2) die("Error: Not authorized.\n");
 
-function logt($str)
-{
-	echo '['.date('H:i:s').'] '.$str."\n";
-}
-
 set_time_limit(0);
 
 while (!db_connect())
@@ -37,120 +32,6 @@ switch ($argv[2])
 {
 	// Обработчик загрузок
 	case 'uploads':
-	function APinDB($NoBSSID, $bssid, $essid, $key)
-	{
-		global $db;
-		$result = 0;
-		$essid = $db->real_escape_string($essid);
-		$key = $db->real_escape_string($key);
-		// Проверяем, есть ли эта точка в базе (по BSSID/ESSID/WiFiKey)
-		if ($res = QuerySql("SELECT `id` FROM BASE_TABLE WHERE `NoBSSID`=$NoBSSID AND `BSSID`=$bssid AND `ESSID`='$essid' AND `WiFiKey`='$key' LIMIT 1"))
-		{
-			$result = $res->num_rows;
-			$res->close();
-		}
-		return $result > 0;
-	}
-	function addRow($row, $cmtid, $uid)
-	{
-		global $checkexist;
-		global $db;
-		global $aps;
-		// Отбираем только валидные точки доступа
-		$addr = $row[0];
-		$port = $row[1];
-		if ($addr == 'IP Address' && $port == 'Port')
-		{
-			return 1;
-		}
-		$bssid = $row[8];
-		$essid = $row[9];
-		$sec = $row[10];
-		$key = $row[11];
-		$wps = preg_replace('~\D+~', '', $row[12]); // Оставляем только цифры
-
-		if ($bssid == '<no wireless>')
-			return 2;
-
-		if (ismac($bssid)) // Проверка MAC-адреса
-		{
-			$NoBSSID = 0;
-			$bssid = mac2dec($bssid);
-		} else {
-			$NoBSSID = 1;
-			if ($bssid == '<access denied>')
-				$NoBSSID = 2;
-			if ($bssid == '<not accessible>')
-				$NoBSSID = 3;
-			if ($bssid == '<not implemented>')
-				$NoBSSID = 4;
-			$bssid = 0;
-		}
-		if (($NoBSSID || $wps == '')
-		&& ($essid == '' || $sec == '' || $sec == '-' || $key == '' || $key == '-'))
-		{
-			if ($NoBSSID == 0
-			|| $essid != ''
-			|| $sec != ''
-			|| $key != ''
-			|| $wps != '')
-			{ return 3; } // Недостаточно полезных данных для добавления
-			else { return 1; } // Вообще не содержит данных
-		}
-		if ($checkexist)
-			if (APinDB($NoBSSID, $bssid, $essid, $key))
-			{
-				return 4; // Уже есть в базе, пропускаем
-			}
-		if ($NoBSSID == 0) // Корректный BSSID
-		{
-			$aps[] = $bssid; // Записываем в очередь ожидания
-			$chkgeo = QuerySql("SELECT `BSSID` FROM GEO_TABLE WHERE `BSSID`=$bssid LIMIT 1");
-			if ($chkgeo->num_rows == 0)
-			{
-				// Добавляем новый BSSID с координатами NULL
-				QuerySql("INSERT INTO GEO_TABLE (`BSSID`) VALUES ($bssid)");
-			}
-			$chkgeo->close();
-		}
-		if ($cmtid == null) $cmtid = 'NULL';
-		$addr = _ip2long($addr); // IP Address
-		if ($addr == 0 || $addr == -1) $addr = 'NULL';
-		$port = (($port == '') ? 'NULL' : (int)$port); // Port
-		$auth = ($row[4] == '' ? 'NULL' : '\''.$db->real_escape_string($row[4]).'\''); // Authorization
-		$name = '\''.$db->real_escape_string($row[5]).'\''; // Device Name
-		$radio = (($row[6] == '[X]') ? 1 : 0); // RadioOff
-		$hide = (($row[7] == '[X]') ? 1 : 0); // Hidden
-		$essid = '\''.$db->real_escape_string($essid).'\''; // ESSID
-		$sec = str2sec($sec); // Security
-		$key = '\''.$db->real_escape_string($key).'\''; // Wi-Fi Key
-		$wps = (($wps == '') ? 1 : (int)$wps); // WPS PIN
-		$lanip = _ip2long($row[13]); // LAN IP
-		if ($lanip == 0 || $lanip == -1) $lanip = 'NULL';
-		$lanmsk = _ip2long($row[14]); // LAN Mask
-		if ($lanmsk == 0) $lanmsk = 'NULL';
-		$wanip = _ip2long($row[15]); // WAN IP
-		if ($wanip == 0 || $wanip == -1) $wanip = 'NULL';
-		$wanmsk = _ip2long($row[16]); // WAN Mask
-		if ($wanmsk == 0) $wanmsk = 'NULL';
-		$gate = _ip2long($row[17]); // WAN Gateway
-		if ($gate == 0 || $gate == -1) $gate = 'NULL';
-		$DNS = explode(' ', $row[18]); // DNS (up to 3 servers)
-		for ($i = 0; $i < count($DNS); $i++)
-		{
-			$DNS[$i] = _ip2long($DNS[$i]);
-			if ($DNS[$i] == 0 || $DNS[$i] == -1) $DNS[$i] = 'NULL';
-		}
-		for ($i = 0; $i <= 3; $i++)
-			if (!isset($DNS[$i])) $DNS[$i] = 'NULL';
-
-		QuerySql("INSERT INTO BASE_TABLE 
-				(`cmtid`,`IP`,`Port`,`Authorization`,`name`,`RadioOff`,`Hidden`,`NoBSSID`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`LANIP`,`LANMask`,`WANIP`,`WANMask`,`WANGateway`,`DNS1`,`DNS2`,`DNS3`,`uid`) 
-				VALUES ($cmtid, $addr, $port, $auth, $name, $radio, $hide, $NoBSSID, $bssid, $essid, $sec, $key, $wps, $lanip, $lanmsk, $wanip, $wanmsk, $gate, $DNS[0], $DNS[1], $DNS[2], $uid) 
-				ON DUPLICATE KEY UPDATE 
-				`cmtid`=$cmtid,`IP`=$addr,`Port`=$port,`Authorization`=$auth,`name`=$name,`RadioOff`=$radio,`Hidden`=$hide,`NoBSSID`=$NoBSSID,`BSSID`=$bssid,`ESSID`=$essid,`Security`=$sec,`WiFiKey`=$key,`WPSPIN`=$wps,`LANIP`=$lanip,`LANMask`=$lanmsk,`WANIP`=$wanip,`WANMask`=$wanmsk,`WANGateway`=$gate,`DNS1`=$DNS[0],`DNS2`=$DNS[1],`DNS3`=$DNS[2],`uid`=$uid;");
-		return 0;
-	}
 	while (true)
 	{
 		logt('Fetching a task... (tstate = 1)');

@@ -1,8 +1,10 @@
 <?php
+require_once 'db.php';
+global $db;
+if (!db_connect()) {die("Ошибка подключения к БД");} 
+
 require_once 'auth.php';
-global $login;
-global $level;
-global $nick;
+global $login, $level, $nick;
 
 
 if (isset($_POST["login"]) && isset($_POST["password"])) { //Если логин и пароль были отправлены
@@ -30,4 +32,6 @@ if ($action == 'logout') { // Если нужно выйти
 	$content = str_replace('%action_name%', 'Войти', $content);
 	echo str_replace('</body>', $incscript.'</body>', $content);
 }
+
+$db->close();
 ?>

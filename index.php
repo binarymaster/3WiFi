@@ -9,7 +9,7 @@ if ($page == 'index' ||
 	$page == 'left' ||
 	$page == 'main' ||
 	$page == 'login' ||
-	$page == 'map' ||
+	$page == 'registration' ||
 	$page == 'find' ||
 	$page == 'find_ranges' ||
 	$page == 'devicemac' ||
@@ -18,8 +18,11 @@ if ($page == 'index' ||
 	$page == 'stat')
 {
 	global $level, $login, $nick;
-	$action = ($login == '' ? 'login' : 'logout');
-	$action_name = ($login == '' ? 'Войти' : 'Выйти');
+
+	$action_login = ($login == '' ? 'login' : 'logout');
+	$action_login_name = ($login == '' ? 'Войти' : 'Выйти');
+	$action_reg = ($login == '' ? 'reg' : 'inv');
+	$action_reg_name = ($login == '' ? 'Зарегистрироваться' : 'Пригласить');
 
 	$lat = 55.76;
 	$lon = 37.64;
@@ -28,6 +31,8 @@ if ($page == 'index' ||
 	if (isset($_GET['lon'])) $lon = (float)$_GET['lon'];
 	if (isset($_GET['rad'])) $rad = (float)$_GET['rad'];
 
+	$invite = getParam('invite');
+	
 	$content = file_get_contents($page.'.html');
 
 	$content = str_replace('%var_lat%', $lat, $content);
@@ -35,8 +40,11 @@ if ($page == 'index' ||
 	$content = str_replace('%var_rad%', $rad, $content);
 	$content = str_replace('%login%', $login, $content);
 	$content = str_replace('%nick%', $nick, $content);
-	$content = str_replace('%action%', $action, $content);
-	$content = str_replace('%action_name%', $action_name, $content);
+	$content = str_replace('%action%', $action_login, $content);
+	$content = str_replace('%action_name%', $action_login_name, $content);
+	$content = str_replace('%action_reg%', $action_reg, $content);
+	$content = str_replace('%action_reg_name%', $action_reg_name, $content);
+	$content = str_replace('%invite%', $invite, $content);
 
 	echo str_replace('</body>', $incscript.'</body>', $content);
 	exit();
