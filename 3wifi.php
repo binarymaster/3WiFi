@@ -646,36 +646,6 @@ switch ($action)
 			// Проверка на валидность
 			$valid = false;
 
-			function ValidHeaderCSV($row)
-			{
-				if (($row[0] !== 'IP Address')
-				|| ($row[1] !== 'Port')
-				|| ($row[4] !== 'Authorization')
-				|| ($row[5] !== 'Server name / Realm name / Device type')
-				|| ($row[6] !== 'Radio Off')
-				|| ($row[7] !== 'Hidden')
-				|| ($row[8] !== 'BSSID')
-				|| ($row[9] !== 'ESSID')
-				|| ($row[10] !== 'Security')
-				|| ($row[11] !== 'Key')
-				|| ($row[12] !== 'WPS PIN')
-				|| ($row[13] !== 'LAN IP Address')
-				|| ($row[14] !== 'LAN Subnet Mask')
-				|| ($row[15] !== 'WAN IP Address')
-				|| ($row[16] !== 'WAN Subnet Mask')
-				|| ($row[17] !== 'WAN Gateway')
-				|| ($row[18] !== 'Domain Name Servers'))
-				{
-					return false;
-				}
-				return true;
-			}
-			function ValidHeaderTXT($row)
-			{
-				$row = explode("\t", $row);
-				return (count($row) == 23);
-			}
-
 			if (($handle = fopen($filename, 'r')) !== false)
 			{
 				switch ($ext)
