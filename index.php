@@ -8,8 +8,8 @@ if ($page == '') $page = 'index';
 if ($page == 'index' ||
 	$page == 'left' ||
 	$page == 'main' ||
-	$page == 'map' ||
 	$page == 'login' ||
+	$page == 'map' ||
 	$page == 'find' ||
 	$page == 'find_ranges' ||
 	$page == 'devicemac' ||
@@ -18,14 +18,9 @@ if ($page == 'index' ||
 	$page == 'stat')
 {
 	global $level, $login, $nick;
-	if ($login == '') {
-		$action = 'login';
-		$action_name = 'Войти';
-	}else {
-		$action = 'logout';
-		$action_name = 'Выйти';
-	}	
-	
+	$action = ($login == '' ? 'login' : 'logout');
+	$action_name = ($login == '' ? 'Войти' : 'Выйти');
+
 	$lat = 55.76;
 	$lon = 37.64;
 	$rad = 2;

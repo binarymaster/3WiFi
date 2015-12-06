@@ -44,8 +44,9 @@ CREATE TABLE `geo` (
 	`BSSID` BIGINT(15) UNSIGNED NOT NULL,
 	`latitude` FLOAT(12,8) NULL DEFAULT NULL,
 	`longitude` FLOAT(12,8) NULL DEFAULT NULL,
+	`quadkey` BIGINT(20) UNSIGNED NULL DEFAULT NULL,
 	PRIMARY KEY (`BSSID`),
-	INDEX `Coords` (`latitude`, `longitude`)
+	INDEX `quadkey` (`quadkey`)
 ) COLLATE='utf8_general_ci' ENGINE=MyISAM ROW_FORMAT=FIXED;
 
 -- Дамп структуры таблицы 3wifi.comments
@@ -130,23 +131,24 @@ CREATE TABLE `mem_geo` (
 	`BSSID` BIGINT(15) UNSIGNED NOT NULL,
 	`latitude` FLOAT(12,8) NULL DEFAULT NULL,
 	`longitude` FLOAT(12,8) NULL DEFAULT NULL,
+	`quadkey` BIGINT(20) UNSIGNED NULL DEFAULT NULL,
 	PRIMARY KEY (`BSSID`),
-	INDEX `Coords` (`latitude`, `longitude`)
+	INDEX `quadkey` (`quadkey`)
 ) COLLATE='utf8_general_ci' ENGINE=MEMORY ROW_FORMAT=FIXED;
 
 -- Дамп структуры для таблицы 3wifi.users
 CREATE TABLE `users` (
-  `uid` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `login` varchar(30) NOT NULL,
-  `nick` varchar(30) NOT NULL,
-  `pass_hash` char(32) NOT NULL,
-  `autologin` char(32) NOT NULL,
-  `salt` char(32) NOT NULL,
-  `level` int(10) unsigned NOT NULL DEFAULT '0',
-  `ip_hash` char(32) NOT NULL,
-  PRIMARY KEY (`uid`),
-  UNIQUE KEY `login` (`login`),
-  UNIQUE KEY `nick` (`nick`)
+	`uid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+	`login` varchar(30) NOT NULL,
+	`nick` varchar(30) NOT NULL,
+	`pass_hash` char(32) NOT NULL,
+	`autologin` char(32) NOT NULL,
+	`salt` char(32) NOT NULL,
+	`level` int(10) unsigned NOT NULL DEFAULT '0',
+	`ip_hash` char(32) NOT NULL,
+	PRIMARY KEY (`uid`),
+	UNIQUE KEY `login` (`login`),
+	UNIQUE KEY `nick` (`nick`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Дамп данных таблицы 3wifi.users

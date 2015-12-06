@@ -2,6 +2,7 @@
 require_once 'auth.php';
 require_once 'utils.php';
 require_once 'db.php';
+
 Header('Content-Type: text/plain');
 echo "3WiFi Daemon Script\n\n";
 
@@ -9,22 +10,20 @@ if ($argv[0] != basename(__FILE__))
 {
 	die('This is CLI script. Use it with php-cli.');
 }
-
 if (count($argv) < 3)
 {
 	echo "USAGE:\n";
 	echo "$argv[0] <password> <action>\n";
 	exit();
 }
-
 if ($level != 2) die("Error: Not authorized.\n");
-
-set_time_limit(0);
 
 function logt($str)
 {
 	echo '['.date('H:i:s').'] '.$str."\n";
 }
+
+set_time_limit(0);
 
 while (!db_connect())
 {

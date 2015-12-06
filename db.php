@@ -368,8 +368,4 @@ function CheckRelevanceOfMemoryTables($UseFix)
 	return $Result;
 }
 
-function quote($var)    {
-	return mysqli_real_escape_string($var);
-}
-
 ?>

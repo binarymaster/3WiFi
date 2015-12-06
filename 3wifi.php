@@ -12,7 +12,7 @@ require_once 'quadkey.php';
 session_start(); // Сессия уже запущена в auth.php
 global $uid;
 
-$topPort = 10;
+$topPort = 30;
 $topauth = 100;
 $topname = 30;
 $topbssid = 30;
