@@ -21,26 +21,37 @@ class User {
 	const USER_UNAUTHORIZED = NULL; // Не авторизован
 	const USER_BAN = -1; // Забанен
 
-	public $Level = USER_UNAUTHORIZED;
-	public $Login = '';
-	public $HashPass = NULL;
-	public $Nick = '';
 	public $uID = NULL;
+	public $Login = '';
+	public $Nick = '';
+	public $HashPass = NULL;
 	public $HashKey = NULL;
-	public $IP = NULL;
-	public $HashIP = NULL;
 	public $Salt = NULL;
+	public $Level = USER_UNAUTHORIZED;
+	public $HashIP = NULL;
+	public $maxInvites = 0;
 	
-	function __construct ($db) {
+	private static $mysqli;
+	
+
+    function __construct($server='localhost', $user='user', $password=NULL, $db='3wifi', $port='3306', $socket=NULL) {
 	/**
 	 * Создает объект user подключенный к БД
-	 * @param msqli $db
+	 * @params new msqli(params)
 	 */
-		$this->db = $db;
+		if(is_null(self::$mysqli)) self::$mysqli = new mysqli($server, $user, $password, $db, $port, $socket);
+		if (mysqli_connect_errno()) {
+			die ("Ошибка соединения с Базой Данных: ".mysqli_connect_error());
+			exit();
+		}	
 	}
 	
+	function __destruct() {
+		self::$mysqli->close();
+	}
+ 	
 	private function quote($var) {
-		return $this->db->real_escape_string($var);
+		return self::$mysqli->real_escape_string($var);
 	}
 
 	public function newHashKey() {
@@ -48,10 +59,10 @@ class User {
 	 * Генерирует новый хэш-ключ (Нужен для автоматической авторизации по кукам)
 	 * @return string 
 	 */
-		return = md5(uniqid(rand(),true));
+		return md5(uniqid(rand(),true));
 	}
 	
-	public function newHashIP($Salt = null, $IP = $_SERVER['REMOTE_ADDR']) {
+	public function newHashIP($Salt = null, $IP=-1) {
 	/**
 	 * Возвращает правильный хэш-ip для указанного IP и Соли (Нужно для автоматической авторизации по кукам)
 	 * @param string [$Salt] (без параметра - соль пользователя, либо указанная соль)
@@ -59,7 +70,7 @@ class User {
 	 * @return string 
 	 */
 		$Salt = (is_null($Salt) ? $this->Salt : $Salt);
-		$IP =  (is_null($IP) ? $this->IP : $IP);
+		$IP =  (is_null($IP) ? $this->IP : ($IP===-1 ? $_SERVER['REMOTE_ADDR'] : $IP) );
 		return md5(md5($IP).$Salt);
 	}
 	
@@ -89,7 +100,7 @@ class User {
 			SELECT {$this->quote($this->uID)};"; // Для совместимости получим его же uID обратно
 		}
 		
-		$res = $this->query($sql);
+		$res = $this->mysqli->query($sql);
 		$this->uID = (($row = $res->fetch_row()) ? (int)$row[0] : null); // Запоминаем полученный uID
 		$res->close();
 		return $this->uID; // И возвращаем uID обратно
@@ -108,7 +119,7 @@ class User {
 	 */
 		
 		if (is_null($uID)) { // если uID не указан, ищем по Login:HashKey:HashIP
-			$sql = "SELECT * FROM `users` WHERE `Login`={$this->quote($Login)} AND `HashKey`='{$this->quote($HashKey)}' AND `HashIP`='{$this->quote($HashIP)}' LIMIT 1;"
+			$sql = "SELECT * FROM `users` WHERE `Login`={$this->quote($Login)} AND `HashKey`='{$this->quote($HashKey)}' AND `HashIP`='{$this->quote($HashIP)}' LIMIT 1;";
 			$result = false; // Пользователь даказывает верность загрузки
 		} else {
 			$sql = "SELECT * FROM `users` WHERE `uID`={$this->quote($uID)} LIMIT 1";
@@ -176,7 +187,7 @@ class User {
 			$this->Level	  = $_SESSION["Level"];
 			$this->HashIP 	  = $_SESSION["HashIP"];
 			$this->maxInvites = $_SESSION["maxInvites"];
-			$resturn true;
+			return true;
 		}
 		else return false;
 	}
@@ -201,12 +212,12 @@ class User {
 	 * Загружает пользователя из куки
 	 * @return bool $result 
 	 */
-		if (isset($_COOKIE["Auth"]) // Есть кука 
+		if (isset($_COOKIE["Auth"])) // Есть кука 
 		{
 			$Cookie = unserialize($_COOKIE["Auth"]); // получаем куку			
 			$this->Login	= $Cookie["Login"];
 			$this->HashKey	= $Cookie["HashKey"];
-			$this->HashIP	= $Cookie["HashIP"]);
+			$this->HashIP	= $Cookie["HashIP"];
 			return true;
 		} else return false;
 	}
@@ -240,6 +251,23 @@ class User {
 		return true;
 	}
 
+	public function setUser($uID=NULL, $Login='', $Nick='', $HashPass=NULL, $HashKey=NULL, $Salt=NULL, $Level=USER_UNAUTHORIZED, $HashIP=NULL, $maxInvites=0) {
+	/**
+	 * Запоминает указанные данные 
+	 * @params [User]
+	 * @return bool true
+	 */
+		$this->uID = $uID;
+		$this->Login = $Login;
+		$this->Nick = $Nick;
+		$this->HashPass = $HashPass;
+		$this->HashKey = $HashKey;
+		$this->Salt = $Salt;
+		$this->Level = $Level;
+		$this->HashIP = $HashIP;
+		$this->maxInvites = $maxInvites;
+	}
+
 	public function Auth($password, $login = NULL) {
 	/**
 	 * Авторизует пользователя по паролю:[логину], 
@@ -249,8 +277,7 @@ class User {
 	 * @return bool 
 	 */
 		$login = ( is_null($login) ? $this->Login : $login );
-		
-		$res = $this->db->query("SELECT * FROM `users` WHERE `login`='{$this->quote($login)}' LIMIT 1");
+		$res = self::$mysqli->query("SELECT * FROM `users` WHERE `login`='{$this->quote($login)}' LIMIT 1");
 		
 		if ($res->num_rows == 1) // Если логин существует
 		{
@@ -264,8 +291,7 @@ class User {
 			$_Level 	 = (int)$row[6];
 			// HashIP установим новый
 			$_maxInvites = (int)$row[8];
-			
-			if (md5( md5($password).$salt ) == $_HashPass) { // Если пароль указан правильно
+			if (md5( md5($password).$_Salt ) == $_HashPass) { // Если пароль указан правильно
 				$this->setUser($_uid, $login, $_nick, $_HashPass, $this->newHashKey, $_Salt, $_Level, $this->newHashIP($_Salt), $_maxInvites);
 				$this->save(); // сохраним состояние авторизации				
 				return true;
@@ -286,7 +312,7 @@ class User {
 	 * @return bool
 	 */
 	public function isUserLogin($login) {
-		$res = $this->db->query("SELECT `uid` FROM `users` WHERE `Login`='{$this->quote($login)}'");
+		$res = self::$mysqli->query("SELECT `uid` FROM `users` WHERE `Login`='{$this->quote($login)}'");
 		$result = ($res->num_rows == 1);// Если пользователь существует
 		$res->close();
 		return $result; 
@@ -298,7 +324,7 @@ class User {
 	 * @param string $nick
 	 * @return bool
 	 */
-		$res = $this->db->query("SELECT `uid` FROM `users` WHERE `Nick`='{$this->quote($nick)}'");
+		$res = self::$mysqli->query("SELECT `uid` FROM `users` WHERE `Nick`='{$this->quote($nick)}'");
 		$result = ($res->num_rows == 1);// Если пользователь существует
 		$res->close();
 		return $result; 
@@ -321,7 +347,7 @@ class User {
 	 * @param string $invite
 	 * @return bool
 	 */
-		$res = $this->db->query("SELECT `id` FROM `invites` WHERE `invite`='{$this->quote($invite)}' AND `uid2` IS NULL LIMIT 1;");
+		$res = self::$mysqli->query("SELECT `id` FROM `invites` WHERE `invite`='{$this->quote($invite)}' AND `uid2` IS NULL LIMIT 1;");
 		$result = ($res->num_rows == 1); // Если код существует и действителен
 		$res->close();
 		return $result;
@@ -333,7 +359,7 @@ class User {
 	 * @param int $uid
 	 * @return array $ActiveInvites
 	 */
-		$res = $this->db->query("SELECT * FROM `invites` WHERE `uid1`='{$this->quote($uid)}' AND `uid2` IS NULL;");
+		$res = self::$mysqli->query("SELECT * FROM `invites` WHERE `uid1`='{$this->quote($uid)}' AND `uid2` IS NULL;");
 		for ($result = array (); $row = $res->fetch_assoc(); $result[] = $row);
 		$res->close();
 		return $result;
