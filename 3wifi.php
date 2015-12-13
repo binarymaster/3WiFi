@@ -282,7 +282,7 @@ switch ($action)
 		else
 		{
 			$comment = $db->real_escape_string($comment);
-			$res = QuerySql("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
+			$res = $db->query("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
 			if ($res->num_rows > 0)
 			{
 				$row = $res->fetch_row();
@@ -668,7 +668,7 @@ switch ($action)
 				$comment = $db->real_escape_string($comment);
 				$uid = $UserManager->uID;
 				if (is_null($uid) || $UserManager->Level < 1) $uid = 'NULL';
-				if (QuerySql("INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`,`uid`) VALUES ('$tid',now(),now(),'$ext','$comment',$checkexist,$nowait,$uid)"))
+				if ($db->query("INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`,`uid`) VALUES ('$tid',now(),now(),'$ext','$comment',$checkexist,$nowait,$uid)"))
 				{
 					$json['upload']['state'] = true;
 					$json['upload']['tid'] = $tid;
@@ -691,7 +691,7 @@ switch ($action)
 					$json['upload']['tid'] = $tid;
 					$filename = 'uploads/'.$tid.$task['ext'];
 					$comment = $db->real_escape_string($comment);
-					QuerySql("UPDATE tasks SET `modified`=now(),`comment`='$comment',`checkexist`=$checkexist,`nowait`=$nowait WHERE `tid`='$tid')");
+					$db->query("UPDATE tasks SET `modified`=now(),`comment`='$comment',`checkexist`=$checkexist,`nowait`=$nowait WHERE `tid`='$tid')");
 					if ($task['ext'] != $ext)
 					{
 						$error[] = 4; // Несовпадение с форматом файла задания
@@ -713,7 +713,7 @@ switch ($action)
 		if ($json['upload']['state'] && $done)
 		{
 			// Запуск обработки задания
-			$json['upload']['processing'] = QuerySql("UPDATE tasks SET `tstate`=1 WHERE `tid`='$tid'");
+			$json['upload']['processing'] = $db->query("UPDATE tasks SET `tstate`=1 WHERE `tid`='$tid'");
 		}
 		$db->close();
 	} else
@@ -771,7 +771,7 @@ switch ($action)
 		$sql .= ' AND cmtval LIKE \'%'.$db->real_escape_string($cval).'%\'';
 
 	$sql .= ' ORDER BY cmtval';
-	if ($res = QuerySql($sql))
+	if ($res = $db->query($sql))
 	{
 		while ($row = $res->fetch_row())
 			$json['hint'][] = $row[0];
@@ -846,19 +846,19 @@ switch ($action)
 			$json['stat']['geoloc'] = (int)$row[0];
 			$res->close();
 		}
-		if ($res = QuerySql('SELECT COUNT(tid) FROM tasks WHERE tstate = 0'))
+		if ($res = $db->query('SELECT COUNT(tid) FROM tasks WHERE tstate = 0'))
 		{
 			$row = $res->fetch_row();
 			$json['stat']['tasks']['uploading'] = (int)$row[0];
 			$res->close();
 		}
-		if ($res = QuerySql('SELECT COUNT(tid) FROM tasks WHERE tstate > 0 AND tstate < 3'))
+		if ($res = $db->query('SELECT COUNT(tid) FROM tasks WHERE tstate > 0 AND tstate < 3'))
 		{
 			$row = $res->fetch_row();
 			$json['stat']['tasks']['processing'] = (int)$row[0];
 			$res->close();
 		}
-		if ($res = QuerySql('SELECT comment FROM tasks WHERE tstate > 0 AND tstate < 3 ORDER BY created LIMIT 1'))
+		if ($res = $db->query('SELECT comment FROM tasks WHERE tstate > 0 AND tstate < 3 ORDER BY created LIMIT 1'))
 		{
 			$row = $res->fetch_row();
 			$json['stat']['tasks']['comment'] = $row[0];
@@ -1216,7 +1216,7 @@ switch ($action)
 		break;
 	}
 
-	if ($res = QuerySql("SELECT COUNT(*) FROM users"))
+	if ($res = $db->query("SELECT COUNT(*) FROM users"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
@@ -1224,7 +1224,7 @@ switch ($action)
 	}
 
 	// fixit!!!!!!!!
-	if ($res = QuerySql('SELECT nick, 0 FROM users WHERE 1'))
+	if ($res = $db->query('SELECT nick, 0 FROM users WHERE 1'))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())

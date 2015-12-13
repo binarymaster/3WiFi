@@ -231,7 +231,7 @@ function getTask($tid)
 {
 	global $db;
 	$result = false;
-	if ($res = QuerySql("SELECT * FROM tasks WHERE `tid`='$tid'"))
+	if ($res = $db->query("SELECT * FROM tasks WHERE `tid`='$tid'"))
 	{
 		if ($row = $res->fetch_row())
 		{
@@ -258,7 +258,7 @@ function getTask($tid)
 function getCommentVal($cmtid)
 {
 	if ($cmtid == null) return '';
-	$res = QuerySql("SELECT `cmtval` FROM comments WHERE `cmtid`=$cmtid");
+	$res = $db->query("SELECT `cmtval` FROM comments WHERE `cmtid`=$cmtid");
 	$row = $res->fetch_row();
 	$res->close();
 	return $row[0];
@@ -270,15 +270,15 @@ function getCommentId($comment, $create = false)
 	if ($comment == '') return $result;
 	global $db;
 	$comment = $db->real_escape_string($comment);
-	$res = QuerySql("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
+	$res = $db->query("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
 	$row = $res->fetch_row();
 	$res->close();
 	if ($row[0] == null)
 	{
 		if ($create)
 		{
-			QuerySql("INSERT INTO comments (`cmtval`) VALUES ('$comment')");
-			$res = QuerySql("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
+			$db->query("INSERT INTO comments (`cmtval`) VALUES ('$comment')");
+			$res = $db->query("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
 			$row = $res->fetch_row();
 			$res->close();
 			$result = (int)$row[0];

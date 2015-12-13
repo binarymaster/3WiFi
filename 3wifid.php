@@ -32,7 +32,7 @@ switch ($argv[1])
 	while (true)
 	{
 		logt('Fetching a task... (tstate = 1)');
-		$res = QuerySql('SELECT `tid` FROM tasks WHERE `tstate`=1 ORDER BY `created` LIMIT 1');
+		$res = $db->query('SELECT `tid` FROM tasks WHERE `tstate`=1 ORDER BY `created` LIMIT 1');
 		$tid = (($row = $res->fetch_row()) ? $row[0] : null);
 		$res->close();
 		$slp = 5;
@@ -67,7 +67,7 @@ switch ($argv[1])
 						if (microtime(true) - $time > $hangcheck)
 						{
 							logt("Status: $cntp processed, $cnta added (Working)");
-							QuerySql("UPDATE tasks SET `lines`=$cntp,`accepted`=$cnta WHERE `tid`='$tid'");
+							$db->query("UPDATE tasks SET `lines`=$cntp,`accepted`=$cnta WHERE `tid`='$tid'");
 							$time = microtime(true);
 						}
 					}
@@ -83,7 +83,7 @@ switch ($argv[1])
 						if (microtime(true) - $time > $hangcheck)
 						{
 							logt("Status: $cntp processed, $cnta added (Working)");
-							QuerySql("UPDATE tasks SET `lines`=$cntp,`accepted`=$cnta WHERE `tid`='$tid'");
+							$db->query("UPDATE tasks SET `lines`=$cntp,`accepted`=$cnta WHERE `tid`='$tid'");
 							$time = microtime(true);
 						}
 					}
@@ -112,12 +112,12 @@ switch ($argv[1])
 					fclose($handle);
 				}
 				logt("Set tstate = 2 (geolocation)");
-				QuerySql("UPDATE tasks SET `lines`=$cntp,`accepted`=$cnta,`warns`='$warns',`tstate`=2 WHERE `tid`='$tid'");
+				$db->query("UPDATE tasks SET `lines`=$cntp,`accepted`=$cnta,`warns`='$warns',`tstate`=2 WHERE `tid`='$tid'");
 				logt("Task processing complete.");
 			}
 			else
 			{
-				QuerySql("DELETE FROM tasks WHERE `tid`='$tid'");
+				$db->query("DELETE FROM tasks WHERE `tid`='$tid'");
 				logt("Task processing in `nowait' mode complete.");
 			}
 			unset($aps);
@@ -143,10 +143,10 @@ switch ($argv[1])
 	while (true)
 	{
 		logt('Clean complete tasks... (tstate = 3)');
-		QuerySql("DELETE FROM tasks WHERE `tstate`=3 AND `modified` < DATE_SUB(NOW(), INTERVAL 1 MINUTE)");
+		$db->query("DELETE FROM tasks WHERE `tstate`=3 AND `modified` < DATE_SUB(NOW(), INTERVAL 1 MINUTE)");
 
 		logt('Fetching a task... (tstate = 2)');
-		$res = QuerySql('SELECT `tid` FROM tasks WHERE `tstate`=2 ORDER BY `created` LIMIT 1');
+		$res = $db->query('SELECT `tid` FROM tasks WHERE `tstate`=2 ORDER BY `created` LIMIT 1');
 		$tid = (($row = $res->fetch_row()) ? $row[0] : null);
 		$res->close();
 		$slp = 5;
@@ -196,7 +196,7 @@ switch ($argv[1])
 				if (microtime(true) - $time > $hangcheck)
 				{
 					logt('Status: '.$apschk[1].' found, '.$apschk[-1].' no, '.$apschk[0].' left (Working)');
-					QuerySql("UPDATE tasks SET `onmap`=$found WHERE `tid`='$tid'");
+					$db->query("UPDATE tasks SET `onmap`=$found WHERE `tid`='$tid'");
 					$time = microtime(true);
 				}
 				sleep(2);
@@ -204,7 +204,7 @@ switch ($argv[1])
 			logt('Status: '.$apschk[1].' found, '.$apschk[-1].' not found (Done!)');
 
 			logt("Set tstate = 3 (complete)");
-			QuerySql("UPDATE tasks SET `onmap`=$found,`tstate`=3 WHERE `tid`='$tid'");
+			$db->query("UPDATE tasks SET `onmap`=$found,`tstate`=3 WHERE `tid`='$tid'");
 			logt("Task processing complete.");
 			$slp = 0;
 		}
