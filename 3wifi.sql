@@ -163,6 +163,18 @@ CREATE TABLE `users` (
 	UNIQUE INDEX `nick` (`nick`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- Дамп структуры для таблицы 3wifi.logauth
+CREATE TABLE `logauth` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`IP` INT(15) UNSIGNED NOT NULL,
+	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
+	`action` TINYINT(3) UNSIGNED NOT NULL,
+	`data` CHAR(64) NOT NULL DEFAULT '',
+	`status` BIT(1) NOT NULL DEFAULT b'0',
+	PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 -- Дамп данных таблицы 3wifi.users
 INSERT INTO `users` (`uid`, `puid`, `login`, `nick`, `pass_hash`, `autologin`, `salt`, `level`, `ip_hash`, `maxInvites`) VALUES
 	(0, 0, 'root', '3WiFi System', '', '', '', -1, '', 0);

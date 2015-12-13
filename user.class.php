@@ -20,6 +20,12 @@ class User {
 	const USER_UNAUTHORIZED = -1; // Не авторизован
 	const USER_BAN = -2; // Забанен
 
+	const LOG_AUTHORIZATION = 1;
+	const LOG_LOGOUT = 2;
+	const LOG_REGISTRATION = 3;
+	const LOG_CREATEINVITE = 4;
+	const LOG_DELETEINVITE = 5;
+
 	public $uID = NULL;
 	public $puID = NULL;
 	public $InviterNickName = NULL;
@@ -347,13 +353,17 @@ class User {
 		$InviteInfo = $this->getInviteInfo($Invite);
 		if ($InviteInfo['uid'] != NULL) return false;
 
+		$ParentUser = $this->getUserInfo($InviteInfo['puid']);
 		$Invites = 0;
-		switch($InviteInfo['level'])
+		if($ParentUser['level'] >= 2)
 		{
-			case 1: $Invites = 3;
-			break;
-			case 2: $Invites = 10;
-			break;
+			switch($InviteInfo['level'])
+			{
+				case 1: $Invites = 3;
+				break;
+				case 2: $Invites = 10;
+				break;
+			}
 		}
 		$this->setUser(NULL, $InviteInfo['puid'], $Login, $Nick, md5($Password.$Salt), '', $Salt, (int)$InviteInfo['level'], NULL, $Invites);
 		$this->save();
@@ -362,6 +372,7 @@ class User {
 			$sql = "UPDATE invites SET uid=".$this->uID." WHERE invite='".self::quote($Invite)."'";
 			$res = self::$mysqli->query($sql);
 			self::$mysqli->query('UPDATE users SET regdate=NOW() WHERE uid='.$this->uID);
+			$this->eventLog(self::LOG_REGISTRATION, 1, 'Invite: '.$Invite);
 			return true;
 		}
 		return false;
@@ -387,17 +398,15 @@ class User {
 			{
 				$this->setUser($row['uid'], $row['puid'], $login, $row['nick'], $row['pass_hash'], $this->newHashKey(), $row['salt'], $row['level'], $this->newHashIP($_Salt), $row['invites']);
 				$this->RegDate = $row['regdate'];
-				$this->save(); // сохраним состояние авторизации
+				$this->save(); // сохраним состояние
+				$this->eventLog(self::LOG_AUTHORIZATION, 1);
 				return true;
-			}
-			else
-			{
-				return false;
 			}
 		}else { // Логин не существует, авторизация провалилась
 			return false;
 		}
 		$res->close();
+		$this->eventLog(self::LOG_AUTHORIZATION, 0);
 	}
 
 	/**
@@ -446,6 +455,7 @@ class User {
 		$_SESSION = array(); // Очищаем сессию
 		session_destroy(); // Уничтожаем
 		setcookie('auth', '', time()-3600); // Удаляем авто авторизацию
+		$this->eventLog(self::LOG_LOGOUT, 1);
 		return true;
 	}
 
@@ -465,6 +475,15 @@ class User {
 
 		$res = self::$mysqli->query("SELECT * FROM invites WHERE `invite`='{$this->quote($invite)}' LIMIT 1;");
 		if (!$res) return false;
+		$result = $res->fetch_assoc();
+		$res->close();
+		return $result;
+	}
+	public function getUserInfo($uid) {
+
+		$res = self::$mysqli->query('SELECT * FROM users WHERE `uid`='.$uid.' LIMIT 1');
+		if (!$res) return false;
+
 		$result = $res->fetch_assoc();
 		$res->close();
 		return $result;
@@ -498,6 +517,7 @@ class User {
 			return false;
 		}
 		if ($this->Level < 3) $res = self::$mysqli->query("UPDATE users SET invites=invites-1 WHERE uid=$uid");
+		$this->eventLog(self::LOG_CREATEINVITE, 1, $Invite);
 		return true;
 	}
 
@@ -513,7 +533,18 @@ class User {
 			return false;
 		}
 		if ($this->Level < 3) $res = self::$mysqli->query("UPDATE users SET invites=invites+1 WHERE uid=$uid");
+		$this->eventLog(self::LOG_DELETEINVITE, 1, $invite);
 		return true;
+	}
+
+	public function eventLog($Action, $Status, $Data='')
+	{
+		$IP = $_SERVER['REMOTE_ADDR'];
+		$IP = ip2long($IP);
+		if($IP === FALSE) return;
+
+		$sql = 'INSERT INTO logauth SET IP='.$IP.', uid='.$this->uID.',action='.$Action.', data="'.$Data.'", status='.$Status;
+		self::$mysqli->query($sql);
 	}
 
 	public function isLogged()

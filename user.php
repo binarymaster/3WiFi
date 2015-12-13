@@ -149,8 +149,23 @@ switch($action)
 	$json['result'] = $UserManager->Registration($newLogin, $newNick, $newPassword, $newInvite);
 	break;
 
+	// Смена никнейма пользователя
+	case 'changenick':
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	// $_POST['nick']
+	break;
+
 	// Смена пароля пользователя
 	case 'changepass':
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
 	// $_POST['oldpass']
 	// $_POST['password']
 	break;
@@ -187,7 +202,12 @@ switch($action)
 	case 'deleteinv':
 	$invite = isset($_POST['invite']) ? $_POST['invite'] : NULL;
 
-	if ($UserManager->Level < 1 || $invite == NULL)
+	if ($invite == NULL)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if ($UserManager->Level < 1)
 	{
 		$json['error'] = 'lowlevel';
 		break;
