@@ -246,11 +246,19 @@ function initmenu()
 	<div class=mainmenu>
 		<a href="home"><img class=menulogo src="img/logo.png"></a>
 		<div class=menubtn style="width: 92px; pointer-events: none"><p></p></div>
+		<span class=multi>
+			<a href="home"><div class="%chk_docs%"><p>О проекте</p></div></a>
+			<span class=submenu>
+				<a href="home"><div class="%chk_home%"><p>Главная</p></div></a>
+				<a href="faq"><div class="%chk_faq%"><p>F.A.Q</p></div></a>
+				<a href="rules"><div class="%chk_rul%"><p>Соглашение</p></div></a>
+			</span>
+		</span>
 		<a href="map"><div class="%chk_map%"><p>Карта</p></div></a>
 		<a href="find"><div class="%chk_find%"><p>Поиск</p></div></a>
 		<span class=multi>
 			<a href="ranges"><div class="%chk_tool%"><p>Инструменты</p></div></a>
-			<span class=submenu id=subtool>
+			<span class=submenu>
 				<a href="ranges"><div class="%chk_rang%"><p>Поиск диапазонов</p></div></a>
 				<a href="devmac"><div class="%chk_dev%"><p>Устройство по MAC</p></div></a>
 			</span>
@@ -263,7 +271,6 @@ function initmenu()
 				<a href="graph"><div class="%chk_grph%"><p>Динамика</p></div></a>
 			</span>
 		</span>
-		<a href="map"><div class="%chk_faq%"><p>F.A.Q</p></div></a>
 		<a href="javascript://" onclick="loginBtn()" style="float: right"><div class=menubtn><p>%login_str%</p></div></a>
 		<a href="user"><div class="%chk_user%" style="float: right" id=nickname><p>%nick%</p></div></a>
 	</div>
@@ -271,7 +278,7 @@ function initmenu()
 
 <div class=content>%content%</div>
 
-<div class=footer>&copy; 2015 akokarev, binarymaster, Felis-Sapiens, Fusix <span><a href="rules">Соглашение</a></span></div>
+<div class=footer>&copy; 2015 akokarev, binarymaster, Felis-Sapiens, Fusix</div>
 
 <div class=modal>
 	<div class=modal_bkg onclick="hideModal()"></div>

@@ -202,13 +202,6 @@
 	font-weight: bold;
 	margin-bottom: 12px;
 }
-.footer span {
-	float: right;
-	padding-right: 48px;
-}
-.footer a {
-	color: white;
-}
 .todo {
 	list-style-type: decimal;
 }
