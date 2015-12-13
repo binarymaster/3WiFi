@@ -1223,7 +1223,8 @@ switch ($action)
 		$res->close();
 	}
 
-	/*if ($res = QuerySql("SELECT u.nick, COUNT(b.id) FROM BASE_TABLE as b, users as u WHERE b.uid=u.uid GROUP BY u.uid ORDER BY COUNT(b.id) DESC LIMIT $topSid"))
+	// fixit!!!!!!!!
+	if ($res = QuerySql('SELECT nick, 0 FROM users WHERE 1'))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1234,7 +1235,7 @@ switch ($action)
 			$json['stat']['data'][] = $data;
 		}
 		$res->close();
-	}*/
+	}
 	$db->close();
 	break;
 }

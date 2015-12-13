@@ -19,6 +19,8 @@ function appendRow(rowid, idx, p1, p2, tt, of, th)
 }
 function parsestat(st, d)
 {
+	if(!d.stat.data) return;
+	
 	if (typeof d.stat.top == 'number')
 	{
 		$('#sttot').text('('+d.stat.total+')');
