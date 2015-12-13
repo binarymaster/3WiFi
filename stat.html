@@ -1,8 +1,6 @@
-<html><head>
 <title>3WiFi: Статистика</title>
-<meta http-equiv=Content-Type content="text/html;charset=UTF-8">
-<link rel=stylesheet href="css/style.css" type="text/css">
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<head>
 <script type="text/javascript">
 function appendRow(rowid, idx, p1, p2, tt, of, th)
 {
@@ -43,6 +41,7 @@ function parsestat(st, d)
 }
 function loadstat(st)
 {
+	$('.st1').show();
 	$('button').prop('disabled', true);
 	$('#stval').text('Загрузка...');
 	$('#sttot').empty();
@@ -120,14 +119,19 @@ function loadstat(st)
 		$('button').prop('disabled', false);
 	});
 }
+function initpage()
+{
+	$('.content').css('padding-top', '0px');
+	loadstat('stat');
+}
 </script>
 </head>
 
-<body onload="loadstat('stat')">
-<h2 align="center"><span id=stat_cap>Статистика загружается...</span></h2>
+<body>
+<h2 align=center><span id=stat_cap>Статистика загружается...</span></h2>
 <noscript>Включите JavaScript для отображения данных.</noscript>
 
-<p><button onclick="loadstat('stat')">Сводная</button>&nbsp;
+<p align=center><button onclick="loadstat('stat')">Сводная</button>&nbsp;
 <button onclick="loadstat('stcmt')">Комментарии</button>&nbsp;
 <button onclick="loadstat('stdev')">Устройства</button>&nbsp;
 <button onclick="loadstat('stport')">Порты</button>&nbsp;
@@ -138,13 +142,12 @@ function loadstat(st)
 <button onclick="loadstat('stkey')">Ключи</button>&nbsp;
 <button onclick="loadstat('stwps')">WPS</button>&nbsp;
 <button onclick="loadstat('stdns')">DNS</button>&nbsp;
-<button onclick="loadstat('stsid')">Сиды</button></p>
+<button onclick="loadstat('stsid')">Участники</button></p>
 
-<table class=st1>
+<table class=st1 style="display: none;">
 <tbody>
 <tr><th>Кол-во <span id=sttot></span></th><th><span id=stval>Значение</span> <span id=stcnt></span></th></tr>
 </tbody>
 <tbody id=stat></tbody>
 </table>
-
-</body></html>
+</body>

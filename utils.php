@@ -21,6 +21,15 @@ function StrInStr($str, $sub)
 {
 	return !(strpos($str, $sub) === false);
 }
+function getStringBetween($string, $start, $end)
+{
+	$string = ' '.$string;
+	$ini = strpos($string, $start);
+	if ($ini == 0) return '';
+	$ini += strlen($start);
+	$len = strpos($string, $end, $ini) - $ini;
+	return substr($string, $ini, $len);
+}
 
 // IP block
 function _long2ip($arg)
@@ -338,16 +347,5 @@ function ValidHeaderTXT($row)
 {
 	$row = explode("\t", $row);
 	return (count($row) == 23);
-}
-
-function getParam($param, $default = null)
-{
-	return (isset($_GET[$param]) ? $_GET[$param] : (isset($_POST[$param]) ? $_POST[$param] : $default));
-}
-
-function MessageRed ($message)
-// Выводит сообщение в стиле H2 RED
-{
-	echo "<h2 style=\"color:red;\">$message</h2>";
 }
 ?>

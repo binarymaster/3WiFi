@@ -12,10 +12,10 @@ This project was created to collect data from Router Scan log reports, search fo
 5. Start all background daemons:
 ```sh
 # Upload routine loads data into database
-php -f 3wifid.php secret_password uploads
+php -f 3wifid.php uploads
 # Finalize routine prepares tasks for finalization
-php -f 3wifid.php secret_password finalize
+php -f 3wifid.php finalize
 # Geolocate routine locates new added BSSIDs on map
-php -f 3wifid.php secret_password geolocate
+php -f 3wifid.php geolocate
 ```
 Before running the daemons, make sure that `php-cli` interpreter is accessible from your directory.

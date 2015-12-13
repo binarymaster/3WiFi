@@ -5,12 +5,13 @@ if (!isset($_GET['a']))
 	Header('Location: /');
 	exit;
 }
-require_once 'auth.php';
+require_once 'user.class.php';
 require_once 'utils.php';
 require_once 'db.php';
 require_once 'quadkey.php';
-session_start(); // Сессия уже запущена в auth.php
-global $uid;
+
+$UserManager = new User();
+$UserManager->loadSession();
 
 $topPort = 30;
 $topauth = 100;
@@ -35,6 +36,7 @@ switch ($action)
 	case 'hash':
 	$json['result'] = true;
 	$json['hash']['state'] = false;
+	$magic = '3wifi-magic-word';
 	if (isset($_GET['check']))
 	{
 		$check = $_GET['check'];
@@ -104,16 +106,15 @@ switch ($action)
 					$xessid = htmlspecialchars($row['ESSID']);
 					$xwifikey = htmlspecialchars($row['WiFiKey']);
 
-					if ($level > 0) {$aphint[] = $xtime;}
+					if ($UserManager->Level >= 0) $aphint[] = $xtime;
 					$aphint[] = $xbssid;
 					$aphint[] = $xessid;
-					if ($level > 0) {$aphint[] = $xwifikey;}
+					if ($UserManager->Level >= 0) $aphint[] = $xwifikey;
 					$hints[] = implode('<br>', $aphint);
 				}
 			}
 			$ap['properties']['hintContent'] = implode('<hr>', $hints);
 		}
-
 		$json['data']['features'][] = $ap;
 	}
 	$get_info_stmt->close();
@@ -124,8 +125,8 @@ switch ($action)
 	// Поиск по базе
 	case 'find':
 	$json['result'] = true;
-	$json['auth'] = $level > 0;
-	if ($level == 0) break;
+	$json['auth'] = $UserManager->Level >= 0;
+	if (!$json['auth']) break;
 
 	function GenerateFindQuery($cmtid, $BSSID, $ESSID, $Name, $Key, $Page, $Limit)
 	{
@@ -255,7 +256,7 @@ switch ($action)
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
 	if (isset($_POST['essid'])) $essid = $_POST['essid'];
 	$bssid = str_replace('-', ':', $bssid);
-	if ($level > 1)
+	if ($UserManager->Level > 1)
 	{
 		if (isset($_POST['comment'])) $comment = $_POST['comment'];
 		if (isset($_POST['ipaddr'])) $ipaddr = $_POST['ipaddr'];
@@ -333,12 +334,12 @@ switch ($action)
 			$LastId = (int)$row[0];
 
 			$entry = array();
-			if ($level > 1) $entry['id'] = (int)$row[0];
+			if ($UserManager->Level > 1) $entry['id'] = (int)$row[0];
 			$entry['time'] = $row[1];
 			$entry['comment'] = ($row[2] == null ? '' : $row[3]);
 			$ip = _long2ip($row[4]);
 			$wanip = _long2ip($row[14]);
-			if ($level > 1)
+			if ($UserManager->Level > 1)
 			{
 				$entry['ipport'] = ($ip != '' ? $ip : ($wanip != '' ? $wanip : ''));
 				if (isLocalIP($entry['ipport'])
@@ -400,10 +401,10 @@ switch ($action)
 	break;
 
 	// Поиск диапазонов IP
-	case 'find_ranges':
+	case 'ranges':
 	$json['result'] = true;
-	$json['auth'] = $level > 0;
-	if ($level == 0) break;
+	$json['auth'] = $UserManager->Level >= 0;
+	if (!$json['auth']) break;
 
 	$lat = ''; $lon = '';
 	if (isset($_POST['latitude'])) $lat = $_POST['latitude'];
@@ -511,8 +512,8 @@ switch ($action)
 	// Определение устройства по MAC
 	case 'devicemac':
 	$json['result'] = true;
-	$json['auth'] = $level > 0;
-	if ($level == 0) break;
+	$json['auth'] = $UserManager->Level >= 0;
+	if (!$json['auth']) break;
 
 	$bssid = '';
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
@@ -617,7 +618,6 @@ switch ($action)
 		$done = isset($_GET['done']) && ($_GET['done'] == '1');
 		if ($contentType == 'text/csv') $ext = '.csv';
 		if ($contentType == 'text/plain') $ext = '.txt';
-
 		if ($tid == '')
 		{
 			function randhex($length)
@@ -666,6 +666,8 @@ switch ($action)
 			if ($valid)
 			{
 				$comment = $db->real_escape_string($comment);
+				$uid = $UserManager->uID;
+				if (is_null($uid) || $UserManager->Level < 1) $uid = 'NULL';
 				if (QuerySql("INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`,`uid`) VALUES ('$tid',now(),now(),'$ext','$comment',$checkexist,$nowait,$uid)"))
 				{
 					$json['upload']['state'] = true;
@@ -1201,27 +1203,27 @@ switch ($action)
 	}
 	$db->close();
 	break;
-	
+
 	// Активные участники (Сидеры)
 	case 'stsid':
 	$json['result'] = true;
 	$json['stat']['top'] = $topSid;
-	
+
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	
+
 	if ($res = QuerySql("SELECT COUNT(*) FROM users"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	
-	if ($res = QuerySql("SELECT u.nick, COUNT(b.id) FROM BASE_TABLE as b, users as u where b.uid=u.uid GROUP BY u.uid ORDER BY COUNT(b.id) DESC LIMIT $topSid"))
+
+	/*if ($res = QuerySql("SELECT u.nick, COUNT(b.id) FROM BASE_TABLE as b, users as u WHERE b.uid=u.uid GROUP BY u.uid ORDER BY COUNT(b.id) DESC LIMIT $topSid"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1232,7 +1234,7 @@ switch ($action)
 			$json['stat']['data'][] = $data;
 		}
 		$res->close();
-	}
+	}*/
 	$db->close();
 	break;
 }

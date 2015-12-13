@@ -1,9 +1,6 @@
-<html>
-<head>
 <title>3WiFi: Поиск диапазонов IP</title>
-<meta http-equiv=Content-Type content="text/html;charset=UTF-8">
-<link rel=stylesheet href="css/style.css" type="text/css">
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<head>
 <script type="text/javascript">
 function find()
 {
@@ -16,7 +13,7 @@ function find()
 	$('#fhead').append('<tr><th>IP Range</th><th>Description</th></tr>');
 	$('#fdata').append('<tr><td colspan=2><img src="img/loading.gif"></td></tr>');
 
-	$.post('3wifi.php?a=find_ranges', formdata, function(d)
+	$.post('3wifi.php?a=ranges', formdata, function(d)
 	{
 		$('input').prop('disabled', false);
 		$('button').prop('disabled', false);
@@ -27,11 +24,9 @@ function find()
 		}
 		if (!d.auth)
 		{
-			localStorage.setItem('3wifi.password', '');
 			$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
 			return;
 		}
-		localStorage.setItem('3wifi.password', $('input[name=pass]').val());
 		if(typeof d.error != "undefined")
 		{
 			$('#fdata > tr:first-child > :first-child').text(d.error);
@@ -75,7 +70,7 @@ function listRanges()
 }
 function initpage()
 {
-	$('input').bind('keydown', function (e) {
+	$('#frangesform > input').bind('keydown', function (e) {
 		switch (e.keyCode)
 		{
 			case 13: // Enter
@@ -83,25 +78,23 @@ function initpage()
 			break;
 		}
 	});
-	var pass = localStorage.getItem('3wifi.password');
-	if (pass != null) $('input[name=pass]').val(pass);
 }
 </script>
-</head><body onload='initpage()'>
+</head>
 
+<body>
+<form id=frangesform enctype="multipart/form-data" method="POST" onsubmit="return false">
 <table>
-	<tbody id=fuserform>
-		<form enctype="multipart/form-data" method="POST">
-			<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
-			<tr><td>Latitude / Широта:</td><td><input name="latitude" type="number" value="%var_lat%" /></td><td>° [-90; 90]</td></tr>
-			<tr><td>Longitude / Долгота:</td><td><input name="longitude" type="number" value="%var_lon%" /></td><td>° [-180; 180]</td></tr>
-			<tr><td>Search radius / Радиус поиска:</td><td><input name="radius" type="number" value="%var_rad%" /></td><td>км (max 25)</td></tr>
-		</form>
+	<tbody>
+		<tr><td>Latitude / Широта:</td><td><input name="latitude" type="number" value="%var_lat%" /></td><td>° [-90; 90]</td></tr>
+		<tr><td>Longitude / Долгота:</td><td><input name="longitude" type="number" value="%var_lon%" /></td><td>° [-180; 180]</td></tr>
+		<tr><td>Search radius / Радиус поиска:</td><td><input name="radius" type="number" value="%var_rad%" /></td><td>км (max 25)</td></tr>
 	</tbody>
 	<tbody>
 		<tr><td><button onclick="find()">Найти</button> <button onclick="listRanges()">Список</button></td><td></td></tr>
 	</tbody>
 </table>
+</form>
 <textarea id=tranges cols=24 rows=8 style="display: none"></textarea>
 <br>
 <table class=st1>
@@ -109,4 +102,3 @@ function initpage()
 	<tbody id=fdata></tbody>
 </table>
 </body>
-</html>

@@ -1,10 +1,7 @@
-<html><head>
 <title>3WiFi: Поиск по базе</title>
-<meta http-equiv=Content-Type content="text/html;charset=UTF-8">
-<link rel=stylesheet href="css/style.css" type="text/css">
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<head>
 <script type="text/javascript">
-level = 0;
 function appendTable(table, tag, fields, flags)
 {
 	var tr = $('<tr>'), tf;
@@ -37,7 +34,6 @@ function switchLevel(newlevel)
 	switch (level)
 	{
 		case 1:
-		$('input[name=pass]')[0].value = $('input[name=pass]')[1].value;
 		$('input[name=bssid]')[0].value = $('input[name=bssid]')[1].value;
 		$('input[name=essid]')[0].value = $('input[name=essid]')[1].value;
 		$('#fuserform').show();
@@ -47,7 +43,6 @@ function switchLevel(newlevel)
 		[null, null, null, null, null, null, null, nw]);
 		break;
 		case 2:
-		$('input[name=pass]')[1].value = $('input[name=pass]')[0].value;
 		$('input[name=bssid]')[1].value = $('input[name=bssid]')[0].value;
 		$('input[name=essid]')[1].value = $('input[name=essid]')[0].value;
 		$('#fuserform').hide();
@@ -102,7 +97,7 @@ function find(page)
 	var formdata = $($('form')[level-1]).serialize();
 	$('input').prop('disabled', true);
 	$('button').prop('disabled', true);
-	$('#found').empty();
+	$('#found'+level).empty();
 	$('#fdata').empty();
 	var cols = $('#fhead').children().children().length;
 	appendTable('fdata', '<td>', ['<img src="img/loading.gif">'], [{raw: true, mono: false, nowrap: false, over: false, cs: cols}]);
@@ -113,8 +108,8 @@ function find(page)
 		{
 			if (d.auth)
 			{
-				localStorage.setItem('3wifi.password', $('input[name=pass]').val());
-				$('#found').text('Результатов: '+ d.found +' ('+ d.time.toFixed(2) +' сек.)');
+				var res = 'Результатов: '+ d.found +' ('+ d.time.toFixed(2) +' сек.)';
+				$('#found'+level).text(res);
 
 				cur_page = d.page.current;
 				cnt_pages = d.page.count;
@@ -127,8 +122,10 @@ function find(page)
 					if (typeof d.data[0].id == 'number')
 					{
 						switchLevel(2);
+						$('#found'+level).text(res);
 					} else {
 						switchLevel(1);
+						$('#found'+level).text(res);
 					}
 					$('#fdata').empty();
 					for (var i = 0; i < d.data.length; i++)
@@ -137,8 +134,8 @@ function find(page)
 						var links = '';
 						if (!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lon)))
 						{
-							links += '<a href="map.php?lat='+e.lat+'&lon='+e.lon+'">map</a>&nbsp;';
-							links += '<a href="find_ranges.php?lat='+e.lat+'&lon='+e.lon+'&rad=1">ranges</a>';
+							links += '<a href="map?lat='+e.lat+'&lon='+e.lon+'">map</a>&nbsp;';
+							links += '<a href="ranges?lat='+e.lat+'&lon='+e.lon+'&rad=1">ranges</a>';
 						}
 						var nw = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
 						var mnw = {raw: false, mono: true, nowrap: true, over: false, cs: 1};
@@ -167,7 +164,6 @@ function find(page)
 					$('#fdata > tr:first-child > :first-child').text('Ничего не найдено.');
 				}
 			} else {
-				localStorage.setItem('3wifi.password', '');
 				$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
 			}
 		} else {
@@ -179,10 +175,11 @@ function find(page)
 }
 function initpage()
 {
+	level = 0;
 	cur_page = 0;
 	cnt_pages = 0;
-	switchLevel(1);
-	$('input').bind('keydown', function (e) {
+	switchLevel(ProfileInfo.Level < 2 ? 1 : 2);
+	$('#fuserform > input').$('#fadminform > input').bind('keydown', function (e) {
 		switch (e.keyCode)
 		{
 			case 13: // Enter
@@ -190,38 +187,34 @@ function initpage()
 			break;
 		}
 	});
-	var pass = localStorage.getItem('3wifi.password');
-	if (pass != null) $('input[name=pass]').val(pass);
 }
 </script>
-<style type="text/css">
-.swp { cursor: pointer }
-</style>
-</head><body onload='initpage()'>
+</head>
 
-<table>
-<tbody id=fuserform style="display:none">
+<body>
 <form enctype="multipart/form-data" method="POST">
-<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
+<table id=fuserform style="display:none">
+<tbody>
 <tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td>(* - заменяющий символ)</td></tr>
 <tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="%" /></td><td>(% и _ - заменяющие символы)</td></tr>
 <input name="page" type="hidden" value="1" />
-</form>
+<tr><td><button onclick="find(1)">Найти</button></td><td id=found1></td></tr>
 </tbody>
-<tbody id=fadminform style="display:none">
+</table>
+</form>
+
 <form enctype="multipart/form-data" method="POST">
-<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
+<table id=fadminform style="display:none">
+<tbody>
 <tr><td>Комментарий:</td><td><input name="comment" type="text" value="*" /></td><td>Устройство:</td><td><input name="name" type="text" value="%" /></td></tr>
 <tr><td>IP-адрес:</td><td><input name="ipaddr" type="text" value="" /></td><td>Авторизация:</td><td><input name="auth" type="text" value="%" /></td></tr>
 <tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td>ESSID / Имя:</td><td><input name="essid" type="text" value="%" /></td></tr>
 <tr><td>Ключ сети:</td><td><input name="key" type="text" value="%" /></td><td>Пин код WPS:</td><td><input name="wps" type="text" value="" /></td></tr>
 <input name="page" type="hidden" value="1" />
-</form>
-</tbody>
-<tbody>
-<tr><td><button onclick="find(1)">Найти</button></td><td id=found></td></tr>
+<tr><td><button onclick="find(1)">Найти</button></td><td id=found2></td></tr>
 </tbody>
 </table>
+</form>
 
 <table class=st1 id=pages_t style="margin-top: 2px; margin-bottom: 4px">
 </table>
@@ -235,5 +228,4 @@ function initpage()
 
 <table class=st1 id=pages_b style="margin-top: 4px; margin-bottom: 2px">
 </table>
-
-</body></html>
+</body>

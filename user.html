@@ -1,0 +1,169 @@
+﻿<title>3WiFi: Учетная запись</title>
+
+<head>
+<script type="text/javascript">
+function levelToText(level)
+{
+	switch (level)
+	{
+		case -2: return 'Заблокирован';
+		case -1: return 'Не авторизован';
+		case 0: return 'Гостевой аккаунт';
+		case 1: return 'Пользователь';
+		case 2: return 'Продвинутый';
+		case 3: return 'Администратор';
+		default: return 'Н/Д';
+	}
+}
+function initpage()
+{
+	if (ProfileInfo.isUser == 0) window.location.href = 'home';
+
+	$('.user_tab').click(function()
+	{
+		var elem_content = this.getElementsByClassName('user_tab_content')[0];
+		elem_content.style.display = (elem_content.style.display == 'none') ? 'block' : 'none';
+	});
+
+	$('#userlevel').text(levelToText(ProfileInfo.Level));
+	if (window.location.hash != '')
+	{
+		var tab = 'a[href='+window.location.hash+']';
+		if ($(tab).length > 0) $(tab).click();
+	}
+ 	for (var i = 0; i <= (ProfileInfo.Level < 3 ? 1 : 3); i++)
+		$('#invlevel').append($('<option>').val(i).text(levelToText(i)));
+}
+
+function createInvite()
+{
+	$.get('user.php?a=createinv&level='+encodeURIComponent($('#invlevel').val()), function(json)
+	{
+		if (json.result) ProfileInfo.invites--;
+		getInvitesInfo();
+	});
+}
+
+function deleteInvite()
+{
+	var checked = $('.invchk:checked').parent().parent().children(':nth-child(4)');
+	for (var i = 0; i < checked.length; i++)
+	{
+		var inv = $(checked[i]).text();
+		$.post('user.php?a=deleteinv', 'invite='+inv, function(json)
+		{
+			if (json.result) ProfileInfo.invites++;
+			getInvitesInfo();
+		});
+	}
+	$('#invchkall').prop('checked', false);
+}
+
+function getInvitesInfo()
+{
+	$.post('user.php?a=myinvites', '', function(json)
+	{
+		var table = $('#tab4 > div > table > tbody');
+		table.empty();
+
+		$('#invcount').text(ProfileInfo.Level < 3 ? ProfileInfo.invites : 'безлимит');
+
+		if (json.data.length > 0)
+		{
+			for (var i in json.data)
+			{
+				var inv = json.data[i];
+
+				var invite = inv['invite'];
+				var nick = inv['nick'];
+				if (nick) invite = '<s>'+invite+'</s>';
+
+				var tr1 = $('<tr>').append($('<td>').html('<input type=checkbox class=invchk>'))
+							.append($('<td>').text(inv['time']))
+							.append($('<td>').text(inv['regdate']))
+							.append($('<td>').html(invite))
+							.append($('<td>').text(levelToText(inv['level'])))
+							.append($('<td>').text(nick));
+
+				table.append(tr1);
+			}
+		}
+	});
+}
+
+function changePassword(oldpass, password)
+{
+	$.post('user.php?a=changepass', 'oldpass='+encodeURIComponent(oldpass)+'&password='+encodeURIComponent(password), function()
+	{
+
+	});
+}
+
+function switchTab(num)
+{
+	$('.userTabActive').prop('class', 'userTab');
+	$('#tab'+num+'b').prop('class', 'userTabActive');
+	for (var i = 1; i <= 10; i++)
+	{
+		if (i == num) { $('#tab'+i).show(); } else { $('#tab'+i).hide(); };
+	}
+	if (num == 4)
+	{
+		getInvitesInfo();
+	}
+}
+
+</script>
+</head>
+
+<body>
+<h2 align=center><span id=stat_cap>Управление пользователем %nick%</span></h2>
+<hr>
+
+<div class=usetTabContainer>
+	<div class=userTabs>
+		<div id=tab1b class=userTabActive dir=ltr><a href="#info" onclick="switchTab(1)">Данные профиля</a></div>
+		<div id=tab2b class=userTab dir=ltr><a href="#uploads" onclick="switchTab(2)">Загруженные точки</a></div>
+		<div id=tab3b class=userTab dir=ltr><a href="#fave" onclick="switchTab(3)">Избранное</a></div>
+		<div id=tab4b class=userTab dir=ltr><a href="#inv" onclick="switchTab(4)">Приглашения</a></div>
+		<div id=tab5b class=userTab dir=ltr><a href="#stats" onclick="switchTab(5)">Моя статистика</a></div>
+	</div>
+	<div class=userCodeContainer>
+		<div id=tab1 class=userCode dir=ltr style="display: block;">
+			<table>
+			<tr><td>Логин:</td><td>%login%</td></tr>
+			<tr><td>Никнейм:</td><td>%nick% <a href="javascript://" onclick="">(изменить)</a></td></tr>
+			<tr><td>Дата регистрации:</td><td>%regdate%</td></tr>
+			<tr><td>Уровень:</td><td id=userlevel></td></tr>
+			<tr><td>Пароль:</td><td><a href="javascript://" onclick="">Изменить</a></td></tr>
+			<tr><td>API ключ:</td><td>N/A <a href="javascript://" onclick="">(получить новый)</a></td></tr>
+			<tr><td>Пригласивший:</td><td>%refuser%</td></tr>
+			</table>
+		</div>
+		<div id=tab2 class=userCode dir=ltr style="display: none;">
+		</div>
+		<div id=tab3 class=userCode dir=ltr style="display: none;">
+		</div>
+		<div id=tab4 class=userCode dir=ltr style="display: none;">
+			<div style="display: flex">
+				<table class=st1>
+				<thead>
+				<tr><th><input type=checkbox id=invchkall onclick="$('.invchk').prop('checked', this.checked)"></th><th>Дата приглашения</th><th>Дата регистрации</th><th>Код приглашения</th><th>Уровень доступа</th><th>Никнейм</th></tr>
+				</thead>
+				<tbody>
+				</tbody>
+				</table>
+				<div class=graphbkg style="margin-left: 16px; padding: 4">
+					Осталось приглашений: <span id=invcount></span><br>
+					<select id=invlevel></select>
+					<button onclick="createInvite()">Добавить</button>
+					<br>
+					<button onclick="updateInvite()">Сохранить</button><button onclick="deleteInvite()">Удалить</button>
+				</div>
+			</div>
+		</div>
+		<div id=tab5 class=userCode dir=ltr style="display: none;">
+		</div>
+	</div>
+</div>
+</body>

@@ -1,52 +1,117 @@
 <?php
-require_once 'auth.php';
-$incscript = file_get_contents('counter.txt');
-
-if (!isset($page)) $page = (isset($_GET['page']) ? $_GET['page'] : '');
-if ($page == '') $page = 'index';
-
-if ($page == 'index' ||
-	$page == 'left' ||
-	$page == 'main' ||
-	$page == 'login' ||
-	$page == 'registration' ||
-	$page == 'find' ||
-	$page == 'find_ranges' ||
-	$page == 'devicemac' ||
-	$page == 'upload' ||
-	$page == 'graph' ||
-	$page == 'stat')
+function validPage($page)
 {
-	global $level, $login, $nick;
-
-	$action_login = ($login == '' ? 'login' : 'logout');
-	$action_login_name = ($login == '' ? 'Вход' : 'Выход');
-	$action_reg = ($login == '' ? 'reg' : 'inv');
-	$action_reg_name = ($login == '' ? 'Регистрация' : 'Пригласить');
-
-	$lat = 55.76;
-	$lon = 37.64;
-	$rad = 2;
-	if (isset($_GET['lat'])) $lat = (float)$_GET['lat'];
-	if (isset($_GET['lon'])) $lon = (float)$_GET['lon'];
-	if (isset($_GET['rad'])) $rad = (float)$_GET['rad'];
-
-	$invite = getParam('invite');
-	
-	$content = file_get_contents($page.'.html');
-
-	$content = str_replace('%var_lat%', $lat, $content);
-	$content = str_replace('%var_lon%', $lon, $content);
-	$content = str_replace('%var_rad%', $rad, $content);
-	$content = str_replace('%login%', $login, $content);
-	$content = str_replace('%nick%', $nick, $content);
-	$content = str_replace('%action%', $action_login, $content);
-	$content = str_replace('%action_name%', $action_login_name, $content);
-	$content = str_replace('%action_reg%', $action_reg, $content);
-	$content = str_replace('%action_reg_name%', $action_reg_name, $content);
-	$content = str_replace('%invite%', $invite, $content);
-
-	echo str_replace('</body>', $incscript.'</body>', $content);
+	$result = '';
+	if ($page == 'home' ||
+		$page == 'rules' ||
+		$page == 'faq' ||
+		$page == 'map' ||
+		$page == 'find' ||
+		$page == 'ranges' ||
+		$page == 'devmac' ||
+		$page == 'upload' ||
+		$page == 'graph' ||
+		$page == 'stat' ||
+		$page == 'user')
+	{
+		$result = $page;
+	}
+	return $result;
+}
+if (isset($_GET['redir']) && $_GET['redir'] != '')
+{
+	$page = validPage($_GET['redir']);
+	if ($page != '')
+	{
+		Header('HTTP/1.0 303 See Other');
+		Header('Location: ' . $page);
+	}
 	exit();
 }
+
+require_once 'user.class.php';
+require_once 'utils.php';
+
+session_start();
+
+$UserManager = new User();
+$UserManager->load();
+
+$incscript = file_get_contents('counter.txt');
+
+$page = validPage(isset($_GET['page']) ? $_GET['page'] : 'home');
+if ($page == '') $page = '404';
+
+if(!$UserManager->isLogged())
+{
+	$login_a = 'login';
+	$login_str = 'Вход';
+	$nick = '';
+	$login = '';
+	$level = 0;
+}
+else
+{
+	$login_a = 'logout';
+	$login_str =  'Выход';
+}
+
+$lat = 55.76;
+$lon = 37.64;
+$rad = 2;
+if (isset($_GET['lat'])) $lat = (float)$_GET['lat'];
+if (isset($_GET['lon'])) $lon = (float)$_GET['lon'];
+if (isset($_GET['rad'])) $rad = (float)$_GET['rad'];
+
+if (!file_exists($page.'.html')) $page = '404';
+$hfile = file_get_contents($page.'.html');
+
+$title = getStringBetween($hfile, '<title>', '</title>');
+if ($title == '') $title = '3WiFi: Свободная база точек доступа';
+$head = getStringBetween($hfile, '<head>', '</head>');
+$content = getStringBetween($hfile, '<body>', '</body>');
+
+$content = str_replace('%content%', $content, file_get_contents('index.html'));
+$content = str_replace('%title%', $title, $content);
+$content = str_replace('%head%', $head, $content);
+
+$content = str_replace('</head>', $jsInfo.'</head>', $content);
+
+$mb = 'menubtn';
+$mbs = $mb.' mbsel';
+$content = str_replace('%chk_map%', ($page == 'map' ? $mbs : $mb), $content);
+$content = str_replace('%chk_find%', ($page == 'find' ? $mbs : $mb), $content);
+$content = str_replace('%chk_tool%', ($page == 'ranges' || $page == 'devmac' ? $mbs : $mb), $content);
+$content = str_replace('%chk_load%', ($page == 'upload' ? $mbs : $mb), $content);
+$content = str_replace('%chk_faq%', ($page == 'faq' ? $mbs : $mb), $content);
+$content = str_replace('%chk_st%', ($page == 'stat' || $page == 'graph' ? $mbs : $mb), $content);
+$content = str_replace('%chk_user%', ($page == 'user' ? $mbs : $mb), $content);
+
+$sm = 'submbtn';
+$sms = $sm.' smsel';
+$content = str_replace('%chk_rang%', ($page == 'ranges' ? $sms : $sm), $content);
+$content = str_replace('%chk_dev%', ($page == 'devmac' ? $sms : $sm), $content);
+$content = str_replace('%chk_stat%', ($page == 'stat' ? $sms : $sm), $content);
+$content = str_replace('%chk_grph%', ($page == 'graph' ? $sms : $sm), $content);
+
+$profile = 'isUser: %isUser%, Nickname: "%nick%", Level: %user_access_level%, invites: %user_invites%';
+
+$content = str_replace('%var_lat%', $lat, $content);
+$content = str_replace('%var_lon%', $lon, $content);
+$content = str_replace('%var_rad%', $rad, $content);
+$content = str_replace('%profile%', $profile, $content);
+$content = str_replace('%isUser%', (int)$UserManager->isLogged(), $content);
+$content = str_replace('%login%', htmlspecialchars($UserManager->Login), $content);
+$content = str_replace('%nick%', htmlspecialchars($UserManager->Nick), $content);
+$content = str_replace('%user_access_level%', $UserManager->Level, $content);
+$content = str_replace('%user_invites%', $UserManager->invites, $content);
+$content = str_replace('%regdate%', $UserManager->RegDate, $content);
+$content = str_replace('%refuser%', $UserManager->InviterNickName, $content);
+
+$content = str_replace('%login_a%', $login_a, $content);
+$content = str_replace('%login_str%', $login_str, $content);
+$content = str_replace('%reg_a%', $reg_a, $content);
+$content = str_replace('%reg_str%', 'Регистрация', $content);
+
+echo str_replace('</body>', $incscript.'</body>', $content);
 ?>

@@ -237,18 +237,18 @@ function getTask($tid)
 		{
 			$result = array();
 			$result['id'] = $row[0];
-			$result['state'] = (int)$row[1];
-			$result['created'] = $row[2];
-			$result['modified'] = $row[3];
-			$result['ext'] = $row[4];
-			$result['comment'] = $row[5];
-			$result['checkexist'] = (bool)$row[6];
-			$result['nowait'] = (bool)$row[7];
-			$result['lines'] = (int)$row[8];
-			$result['accepted'] = (int)$row[9];
-			$result['onmap'] = (int)$row[10];
-			$result['warns'] = $row[11];
-			$result['uid'] = (is_null($row[12]) ? 'NULL' : $row[12]);
+			$result['uid'] = $row[1];
+			$result['state'] = (int)$row[2];
+			$result['created'] = $row[3];
+			$result['modified'] = $row[4];
+			$result['ext'] = $row[5];
+			$result['comment'] = $row[6];
+			$result['checkexist'] = (bool)$row[7];
+			$result['nowait'] = (bool)$row[8];
+			$result['lines'] = (int)$row[9];
+			$result['accepted'] = (int)$row[10];
+			$result['onmap'] = (int)$row[11];
+			$result['warns'] = $row[12];
 		}
 		$res->close();
 	}
@@ -459,10 +459,10 @@ function addRow($row, $cmtid, $uid)
 	}
 	for ($i = 0; $i <= 3; $i++)
 		if (!isset($DNS[$i])) $DNS[$i] = 'NULL';
-	QuerySql("INSERT INTO BASE_TABLE (`cmtid`,`IP`,`Port`,`Authorization`,`name`,`RadioOff`,`Hidden`,`NoBSSID`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`LANIP`,`LANMask`,`WANIP`,`WANMask`,`WANGateway`,`DNS1`,`DNS2`,`DNS3`,`uid`)
-			VALUES ($cmtid, $addr, $port, $auth, $name, $radio, $hide, $NoBSSID, $bssid, $essid, $sec, $key, $wps, $lanip, $lanmsk, $wanip, $wanmsk, $gate, $DNS[0], $DNS[1], $DNS[2], $uid)
+	QuerySql("INSERT INTO BASE_TABLE (`cmtid`,`IP`,`Port`,`Authorization`,`name`,`RadioOff`,`Hidden`,`NoBSSID`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`LANIP`,`LANMask`,`WANIP`,`WANMask`,`WANGateway`,`DNS1`,`DNS2`,`DNS3`)
+			VALUES ($cmtid, $addr, $port, $auth, $name, $radio, $hide, $NoBSSID, $bssid, $essid, $sec, $key, $wps, $lanip, $lanmsk, $wanip, $wanmsk, $gate, $DNS[0], $DNS[1], $DNS[2])
 			ON DUPLICATE KEY UPDATE
-			`cmtid`=$cmtid,`IP`=$addr,`Port`=$port,`Authorization`=$auth,`name`=$name,`RadioOff`=$radio,`Hidden`=$hide,`NoBSSID`=$NoBSSID,`BSSID`=$bssid,`ESSID`=$essid,`Security`=$sec,`WiFiKey`=$key,`WPSPIN`=$wps,`LANIP`=$lanip,`LANMask`=$lanmsk,`WANIP`=$wanip,`WANMask`=$wanmsk,`WANGateway`=$gate,`DNS1`=$DNS[0],`DNS2`=$DNS[1],`DNS3`=$DNS[2],`uid`=$uid;");
+			`cmtid`=$cmtid,`IP`=$addr,`Port`=$port,`Authorization`=$auth,`name`=$name,`RadioOff`=$radio,`Hidden`=$hide,`NoBSSID`=$NoBSSID,`BSSID`=$bssid,`ESSID`=$essid,`Security`=$sec,`WiFiKey`=$key,`WPSPIN`=$wps,`LANIP`=$lanip,`LANMask`=$lanmsk,`WANIP`=$wanip,`WANMask`=$wanmsk,`WANGateway`=$gate,`DNS1`=$DNS[0],`DNS2`=$DNS[1],`DNS3`=$DNS[2];");
 	return 0;
 }
 

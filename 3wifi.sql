@@ -31,7 +31,6 @@ CREATE TABLE `base` (
 	`DNS1` INT(10) NULL DEFAULT NULL,
 	`DNS2` INT(10) NULL DEFAULT NULL,
 	`DNS3` INT(10) NULL DEFAULT NULL,
-	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	INDEX `BSSID` (`BSSID`),
 	INDEX `ESSID` (`ESSID`),
@@ -51,12 +50,12 @@ CREATE TABLE `geo` (
 
 -- Дамп структуры для таблицы 3wifi.invites
 CREATE TABLE IF NOT EXISTS `invites` (
-	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-	`invite` CHAR(32) NOT NULL,
-	`uid1` INT(11) UNSIGNED NOT NULL,
-	`uid2` INT(11) UNSIGNED NULL DEFAULT NULL,
-	`level` INT(10) UNSIGNED NULL DEFAULT '1',
-	PRIMARY KEY (`id`)
+	`invite` CHAR(12) NOT NULL,
+	`puid` INT(11) UNSIGNED NOT NULL,
+	`time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
+	`level` TINYINT(4) NOT NULL DEFAULT '1',
+	PRIMARY KEY (`invite`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Дамп структуры таблицы 3wifi.comments
@@ -70,6 +69,7 @@ CREATE TABLE `comments` (
 -- Дамп структуры таблицы 3wifi.tasks
 CREATE TABLE `tasks` (
 	`tid` CHAR(32) NOT NULL,
+	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
 	`tstate` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0',
 	`created` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
 	`modified` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -81,7 +81,6 @@ CREATE TABLE `tasks` (
 	`accepted` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	`onmap` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	`warns` TEXT NOT NULL,
-	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
 	PRIMARY KEY (`tid`)
 ) COLLATE='utf8_general_ci' ENGINE=InnoDB;
 
@@ -128,7 +127,6 @@ CREATE TABLE `mem_base` (
 	`DNS1` INT(10) NULL DEFAULT NULL,
 	`DNS2` INT(10) NULL DEFAULT NULL,
 	`DNS3` INT(10) NULL DEFAULT NULL,
-	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
 	PRIMARY KEY (`id`),
 	INDEX `BSSID` (`BSSID`),
 	INDEX `ESSID` (`ESSID`),
@@ -149,19 +147,24 @@ CREATE TABLE `mem_geo` (
 -- Дамп структуры для таблицы 3wifi.users
 CREATE TABLE `users` (
 	`uid` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`regdate` TIMESTAMP NULL DEFAULT NULL,
+	`lastupdate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`puid` INT(11) NOT NULL DEFAULT '0',
 	`login` VARCHAR(30) NOT NULL,
 	`nick` VARCHAR(30) NOT NULL,
 	`pass_hash` CHAR(32) NOT NULL,
 	`autologin` CHAR(32) NOT NULL,
 	`salt` CHAR(32) NOT NULL,
-	`level` INT(10) UNSIGNED NOT NULL DEFAULT '0',
+	`level` TINYINT(4) NOT NULL DEFAULT '0',
 	`ip_hash` CHAR(32) NOT NULL,
-	`maxInvites` SMALLINT(5) UNSIGNED NOT NULL DEFAULT '0',
+	`invites` SMALLINT(5) UNSIGNED NOT NULL DEFAULT '0',
 	PRIMARY KEY (`uid`),
-	UNIQUE KEY `login` (`login`),
-	UNIQUE KEY `nick` (`nick`)
+	UNIQUE INDEX `login` (`login`),
+	UNIQUE INDEX `nick` (`nick`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Дамп данных таблицы 3wifi.users
-INSERT INTO `users` (`uid`, `login`, `nick`, `pass_hash`, `autologin`, `salt`, `level`, `ip_hash`, `maxInvites`) VALUES
-	(1, 'admin', 'Administrator', 'SET {md5(pass.salt)} HERE!', 'SET {md5(\'bla-bla-bla\')} HERE!', 'SET {salt} HERE!', '2', 'DO NOT CHANGE THIS!', '65535');
+INSERT INTO `users` (`uid`, `puid`, `login`, `nick`, `pass_hash`, `autologin`, `salt`, `level`, `ip_hash`, `maxInvites`) VALUES
+	(0, 0, 'root', '3WiFi System', '', '', '', -1, '', 0);
+INSERT INTO `users` (`uid`, `puid`, `login`, `nick`, `pass_hash`, `autologin`, `salt`, `level`, `ip_hash`, `maxInvites`) VALUES
+	(1, 0, 'admin', 'Administrator', 'hash = md5(pass.salt)', '', 'salt = md5(invite)', 3, '', 65535);

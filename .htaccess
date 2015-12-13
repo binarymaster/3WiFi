@@ -1,9 +1,24 @@
 Options -Indexes
 
 RewriteEngine on
-RewriteRule ^(['_A-Za-z]+).html index.php?page=$1 [NC,L,QSA]
-RewriteRule ^(map[0-9]*+).php index.php?page=$1 [NC,L,QSA]
-RewriteRule find_ranges.php index.php?page=find_ranges [NC,L,QSA]
+RewriteRule left.html index.php?redir=home [NC,L,QSA]
+RewriteRule main.html index.php?redir=home [NC,L,QSA]
+RewriteRule devicemac.html index.php?redir=devmac [NC,L,QSA]
+RewriteRule ^(['_A-Za-z]+).html index.php?redir=$1 [NC,L,QSA]
+RewriteRule ^(map[0-9]*+).php index.php?redir=map [NC,L,QSA]
+RewriteRule find_ranges.php index.php?redir=ranges [NC,L,QSA]
+
+RewriteRule home$ index.php?page=home [NC,L,QSA]
+RewriteRule rules$ index.php?page=rules [NC,L,QSA]
+RewriteRule faq$ index.php?page=faq [NC,L,QSA]
+RewriteRule map$ index.php?page=map [NC,L,QSA]
+RewriteRule find$ index.php?page=find [NC,L,QSA]
+RewriteRule ranges$ index.php?page=ranges [NC,L,QSA]
+RewriteRule devmac$ index.php?page=devmac [NC,L,QSA]
+RewriteRule upload$ index.php?page=upload [NC,L,QSA]
+RewriteRule graph$ index.php?page=graph [NC,L,QSA]
+RewriteRule stat$ index.php?page=stat [NC,L,QSA]
+RewriteRule user$ index.php?page=user [NC,L,QSA]
 
 <ifModule mod_deflate.c>
 AddOutputFilterByType DEFLATE text/html text/xml application/xml application/xhtml+xml text/css text/javascript application/javascript application/x-javascript application/json application/json-p

@@ -1,5 +1,4 @@
 <?php
-require_once 'auth.php';
 require_once 'utils.php';
 require_once 'db.php';
 
@@ -10,14 +9,12 @@ if ($argv[0] != basename(__FILE__))
 {
 	die('This is CLI script. Use it with php-cli.');
 }
-if (count($argv) < 3)
+if (count($argv) < 2)
 {
 	echo "USAGE:\n";
-	echo "$argv[0] <password> <action>\n";
+	echo "$argv[0] <action>\n";
 	exit();
 }
-if ($level != 2) die("Error: Not authorized.\n");
-
 set_time_limit(0);
 
 while (!db_connect())
@@ -26,9 +23,9 @@ while (!db_connect())
 	sleep(5);
 }
 logt('MySQL database connected.');
-logt("Running `$argv[2]' task...");
+logt("Running `$argv[1]' task...");
 
-switch ($argv[2])
+switch ($argv[1])
 {
 	// Обработчик загрузок
 	case 'uploads':
@@ -51,42 +48,42 @@ switch ($argv[2])
 			$ext = $task['ext'];
 			$filename = 'uploads/'.$tid.$ext;
 			$hangcheck = 5;
+			$cntp = 0;
+			$cnta = 0;
+			$aps = array();
 			if (($handle = fopen($filename, 'r')) !== false)
 			{
 				$cmtid = getCommentId($task['comment'], true);
-				$i = 0;
-				$cnt = 0;
-				$aps = array();
 				$time = microtime(true);
 				switch ($ext)
 				{
 					case '.csv':
 					while (($data = fgetcsv($handle, 1000, ';')) !== false)
 					{
-						$i++;
-						if ($i == 1) continue; // Пропуск заголовка CSV
+						$cntp++;
+						if ($cntp == 1) continue; // Пропуск заголовка CSV
 						$res = addRow($data, $cmtid, $uid);
-						($res == 0 ? $cnt++ : $warn[$i - 1] = $res);
+						($res == 0 ? $cnta++ : $warn[$cntp - 1] = $res);
 						if (microtime(true) - $time > $hangcheck)
 						{
-							logt("Status: $i processed, $cnt added (Working)");
-							QuerySql("UPDATE tasks SET `lines`='$i',`accepted`='$cnt' WHERE `tid`='$tid'");
+							logt("Status: $cntp processed, $cnta added (Working)");
+							QuerySql("UPDATE tasks SET `lines`=$cntp,`accepted`=$cnta WHERE `tid`='$tid'");
 							$time = microtime(true);
 						}
 					}
-					$i--;
+					$cntp--;
 					break;
 					case '.txt':
 					while (($str = fgets($handle)) !== false)
 					{
 						$data = explode("\t", $str);
-						$i++;
+						$cntp++;
 						$res = addRow($data, $cmtid, $uid);
-						($res == 0 ? $cnt++ : $warn[$i] = $res);
+						($res == 0 ? $cnta++ : $warn[$cntp] = $res);
 						if (microtime(true) - $time > $hangcheck)
 						{
-							logt("Status: $i processed, $cnt added (Working)");
-							QuerySql("UPDATE tasks SET `lines`='$i',`accepted`='$cnt' WHERE `tid`='$tid'");
+							logt("Status: $cntp processed, $cnta added (Working)");
+							QuerySql("UPDATE tasks SET `lines`=$cntp,`accepted`=$cnta WHERE `tid`='$tid'");
 							$time = microtime(true);
 						}
 					}
@@ -94,7 +91,7 @@ switch ($argv[2])
 				}
 				fclose($handle);
 			}
-			logt("Status: $i processed, $cnt added (Done!)");
+			logt("Status: $cntp processed, $cnta added (Done!)");
 			$warns = array();
 			foreach ($warn as $line => $wid)
 				$warns[] = implode('|', array($line, $wid));
@@ -115,7 +112,7 @@ switch ($argv[2])
 					fclose($handle);
 				}
 				logt("Set tstate = 2 (geolocation)");
-				QuerySql("UPDATE tasks SET `lines`=$i,`accepted`=$cnt,`warns`='$warns',`tstate`=2 WHERE `tid`='$tid'");
+				QuerySql("UPDATE tasks SET `lines`=$cntp,`accepted`=$cnta,`warns`='$warns',`tstate`=2 WHERE `tid`='$tid'");
 				logt("Task processing complete.");
 			}
 			else
@@ -123,6 +120,7 @@ switch ($argv[2])
 				QuerySql("DELETE FROM tasks WHERE `tid`='$tid'");
 				logt("Task processing in `nowait' mode complete.");
 			}
+			unset($aps);
 			$slp = 0;
 		}
 		else
@@ -273,7 +271,7 @@ switch ($argv[2])
 	break;
 
 	default:
-	logt("Error: Unsupported action `$argv[2]'");
+	logt("Error: Unsupported action `$argv[1]'");
 	break;
 }
 $db->close();

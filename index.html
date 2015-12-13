@@ -1,11 +1,309 @@
 <html>
 <head>
-<title>3WiFi: Свободная база точек доступа</title>
+<title>%title%</title>
 <meta http-equiv=Content-Type content="text/html;charset=UTF-8">
 <meta name="keywords" content="3wifi, wifi, router, scan, Router Scan, access point, map, internet, free"/>
+<link rel=stylesheet href="css/style.css" type="text/css">
+<style type="text/css">
+body { margin: 0px }
+</style>
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script type="text/javascript">
+function isMobile() 
+{ 
+	if( navigator.userAgent.match(/Android/i)
+	|| navigator.userAgent.match(/webOS/i)
+	|| navigator.userAgent.match(/iPhone/i)
+	|| navigator.userAgent.match(/iPad/i)
+	|| navigator.userAgent.match(/iPod/i)
+	|| navigator.userAgent.match(/BlackBerry/i)
+	|| navigator.userAgent.match(/Windows Phone/i)
+	|| navigator.userAgent.match(/Mobile/i))
+	{
+		return true;
+	}
+	if(window.innerWidth <= 800 && window.innerHeight <= 600) 
+	{
+		return true;
+	}
+	return false;
+}
+
+function errorStr(error)
+{
+	switch (error)
+	{
+		case 'loggedin':
+		return 'Вход уже выполнен';
+		case 'unauthorized':
+		return 'Не авторизован';
+		case 'loginfail':
+		return 'Неверный логин или пароль';
+		case 'form':
+		return 'Поля формы заполнены неверно';
+		case 'invite':
+		return 'Неверный код приглашения';
+		case 'login':
+		return 'Такой логин уже существует';
+		case 'nick':
+		return 'Такой ник уже существует';
+		case 'password':
+		return 'Пароль не соответствует требованиям';
+		default:
+		return 'Неизвестная ошибка';
+	}
+}
+function showModal()
+{
+	$('#win_login').css({left: '50%'});
+	$('#win_login').css({top: '50%'});
+	$('#win_reg').css({left: '-9999px'});
+	$('.modal').show();
+	$('.modal').animate({opacity: 1}, 250);
+}
+function hideModal()
+{
+	$('.modal').animate({opacity: 0}, 250, function() { $('.modal').hide() });
+}
+function showFrm(frm)
+{
+	var frm2 = (frm == '#win_login' ? '#win_reg' : '#win_login')
+	switch (Math.round(Math.random()*3))
+	{
+		case 0: // right to left
+		$(frm).css({left: '150%'});
+		$(frm).css({top: '50%'});
+		$(frm2).animate({left: '-50%'}, 500);
+		$(frm).animate({left: '50%'}, 500);
+		break;
+		case 1: // left to right
+		$(frm).css({left: '-50%'});
+		$(frm).css({top: '50%'});
+		$(frm2).animate({left: '150%'}, 500);
+		$(frm).animate({left: '50%'}, 500);
+		break;
+		case 2: // bottom to top
+		$(frm).css({left: '50%'});
+		$(frm).css({top: '150%'});
+		$(frm2).animate({top: '-50%'}, 500);
+		$(frm).animate({top: '50%'}, 500);
+		break;
+		case 3: // top to bottom
+		$(frm).css({left: '50%'});
+		$(frm).css({top: '-50%'});
+		$(frm2).animate({top: '150%'}, 500);
+		$(frm).animate({top: '50%'}, 500);
+		break;
+	}
+}
+function doLogin()
+{
+	var formdata = $('#frm_login').serialize();
+	$('#frm_login :input').prop('disabled', true);
+	$('#loginstat').html('<img src="img/loading.gif">');
+	$.post('user.php?a=login', formdata, function(json)
+	{
+		if (json.result)
+		{
+			$('#loginstat').html('<img src="img/ok.png" style="position: relative; top: 3px"> Вход выполнен успешно!');
+			setTimeout('window.location.href = \'user\';', 1000);
+		}
+		else
+		{
+			var errstr = (typeof json.error == 'string' ? json.error : '');
+			$('#loginstat').html('<img src="img/no.png" style="position: relative; top: 3px"> ' + errorStr(errstr));
+			$('#frm_login :input').prop('disabled', false);
+		}
+	});
+}
+function doLogout()
+{
+	$.get('user.php?a=logout', function(json)
+	{
+		window.location.href = 'home';
+	});
+}
+function doReg()
+{
+	var formdata = $('#frm_reg').serialize();
+	$('#frm_reg :input').prop('disabled', true);
+	$('#regstat').html('<img src="img/loading.gif">');
+	$.post('user.php?a=reg', formdata, function(json)
+	{
+		if (json.result)
+		{
+			$('#regstat').html('<img src="img/ok.png" style="position: relative; top: 3px"> Регистрация успешна!');
+			setTimeout('window.location.href = \'user\';', 2000);
+		}
+		else
+		{
+			var errstr = (typeof json.error == 'string' ? json.error : '');
+			$('#regstat').html('<img src="img/no.png" style="position: relative; top: 3px"> ' + errorStr(errstr));
+			if (errstr == 'invite') $('#checkinv').html('<img src="img/no.png">');
+			$('#frm_reg :input').prop('disabled', false);
+		}
+	});
+}
+function loginBtn()
+{
+	if (ProfileInfo.isUser == 0)
+	{
+		showModal();
+	} else {
+		doLogout();
+	}
+}
+
+var ProfileInfo = {%profile%};
+
+function initmenu()
+{
+	if (ProfileInfo.isUser == 0) $('a[href=user]').hide();
+
+	if(!isMobile())
+	{
+		$('.multi').mouseenter(function()
+		{
+			$(this.children[1]).show();
+		}).mouseleave(function()
+		{
+			$(this.children[1]).hide();
+		});
+	}
+	else
+	{
+		$('.multi').click(function()
+		{
+			if(!this.children[1].isDoubleTap)
+			{
+				this.children[1].isDoubleTap = true;
+				$(this.children[1]).show();
+				return false;
+			}
+			$(this.children[1]).hide();
+			this.children[1].isDoubleTap = false;
+			return true;
+		});
+	}
+
+	$('#frm_login :input').keydown(function(e) { if (e.keyCode==13) doLogin(); });
+	$('#frm_reg :input').keydown(function(e) { if (e.keyCode==13) doReg(); });
+	$('#frm_reg :input[name=invite]').keyup(function(e) { $('#checkinv').empty(); });
+	var reglog = $('#frm_reg :input[name=login]');
+	reglog.keyup(function(e)
+	{
+		var chk = reglog.val();
+		if (chk == '')
+		{
+			$('#checklogin').empty();
+			return;
+		}
+		$.post('user.php?a=checklogin', 'invite='+encodeURIComponent($('#frm_reg :input[name=invite]').val())+'&login='+encodeURIComponent(chk), function(json)
+		{
+			if (json.error == 'invite')
+			{
+				$('#checkinv').html('<img src="img/no.png">');
+			}
+			else
+			{
+				$('#checklogin').html('<img src="img/'+(json.result ? 'ok' : 'no')+'.png">');
+			}
+		});
+	});
+	var regnick = $('#frm_reg :input[name=nick]');
+	regnick.keyup(function(e)
+	{
+		var chk = regnick.val();
+		if (chk == '')
+		{
+			$('#checknick').empty();
+			return;
+		}
+		$.post('user.php?a=checknick', 'invite='+encodeURIComponent($('#frm_reg :input[name=invite]').val())+'&nick='+encodeURIComponent(chk), function(json)
+		{
+			if (json.error == 'invite')
+			{
+				$('#checkinv').html('<img src="img/no.png">');
+			}
+			else
+			{
+				$('#checknick').html('<img src="img/'+(json.result ? 'ok' : 'no')+'.png">');
+			}
+		});
+	});
+	var regpass = $('#frm_reg :input[name=password]');
+	regpass.keyup(function(e)
+	{
+		var chk = regpass.val();
+		$('#checkpass').html(chk == '' ? '' : '<img src="img/'+(chk.length < 6 || chk.length > 100 ? 'no' : 'ok')+'.png">');
+	});
+}
+</script>
+%head%
 </head>
-<frameset cols="200,*">
-	<frame src="left.html" name="leftFrame" noresize>
-	<frame src="main.html" name="mainFrame">
-</frameset>
+<body onload="initmenu(); initpage()">
+<div class=header>
+	<div class=mainmenu>
+		<a href="home"><img class=menulogo src="img/logo.png"></a>
+		<div class=menubtn style="width: 92px; pointer-events: none"><p></p></div>
+		<a href="map"><div class="%chk_map%"><p>Карта</p></div></a>
+		<a href="find"><div class="%chk_find%"><p>Поиск</p></div></a>
+		<span class=multi>
+			<a href="ranges"><div class="%chk_tool%"><p>Инструменты</p></div></a>
+			<span class=submenu id=subtool>
+				<a href="ranges"><div class="%chk_rang%"><p>Поиск диапазонов</p></div></a>
+				<a href="devmac"><div class="%chk_dev%"><p>Устройство по MAC</p></div></a>
+			</span>
+		</span>
+		<a href="upload"><div class="%chk_load%"><p>Добавить</p></div></a>
+		<span class=multi>
+			<a href="stat"><div class="%chk_st%"><p>Состояние</p></div></a>
+			<span class=submenu>
+				<a href="stat"><div class="%chk_stat%"><p>Статистика</p></div></a>
+				<a href="graph"><div class="%chk_grph%"><p>Динамика</p></div></a>
+			</span>
+		</span>
+		<a href="map"><div class="%chk_faq%"><p>F.A.Q</p></div></a>
+		<a href="javascript://" onclick="loginBtn()" style="float: right"><div class=menubtn><p>%login_str%</p></div></a>
+		<a href="user"><div class="%chk_user%" style="float: right" id=nickname><p>%nick%</p></div></a>
+	</div>
+</div>
+
+<div class=content>%content%</div>
+
+<div class=footer>&copy; 2015 akokarev, binarymaster, Felis-Sapiens, Fusix <span><a href="rules">Соглашение</a></span></div>
+
+<div class=modal>
+	<div class=modal_bkg onclick="hideModal()"></div>
+	<div class=modal_cnt align=center id=win_login>
+		<div class=modal_main>
+			<div class=modal_div>
+				<h2>Вход в систему</h2>
+				<form id=frm_login method=post><table>
+				<tr><td>Логин:</td><td><input type=text name=login></td></tr>
+				<tr><td>Пароль:</td><td><input type=password name=password></td></tr>
+				<tr><td colspan=2 align=center id=loginstat style="font-size: 13px; padding-top: 0px"></td></tr>
+				<tr><td><input type=button value="Войти" onclick="doLogin()"></td><td align=right><a href="javascript://" onclick="showFrm('#win_reg')">Регистрация</a></td></tr>
+				</table></form>
+			</div>
+		</div>
+	</div>
+	<div class=modal_cnt align=center id=win_reg>
+		<div class=modal_main>
+			<div class=modal_div>
+				<h2>Регистрация</h2>
+				<form id=frm_reg method=post><table>
+				<tr><td>Код приглашения:</td><td><input type=text name=invite></td><td id=checkinv></td></tr>
+				<tr><td>Логин:</td><td><input type=text name=login></td><td id=checklogin></td></tr>
+				<tr><td>Ник:</td><td><input type=text name=nick></td><td id=checknick></td></tr>
+				<tr><td>Пароль:</td><td><input type=password name=password></td><td id=checkpass></td></tr>
+				<tr><td align=right><input type=checkbox onclick="$('#frm_reg').find('input[type=button]').prop('disabled', !this.checked)"></td><td style="font-size: 12px">Я согласен с <a href="rules" target=_blank>условиями сайта</a>.</td></tr>
+				<tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr>
+				<tr><td><input type=button value="Зарегистрироваться" onclick="doReg()" disabled></td><td align=right><a href="javascript://" onclick="showFrm('#win_login')">Уже есть аккаунт</a></td></tr>
+				</table></form>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
 </html>

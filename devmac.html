@@ -1,12 +1,6 @@
-<html>
-<head>
 <title>3WiFi: Имя устройства по MAC</title>
-<meta http-equiv=Content-Type content="text/html;charset=UTF-8">
-<link rel=stylesheet href="css/style.css" type="text/css">
-<style>
-td { white-space: nowrap; text-align: left !important }
-</style>
-<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<head>
 <script type="text/javascript">
 function detect()
 {
@@ -29,11 +23,9 @@ function detect()
 		}
 		if (!d.auth)
 		{
-			localStorage.setItem('3wifi.password', '');
 			$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
 			return;
 		}
-		localStorage.setItem('3wifi.password', $('input[name=pass]').val());
 		if (d.scores.length > 0)
 		{
 			$('#fdata').empty();
@@ -67,7 +59,8 @@ function detect()
 }
 function initpage()
 {
-	$('input').bind('keydown', function (e) {
+	$('#fdeviceform > input').keydown(function (e)
+	{
 		switch (e.keyCode)
 		{
 			case 13: // Enter
@@ -75,27 +68,24 @@ function initpage()
 			break;
 		}
 	});
-	var pass = localStorage.getItem('3wifi.password');
-	if (pass != null) $('input[name=pass]').val(pass);
 }
 </script>
-</head><body onload='initpage()'>
+</head>
 
+<body>
+<form id=fdeviceform enctype="multipart/form-data" method="POST">
 <table>
 	<tbody>
-		<form enctype="multipart/form-data" method="POST">
-			<tr><td>Пароль доступа:</td><td><input name="pass" type="password" value="" /></td></tr>
-			<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td></tr>
-		</form>
+		<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td></tr>
 	</tbody>
 	<tbody>
 		<tr><td><button onclick="detect()">Определить</button></td><td></td></tr>
 	</tbody>
 </table>
+</form>
 </br>
 <table class=st1>
 	<tbody id=fhead></tbody>
 	<tbody id=fdata></tbody>
 </table>
 </body>
-</html>
