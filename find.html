@@ -179,7 +179,7 @@ function initpage()
 	cur_page = 0;
 	cnt_pages = 0;
 	switchLevel(ProfileInfo.Level < 2 ? 1 : 2);
-	$('#fuserform > input').$('#fadminform > input').bind('keydown', function (e) {
+	$('#fuserform, #fadminform').find('input').bind('keydown', function (e) {
 		switch (e.keyCode)
 		{
 			case 13: // Enter
