@@ -62,7 +62,7 @@ switch ($argv[1])
 					{
 						$cntp++;
 						if ($cntp == 1) continue; // Пропуск заголовка CSV
-						$res = addRow($data, $cmtid, $uid);
+						$res = db_add_ap($data, $cmtid, $uid);
 						($res == 0 ? $cnta++ : $warn[$cntp - 1] = $res);
 						if (microtime(true) - $time > $hangcheck)
 						{
@@ -78,7 +78,7 @@ switch ($argv[1])
 					{
 						$data = explode("\t", $str);
 						$cntp++;
-						$res = addRow($data, $cmtid, $uid);
+						$res = db_add_ap($data, $cmtid, $uid);
 						($res == 0 ? $cnta++ : $warn[$cntp] = $res);
 						if (microtime(true) - $time > $hangcheck)
 						{

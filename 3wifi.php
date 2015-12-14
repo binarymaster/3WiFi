@@ -1223,8 +1223,7 @@ switch ($action)
 		$res->close();
 	}
 
-	// fixit!!!!!!!!
-	if ($res = $db->query('SELECT nick, 0 FROM users WHERE 1'))
+	if ($res = $db->query('SELECT nick, COUNT(nid) FROM uploads LEFT JOIN users USING(uid) GROUP BY uploads.uid'))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())

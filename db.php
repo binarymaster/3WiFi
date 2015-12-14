@@ -367,7 +367,7 @@ function CheckRelevanceOfMemoryTables($UseFix)
 	return $Result;
 }
 
-function addRow($row, $cmtid, $uid)
+function db_add_ap($row, $cmtid, $uid)
 {
 	global $checkexist;
 	global $db;
@@ -381,8 +381,10 @@ function addRow($row, $cmtid, $uid)
 	}
 	$bssid = $row[8];
 	$essid = $row[9];
+	if (strlen($essid) > 32) $essid = substr($essid, 0, 32);
 	$sec = $row[10];
 	$key = $row[11];
+	if (strlen($key) > 64) $key = substr($key, 0, 64);
 	$wps = preg_replace('~\D+~', '', $row[12]); // Оставляем только цифры
 
 	if ($bssid == '<no wireless>')
@@ -414,7 +416,7 @@ function addRow($row, $cmtid, $uid)
 		else { return 1; } // Вообще не содержит данных
 	}
 	if ($checkexist)
-		if (APinDB($NoBSSID, $bssid, $essid, $key))
+		if (db_ap_exist($NoBSSID, $bssid, $essid, $key))
 		{
 			return 4; // Уже есть в базе, пропускаем
 		}
@@ -463,10 +465,19 @@ function addRow($row, $cmtid, $uid)
 			VALUES ($cmtid, $addr, $port, $auth, $name, $radio, $hide, $NoBSSID, $bssid, $essid, $sec, $key, $wps, $lanip, $lanmsk, $wanip, $wanmsk, $gate, $DNS[0], $DNS[1], $DNS[2])
 			ON DUPLICATE KEY UPDATE
 			`cmtid`=$cmtid,`IP`=$addr,`Port`=$port,`Authorization`=$auth,`name`=$name,`RadioOff`=$radio,`Hidden`=$hide,`NoBSSID`=$NoBSSID,`BSSID`=$bssid,`ESSID`=$essid,`Security`=$sec,`WiFiKey`=$key,`WPSPIN`=$wps,`LANIP`=$lanip,`LANMask`=$lanmsk,`WANIP`=$wanip,`WANMask`=$wanmsk,`WANGateway`=$gate,`DNS1`=$DNS[0],`DNS2`=$DNS[1],`DNS3`=$DNS[2];");
+	if (!is_null($uid))
+	{
+		// Берём id точки из таблицы base в любом случае (могут быть расхождения с mem_base)
+		$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND ESSID=$essid AND Security=$sec AND WiFiKey=$key AND WPSPIN=$wps");
+		$row = $res->fetch_row();
+		$res->close();
+		$nid = (int)$row[0];
+		$db->query("INSERT IGNORE INTO uploads (uid, nid) VALUES ($uid, $nid)");
+	}
 	return 0;
 }
 
-function APinDB($NoBSSID, $bssid, $essid, $key)
+function db_ap_exist($NoBSSID, $bssid, $essid, $key)
 {
 	global $db;
 	$result = 0;

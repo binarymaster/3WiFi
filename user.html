@@ -136,7 +136,8 @@ function switchTab(num)
 			<tr><td>Дата регистрации:</td><td>%regdate%</td></tr>
 			<tr><td>Уровень:</td><td id=userlevel></td></tr>
 			<tr><td>Пароль:</td><td><a href="javascript://" onclick="">Изменить</a></td></tr>
-			<tr><td>API ключ:</td><td>N/A <a href="javascript://" onclick="">(получить новый)</a></td></tr>
+			<tr><td>API ключ/чтение:</td><td>Нет <a href="javascript://" onclick="">(получить новый)</a></td></tr>
+			<tr><td>API ключ/запись:</td><td>Нет <a href="javascript://" onclick="">(получить новый)</a></td></tr>
 			<tr><td>Пригласивший:</td><td>%refuser%</td></tr>
 			</table>
 		</div>
@@ -153,12 +154,12 @@ function switchTab(num)
 				<tbody>
 				</tbody>
 				</table>
-				<div class=graphbkg style="margin-left: 16px; padding: 4">
-					Осталось приглашений: <span id=invcount></span><br>
-					<select id=invlevel></select>
-					<button onclick="createInvite()">Добавить</button>
-					<br>
-					<button onclick="updateInvite()">Сохранить</button><button onclick="deleteInvite()">Удалить</button>
+				<div class=graphbkg style="margin-left: 16px; padding: 8">
+					<table>
+					<tr><td colspan=2>Осталось приглашений: <span id=invcount></span></td></tr>
+					<tr><td align=right><select id=invlevel></select></td><td><button onclick="createInvite()">Добавить</button></td></tr>
+					<tr><td align=right><button onclick="updateInvite()">Сохранить</button></td><td><button onclick="deleteInvite()">Удалить</button></td></tr>
+					</table>
 				</div>
 			</div>
 		</div>
