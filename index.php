@@ -42,20 +42,6 @@ $incscript = file_get_contents('counter.txt');
 $page = validPage(isset($_GET['page']) ? $_GET['page'] : 'home');
 if ($page == '') $page = '404';
 
-if(!$UserManager->isLogged())
-{
-	$login_a = 'login';
-	$login_str = 'Вход';
-	$nick = '';
-	$login = '';
-	$level = 0;
-}
-else
-{
-	$login_a = 'logout';
-	$login_str =  'Выход';
-}
-
 $lat = 55.76;
 $lon = 37.64;
 $rad = 2;
@@ -74,8 +60,6 @@ $content = getStringBetween($hfile, '<body>', '</body>');
 $content = str_replace('%content%', $content, file_get_contents('index.html'));
 $content = str_replace('%title%', $title, $content);
 $content = str_replace('%head%', $head, $content);
-
-$content = str_replace('</head>', $jsInfo.'</head>', $content);
 
 $mb = 'menubtn';
 $mbs = $mb.' mbsel';
@@ -99,9 +83,7 @@ $content = str_replace('%chk_grph%', ($page == 'graph' ? $sms : $sm), $content);
 
 $profile = 'isUser: %isUser%, Nickname: "%nick%", Level: %user_access_level%, invites: %user_invites%';
 
-$content = str_replace('%var_lat%', $lat, $content);
-$content = str_replace('%var_lon%', $lon, $content);
-$content = str_replace('%var_rad%', $rad, $content);
+$content = str_replace('%login_str%', ($UserManager->isLogged() ? 'Выход' : 'Вход'), $content);
 $content = str_replace('%profile%', $profile, $content);
 $content = str_replace('%isUser%', (int)$UserManager->isLogged(), $content);
 $content = str_replace('%login%', htmlspecialchars($UserManager->Login), $content);
@@ -110,11 +92,9 @@ $content = str_replace('%user_access_level%', $UserManager->Level, $content);
 $content = str_replace('%user_invites%', $UserManager->invites, $content);
 $content = str_replace('%regdate%', $UserManager->RegDate, $content);
 $content = str_replace('%refuser%', $UserManager->InviterNickName, $content);
-
-$content = str_replace('%login_a%', $login_a, $content);
-$content = str_replace('%login_str%', $login_str, $content);
-$content = str_replace('%reg_a%', $reg_a, $content);
-$content = str_replace('%reg_str%', 'Регистрация', $content);
+$content = str_replace('%var_lat%', $lat, $content);
+$content = str_replace('%var_lon%', $lon, $content);
+$content = str_replace('%var_rad%', $rad, $content);
 
 echo str_replace('</body>', $incscript.'</body>', $content);
 ?>

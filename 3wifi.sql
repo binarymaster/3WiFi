@@ -178,16 +178,16 @@ CREATE TABLE `logauth` (
 -- Дамп структуры для таблицы 3wifi.uploads
 CREATE TABLE `uploads` (
 	`uid` INT(10) UNSIGNED NULL DEFAULT NULL,
-	`nid` INT(10) UNSIGNED NULL DEFAULT NULL,
-	UNIQUE INDEX `upload` (`uid`, `nid`),
+	`id` INT(10) UNSIGNED NULL DEFAULT NULL,
+	UNIQUE INDEX `upload` (`uid`, `id`),
 	INDEX `uid` (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Дамп структуры для таблицы 3wifi.favorites
 CREATE TABLE `favorites` (
 	`uid` INT(10) UNSIGNED NULL DEFAULT NULL,
-	`nid` INT(10) UNSIGNED NULL DEFAULT NULL,
-	UNIQUE INDEX `favorite` (`uid`, `nid`),
+	`id` INT(10) UNSIGNED NULL DEFAULT NULL,
+	UNIQUE INDEX `favorite` (`uid`, `id`),
 	INDEX `uid` (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

@@ -33,6 +33,8 @@ function errorStr(error)
 {
 	switch (error)
 	{
+		case 'database':
+		return 'Ошибка направления запроса базе данных';
 		case 'loggedin':
 		return 'Вход уже выполнен';
 		case 'unauthorized':
@@ -49,6 +51,8 @@ function errorStr(error)
 		return 'Такой ник уже существует';
 		case 'password':
 		return 'Пароль не соответствует требованиям';
+		case 'lowlevel':
+		return 'Ваш уровень доступа не предусматривает использование данной функции';
 		default:
 		return 'Неизвестная ошибка';
 	}

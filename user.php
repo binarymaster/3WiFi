@@ -13,17 +13,17 @@ $json['result'] = false;
 if (!db_connect())
 {
 	$json['error'] = 'database';
+	header('Content-Type: application/json');
 	echo json_encode($json);
 	exit();
 }
 
-header('Content-Type: application/json');
+$action = isset($_GET['a']) ? $_GET['a'] : null;
 
-$action = isset($_GET['a']) ? $_GET['a'] : NULL;
-
-if ($action == NULL)
+if ($action == null)
 {
-	echo json_encode($json);
+	Header('HTTP/1.0 303 See Other');
+	Header('Location: /');
 	exit;
 }
 
@@ -170,6 +170,137 @@ switch($action)
 	// $_POST['password']
 	break;
 
+	// Просмотр загруженных точек
+	case 'myuploads':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	if (!$res = QuerySql("SELECT id, time, cmtval, IP, Port, Authorization, name, NoBSSID, BSSID, ESSID, Security, WiFiKey, WPSPIN, latitude, longitude 
+						FROM BASE_TABLE RIGHT JOIN uploads USING(id) LEFT JOIN comments USING (cmtid) LEFT JOIN GEO_TABLE USING (BSSID) WHERE uid=$uid ORDER BY time DESC LIMIT 200"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$json['result'] = true;
+	$json['data'] = array();
+	while ($row = $res->fetch_row())
+	{
+		$ap = array();
+		$ap['id'] = (int)$row[0];
+		$ap['time'] = $row[1];
+		$ap['comment'] = $row[2];
+		$ap['ipport'] = _long2ip($row[3]);
+		if ($row[4] != '') $ap['ipport'] .= ':'.$row[4];
+		$ap['auth'] = $row[5];
+		$ap['name'] = $row[6];
+		$ap['bssid'] = ($row[7] == 0 ? dec2mac($row[8]) : '');
+		$ap['essid'] = $row[9];
+		$ap['sec'] = sec2str((int)$row[10]);
+		$ap['key'] = $row[11];
+		$ap['wps'] = ($row[12] == 1 ? '' : str_pad($row[12], 8, '0', STR_PAD_LEFT));
+		$ap['lat'] = null;
+		$ap['lon'] = null;
+		if ($row[6] == 0 && $row[13] != 0 && $row[14] != 0)
+		{
+			$ap['lat'] = (float)$row[13];
+			$ap['lon'] = (float)$row[14];
+		}
+		$json['data'][] = $ap;
+		unset($ap);
+	}
+	$res->close();
+	break;
+
+	// Проверка доступности закачки
+	case 'dlcheck':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	if (!$res = QuerySql("SELECT COUNT(id) FROM uploads WHERE uid=$uid"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$row = $res->fetch_row();
+	$res->close();
+	$json['result'] = true;
+	$json['count'] = (int)$row[0];
+	break;
+
+	// Скачивание загруженных точек
+	case 'download':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	if (!$res = QuerySql("SELECT IP, Port, Authorization, name, RadioOff, Hidden, NoBSSID, BSSID, ESSID, Security, WiFiKey, WPSPIN, LANIP, LANMask, WANIP, WANMask, WANGateway, DNS1, DNS2, DNS3, latitude, longitude, cmtval 
+						FROM BASE_TABLE RIGHT JOIN uploads USING(id) LEFT JOIN comments USING (cmtid) LEFT JOIN GEO_TABLE USING (BSSID) WHERE uid=$uid ORDER BY time"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	unset($json);
+	Header('Content-Disposition: attachment; filename=myuploads.txt');
+	Header('Content-Type: text/plain; charset=utf-8');
+	while ($row = $res->fetch_row())
+	{
+		$row[0] = _long2ip($row[0]);
+		if ($row[0] == '') $row[0] = '0.0.0.0';
+		if ($row[1] == '') $row[1] = '0';
+		$row[4] = ($row[4] == 1 ? '[X]' : '');
+		$row[5] = ($row[5] == 1 ? '[X]' : '');
+		$row[7] = ($row[6] == 0 ? dec2mac($row[7]) : '');
+		$row[9] = sec2str((int)$row[9]);
+		$row[11] = ($row[11] == 1 ? '' : str_pad($row[11], 8, '0', STR_PAD_LEFT));
+		$row[12] = ($row[12] != 0 ? _long2ip($row[12]) : ''); // LAN IP
+		$row[13] = ($row[13] != 0 ? _long2ip($row[13]) : ''); // LAN Mask
+		$row[14] = ($row[14] != 0 ? _long2ip($row[14]) : ''); // WAN IP
+		$row[15] = ($row[15] != 0 ? _long2ip($row[15]) : ''); // WAN Mask
+		$row[16] = ($row[16] != 0 ? _long2ip($row[16]) : ''); // WAN Gateway
+		$row[17] = ($row[17] != 0 ? _long2ip($row[17]) : ''); // DNS 1
+		$row[18] = ($row[18] != 0 ? _long2ip($row[18]) : ''); // DNS 2
+		$row[19] = ($row[19] != 0 ? _long2ip($row[19]) : ''); // DNS 3
+		$dns = trim($row[17].' '.$row[18].' '.$row[19]);
+		if ($row[6] > 0)
+		{	// not accessible
+			$row[20] = '';
+			$row[21] = '';
+		}
+		else if ($row[20] == 0 && $row[21] == 0)
+		{
+			$row[20] = 'not found';
+			$row[21] = 'not found';
+		}
+		//      IP Addr       Port   Time/Stat  Auth         name       RadioOff      Hidden       BSSID        ESSID       Security     Wi-Fi Key      WPS PIN       LAN IP        LAN Mask      WAN IP        WAN Mask      WAN Gate      DNS       Latitude     Longitude      Comment
+		$line = $row[0]."\t".$row[1]."\t0\t\t".$row[2]."\t".$row[3]."\t".$row[4]."\t".$row[5]."\t".$row[7]."\t".$row[8]."\t".$row[9]."\t".$row[10]."\t".$row[11]."\t".$row[12]."\t".$row[13]."\t".$row[14]."\t".$row[15]."\t".$row[16]."\t".$dns."\t".$row[20]."\t".$row[21]."\t".$row[22]."\t\n";
+		echo $line;
+	}
+	$res->close();
+	break;
+
 	// Управление приглашениями
 	case 'myinvites':
 	if (!$UserManager->isLogged())
@@ -235,5 +366,9 @@ switch($action)
 }
 $db->close();
 
-echo json_encode($json);
+if ($json != null)
+{
+	header('Content-Type: application/json');
+	echo json_encode($json);
+}
 ?>

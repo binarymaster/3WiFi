@@ -35,11 +35,76 @@ function initpage()
 		$('#invlevel').append($('<option>').val(i).text(levelToText(i)));
 }
 
+function getMyUploads()
+{
+	$('#uploaded').html('<tr><td colspan=11><img src="img/loading.gif"></td></tr>');
+	$.get('user.php?a=myuploads', function(json)
+	{
+		$('#uploaded').empty();
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return;
+		}
+		for (var i = 0; i < json.data.length; i++)
+		{
+			var ap = json.data[i];
+			var tr = $('<tr>');
+			tr.append($('<td>').css({'font-family': 'monospace', 'white-space': 'nowrap'}).text(ap.time));
+			tr.append($('<td>').text(ap.comment));
+			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.ipport));
+			tr.append($('<td>').text(ap.auth));
+			tr.append($('<td>').text(ap.name));
+			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.bssid));
+			tr.append($('<td>').css({'white-space': 'nowrap'}).text(ap.essid));
+			tr.append($('<td>').text(ap.sec));
+			tr.append($('<td>').css({'white-space': 'nowrap'}).text(ap.key));
+			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.wps));
+			var urls = '';
+			if (typeof ap.lat == 'number')
+			{
+				urls += '<a href="map?lat='+ap.lat+'&lon='+ap.lon+'">map</a>&nbsp;';
+				urls += '<a href="ranges?lat='+ap.lat+'&lon='+ap.lon+'">ranges</a>';
+			}
+			tr.append($('<td>').html(urls));
+			$('#uploaded').append(tr);
+		}
+	});
+}
+
+function myDownload()
+{
+	$.get('user.php?a=dlcheck', function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return;
+		}
+		if (json.count == 0)
+		{
+			alert('У вас нет загруженных точек.');
+			return;
+		}
+		var a = document.createElement('a');
+		a.href = 'user.php?a=download';
+		a.download = 'myuploads.txt';
+		a.target = '_blank';
+		a.click();
+		a.remove();
+	});
+}
+
 function createInvite()
 {
 	$.get('user.php?a=createinv&level='+$('#invlevel').val(), function(json)
 	{
-		if (json.result) ProfileInfo.invites--;
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return;
+		}
+		ProfileInfo.invites--;
 		getInvitesInfo();
 	});
 }
@@ -52,6 +117,11 @@ function updateInvite()
 		var inv = $(checked[i]).text();
 		$.post('user.php?a=updateinv', 'invite='+inv+'&level='+$('#invlevel').val(), function(json)
 		{
+			if (!json.result)
+			{
+				alert(errorStr(json.error));
+				return;
+			}
 			getInvitesInfo();
 		});
 	}
@@ -66,7 +136,12 @@ function deleteInvite()
 		var inv = $(checked[i]).text();
 		$.post('user.php?a=deleteinv', 'invite='+inv, function(json)
 		{
-			if (json.result) ProfileInfo.invites++;
+			if (!json.result)
+			{
+				alert(errorStr(json.error));
+				return;
+			}
+			ProfileInfo.invites++;
 			getInvitesInfo();
 		});
 	}
@@ -77,11 +152,16 @@ function getInvitesInfo()
 {
 	$.post('user.php?a=myinvites', '', function(json)
 	{
-		var table = $('#tab4 > div > table > tbody');
+		var table = $('#invtable');
 		table.empty();
 
 		$('#invcount').text(ProfileInfo.Level < 3 ? ProfileInfo.invites : 'безлимит');
 
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return;
+		}
 		if (json.data.length > 0)
 		{
 			for (var i in json.data)
@@ -109,7 +189,11 @@ function changePassword(oldpass, password)
 {
 	$.post('user.php?a=changepass', 'oldpass='+encodeURIComponent(oldpass)+'&password='+encodeURIComponent(password), function()
 	{
-
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return;
+		}
 	});
 }
 
@@ -121,9 +205,12 @@ function switchTab(num)
 	{
 		if (i == num) { $('#tab'+i).show(); } else { $('#tab'+i).hide(); };
 	}
-	if (num == 4)
+	switch (num)
 	{
-		getInvitesInfo();
+		case 2: getMyUploads();
+		break;
+		case 4: getInvitesInfo();
+		break;
 	}
 }
 
@@ -156,25 +243,30 @@ function switchTab(num)
 			</table>
 		</div>
 		<div id=tab2 class=userCode dir=ltr style="display: none;">
-			<table class=st1 align=center>
-			<thead>
-			<tr><th>Дата</th><th>Комментарий</th><th>IP / Порт</th><th>Авторизация</th><th>Имя устройства</th><th><th>BSSID</th><th>ESSID</th><th>Тип защиты</th><th>Ключ сети</th><th>WPS PIN</th><th>Ссылки</th></tr>
-			</thead>
-			<tbody id=uploaded>
-			</tbody>
-			</table>
+			<div style="max-height: 100%; overflow: auto">
+				<p>Отображается 200 последних загруженных точек. <a href="javascript://" onclick="myDownload()">Скачать все (.txt)</a>.</p>
+				<table class=st1 align=center>
+				<thead style="white-space: nowrap">
+				<tr><th>Дата</th><th>Комментарий</th><th>IP / Порт</th><th>Авторизация</th><th>Имя устройства</th><th>BSSID</th><th>ESSID</th><th>Тип защиты</th><th>Ключ сети</th><th>WPS PIN</th><th>Ссылки</th></tr>
+				</thead>
+				<tbody id=uploaded style="font-size: 12px">
+				</tbody>
+				</table>
+			</div>
 		</div>
 		<div id=tab3 class=userCode dir=ltr style="display: none;">
 		</div>
 		<div id=tab4 class=userCode dir=ltr style="display: none;">
 			<div style="display: flex">
-				<table class=st1>
-				<thead>
-				<tr><th><input type=checkbox id=invchkall onclick="$('.invchk').prop('checked', this.checked)"></th><th>Дата приглашения</th><th>Дата регистрации</th><th>Код приглашения</th><th>Уровень доступа</th><th>Никнейм</th></tr>
-				</thead>
-				<tbody>
-				</tbody>
-				</table>
+				<div style="max-height: 100%; overflow: auto">
+					<table class=st1>
+					<thead>
+					<tr><th><input type=checkbox id=invchkall onclick="$('.invchk').prop('checked', this.checked)"></th><th>Дата приглашения</th><th>Дата регистрации</th><th>Код приглашения</th><th>Уровень доступа</th><th>Никнейм</th></tr>
+					</thead>
+					<tbody id=invtable>
+					</tbody>
+					</table>
+				</div>
 				<div class=graphbkg style="margin-left: 16px; padding: 8">
 					<table>
 					<tr><td colspan=2>Осталось приглашений: <span id=invcount></span></td></tr>

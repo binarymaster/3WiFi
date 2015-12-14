@@ -471,8 +471,8 @@ function db_add_ap($row, $cmtid, $uid)
 		$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND ESSID=$essid AND Security=$sec AND WiFiKey=$key AND WPSPIN=$wps");
 		$row = $res->fetch_row();
 		$res->close();
-		$nid = (int)$row[0];
-		$db->query("INSERT IGNORE INTO uploads (uid, nid) VALUES ($uid, $nid)");
+		$id = (int)$row[0];
+		$db->query("INSERT IGNORE INTO uploads (uid, id) VALUES ($uid, $id)");
 	}
 	return 0;
 }
