@@ -177,7 +177,7 @@ switch($action)
 		$json['error'] = 'unauthorized';
 		break;
 	}
-	$data = $UserManager->listInvites($UserManager->uID);
+	$data = $UserManager->listInvites();
 	if (!is_array($data))
 	{
 		$json['error'] = 'unknown';
@@ -198,11 +198,29 @@ switch($action)
 	$json['result'] = $UserManager->createInvite($level);
 	break;
 
+	// Изменение приглашения
+	case 'updateinv':
+	$invite = isset($_POST['invite']) ? $_POST['invite'] : null;
+	$level = isset($_POST['level']) ? (int)$_POST['level'] : null;
+
+	if ($invite == null || $level == null)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$json['result'] = $UserManager->updateInvite($invite, $level);
+	break;
+
 	// Удаление приглашения
 	case 'deleteinv':
-	$invite = isset($_POST['invite']) ? $_POST['invite'] : NULL;
+	$invite = isset($_POST['invite']) ? $_POST['invite'] : null;
 
-	if ($invite == NULL)
+	if ($invite == null)
 	{
 		$json['error'] = 'form';
 		break;

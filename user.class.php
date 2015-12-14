@@ -489,12 +489,15 @@ class User {
 		return $result;
 	}
 
-	public function listInvites($uid) {
+	public function listInvites($uid = null) {
 	/**
 	 * Метод возвращает список активных и использованных приглашений пользователя
 	 * @param int $uid
 	 * @return array $Invites
 	 */
+		if (is_null($uid)) $uid = $this->uID;
+		if ($uid == NULL) return false;
+
 		$sql = 'SELECT time, users.regdate, invite, nick, invites.level FROM invites LEFT JOIN users USING(`uid`) WHERE invites.puid='.$this->quote($uid).' ORDER BY time';
 		$res = self::$mysqli->query($sql);
 		for ($result=array();$row=$res->fetch_assoc();$row['level']=(int)$row['level'],$result[]=$row);
@@ -504,20 +507,60 @@ class User {
 
 	public function createInvite($level=1, $uid=NULL)
 	{
-		if ($uid == NULL) $uid = $this->uID;
-		if ($this->invites <= 0 && $this->Level < 3)	return false;
+		if (is_null($uid)) $uid = $this->uID;
+		if ($uid == NULL) return false;
 
+		// Если не осталось инвайтов (и не админ)
+		if ($this->invites <= 0 && $this->Level < 3) return false;
+		// Только админ может пригласить пользователя с уровнем выше обычного
 		if ($this->Level <= 2 && $level > 1) return false;
+		// Нельзя создавать инвайты с отрицательным уровнем
+		if ($level < 0) return false;
 
-		$Invite = $this->GenerateRandomString(12, false);
+		$invite = $this->GenerateRandomString(12, false);
 
-		$res = self::$mysqli->query("INSERT INTO invites SET invite='$Invite', puid=$uid, level=$level");
+		$res = self::$mysqli->query("INSERT INTO invites SET invite='$invite', puid=$uid, level=$level");
 		if (self::$mysqli->errno != 0)
 		{
 			return false;
 		}
 		if ($this->Level < 3) $res = self::$mysqli->query("UPDATE users SET invites=invites-1 WHERE uid=$uid");
-		$this->eventLog(self::LOG_CREATEINVITE, 1, $Invite);
+		$this->eventLog(self::LOG_CREATEINVITE, 1, $invite);
+		return true;
+	}
+
+	public function updateInvite($invite, $level)
+	{
+		$uid = $this->uID;
+		if ($uid == null) return false;
+
+		if ($this->Level <= 2 && $level > 1) return false;
+		if ($level < 0) return false;
+
+		$res = self::$mysqli->query("SELECT invite, uid FROM invites WHERE puid=$uid AND invite='".self::quote($invite)."'");
+		if (self::$mysqli->errno != 0)
+		{
+			return false;
+		}
+		$row = $res->fetch_row();
+		$invite = $row[0];
+		$uid = $row[1];
+		$res->close();
+		if ($invite == null) return false;
+
+		self::$mysqli->query("UPDATE invites SET level=$level WHERE invite='".self::quote($invite)."'");
+		if (self::$mysqli->errno != 0)
+		{
+			return false;
+		}
+		if ($uid != null)
+		{
+			self::$mysqli->query("UPDATE users SET level=$level WHERE uid=$uid");
+			if (self::$mysqli->errno != 0)
+			{
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -526,8 +569,7 @@ class User {
 		$uid = $this->uID;
 		if ($uid == NULL) return false;
 
-		$sql = 'DELETE FROM invites WHERE puid='.$uid.' AND uid IS NULL AND invite="'.self::quote($invite).'"';
-		$res = self::$mysqli->query($sql);
+		$res = self::$mysqli->query("DELETE FROM invites WHERE puid=$uid AND uid IS NULL AND invite='".self::quote($invite)."'");
 		if (self::$mysqli->errno != 0)
 		{
 			return false;
@@ -541,7 +583,7 @@ class User {
 	{
 		$IP = $_SERVER['REMOTE_ADDR'];
 		$IP = ip2long($IP);
-		if($IP === FALSE) return;
+		if($IP === false) return;
 
 		$sql = 'INSERT INTO logauth SET IP='.$IP.', uid='.$this->uID.',action='.$Action.', data="'.$Data.'", status='.$Status;
 		self::$mysqli->query($sql);

@@ -37,11 +37,25 @@ function initpage()
 
 function createInvite()
 {
-	$.get('user.php?a=createinv&level='+encodeURIComponent($('#invlevel').val()), function(json)
+	$.get('user.php?a=createinv&level='+$('#invlevel').val(), function(json)
 	{
 		if (json.result) ProfileInfo.invites--;
 		getInvitesInfo();
 	});
+}
+
+function updateInvite()
+{
+	var checked = $('.invchk:checked').parent().parent().children(':nth-child(4)');
+	for (var i = 0; i < checked.length; i++)
+	{
+		var inv = $(checked[i]).text();
+		$.post('user.php?a=updateinv', 'invite='+inv+'&level='+$('#invlevel').val(), function(json)
+		{
+			getInvitesInfo();
+		});
+	}
+	$('#invchkall').prop('checked', false);
 }
 
 function deleteInvite()
@@ -142,6 +156,13 @@ function switchTab(num)
 			</table>
 		</div>
 		<div id=tab2 class=userCode dir=ltr style="display: none;">
+			<table class=st1 align=center>
+			<thead>
+			<tr><th>Дата</th><th>Комментарий</th><th>IP / Порт</th><th>Авторизация</th><th>Имя устройства</th><th><th>BSSID</th><th>ESSID</th><th>Тип защиты</th><th>Ключ сети</th><th>WPS PIN</th><th>Ссылки</th></tr>
+			</thead>
+			<tbody id=uploaded>
+			</tbody>
+			</table>
 		</div>
 		<div id=tab3 class=userCode dir=ltr style="display: none;">
 		</div>
