@@ -38,6 +38,7 @@ switch($action)
 	}
 	if (isset($_POST['login']) && isset($_POST['password']))
 	{
+		filterLogin($_POST['login']);
 		$json['result'] = $UserManager->Auth($_POST['password'], $_POST['login']);
 		if (!$json['result']) $json['error'] = 'loginfail';
 	}
@@ -70,6 +71,7 @@ switch($action)
 			$json['error'] = 'invite';
 			break;
 		}
+		filterLogin($_POST['login']);
 		if (strlen($_POST['login']) < 5 || strlen($_POST['login']) > 30)
 		{
 			$json['result'] = 'form';
@@ -95,6 +97,7 @@ switch($action)
 			$json['error'] = 'invite';
 			break;
 		}
+		filterNick($_POST['nick']);
 		if (strlen($_POST['nick']) < 5 || strlen($_POST['nick']) > 30)
 		{
 			$json['result'] = 'form';
@@ -131,11 +134,13 @@ switch($action)
 		$json['error'] = 'invite';
 		break;
 	}
+	filterLogin($newLogin);
 	if (strlen($newLogin) < 5 || strlen($newLogin) > 30 || $UserManager->isUserLogin($newLogin))
 	{
 		$json['error'] = 'login';
 		break;
 	}
+	filterNick($newNick);
 	if (strlen($newNick) < 5 || strlen($newNick) > 30 || $UserManager->isUserNick($newNick))
 	{
 		$json['error'] = 'nick';
@@ -156,7 +161,13 @@ switch($action)
 		$json['error'] = 'lowlevel';
 		break;
 	}
-	// $_POST['nick']
+	$newNick = isset($_POST['nick']) ? $_POST['nick'] : null;
+	if (is_null($newNick))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	filterNick($_POST['nick']);
 	break;
 
 	// Смена пароля пользователя
@@ -166,8 +177,19 @@ switch($action)
 		$json['error'] = 'lowlevel';
 		break;
 	}
-	// $_POST['oldpass']
-	// $_POST['password']
+	$oldPass = isset($_POST['oldpass']) ? $_POST['oldpass'] : null;
+	$newPass = isset($_POST['password']) ? $_POST['password'] : null;
+	if(is_null($oldPass)
+	|| is_null($newPass))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if (strlen($newPass) < 6 || strlen($newPass) > 100)
+	{
+		$json['error'] = 'password';
+		break;
+	}
 	break;
 
 	// Просмотр загруженных точек

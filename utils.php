@@ -348,4 +348,17 @@ function ValidHeaderTXT($row)
 	$row = explode("\t", $row);
 	return (count($row) == 23);
 }
+
+function filterLogin(&$login)
+{
+	$login = preg_replace('~[\\\\/|!?#$%\^&*()=:;"<>\[\]\{\},\~\+\'`]+~', '', $login);
+	$login = trim(preg_replace('/\s+/', ' ', $login));
+}
+
+function filterNick(&$nick)
+{
+	$nick = preg_replace('~[\\\\/|!?#$%\^&*()=:;"<>\[\]\{\},\~\+]+~', '', $nick);
+	$nick = trim(preg_replace('/\s+/', ' ', $nick));
+}
+
 ?>
