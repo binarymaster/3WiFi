@@ -179,6 +179,7 @@ CREATE TABLE `logauth` (
 CREATE TABLE `uploads` (
 	`uid` INT(10) UNSIGNED NULL DEFAULT NULL,
 	`id` INT(10) UNSIGNED NULL DEFAULT NULL,
+	`creator` BIT(1) NOT NULL DEFAULT b'0',
 	UNIQUE INDEX `upload` (`uid`, `id`),
 	INDEX `uid` (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

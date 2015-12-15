@@ -258,6 +258,7 @@ function getTask($tid)
 function getCommentVal($cmtid)
 {
 	if ($cmtid == null) return '';
+	global $db;
 	$res = $db->query("SELECT `cmtval` FROM comments WHERE `cmtid`=$cmtid");
 	$row = $res->fetch_row();
 	$res->close();
@@ -472,7 +473,13 @@ function db_add_ap($row, $cmtid, $uid)
 		$row = $res->fetch_row();
 		$res->close();
 		$id = (int)$row[0];
-		$db->query("INSERT IGNORE INTO uploads (uid, id) VALUES ($uid, $id)");
+		// Выясняем, если кто-то уже загрузил такую точку
+		$res = $db->query("SELECT COUNT(uid) FROM uploads WHERE id=$id");
+		$row = $res->fetch_row();
+		$res->close();
+		$creator = ($row[0] > 0 ? 0 : 1);
+		// Привязываем загруженную точку к аккаунту
+		$db->query("INSERT IGNORE INTO uploads (uid, id, creator) VALUES ($uid, $id, $creator)");
 	}
 	return 0;
 }
