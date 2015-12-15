@@ -70,20 +70,12 @@ function listRanges()
 }
 function initpage()
 {
-	$('#frangesform > input').bind('keydown', function (e) {
-		switch (e.keyCode)
-		{
-			case 13: // Enter
-			find();
-			break;
-		}
-	});
 }
 </script>
 </head>
 
 <body>
-<form id=frangesform enctype="multipart/form-data" method="POST" onsubmit="return false">
+<form id=frangesform enctype="multipart/form-data" method="POST" onsubmit="find(); return false">
 <table>
 	<tbody>
 		<tr><td>Latitude / Широта:</td><td><input name="latitude" type="number" value="%var_lat%" /></td><td>° [-90; 90]</td></tr>
@@ -91,7 +83,7 @@ function initpage()
 		<tr><td>Search radius / Радиус поиска:</td><td><input name="radius" type="number" value="%var_rad%" /></td><td>км (max 25)</td></tr>
 	</tbody>
 	<tbody>
-		<tr><td><button onclick="find()">Найти</button> <button onclick="listRanges()">Список</button></td><td></td></tr>
+		<tr><td><input type=submit value="Найти" /> <button onclick="listRanges(); return false">Список</button></td><td></td></tr>
 	</tbody>
 </table>
 </form>

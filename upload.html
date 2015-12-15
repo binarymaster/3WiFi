@@ -414,23 +414,25 @@ function initpage()
 		// Good
 		setProgress(0);
 	} else {
-		$('body').html("Необходимые File API не поддерживаются вашим браузером.<br><br>Попробуйте открыть эту страницу другим браузером.");
+		$('#formtable').html("Необходимые File API не поддерживаются вашим браузером.<br><br>Попробуйте открыть эту страницу другим браузером.");
 	}
 }
 </script>
 </head>
 
 <body>
-<table>
-<tr><td>Отчёт Router Scan:</td><td><input name="userfile" type="file" accept=".csv,.txt" onchange="checkFile(this)" /> &nbsp;(в формате <b>CSV</b> или <b>TXT</b>)</td></tr>
-<tr><td>Ваш комментарий:</td><td><span class=wrapper>
-<input name="comment" type="text" placeholder="Город, провайдер, и т.п." autocomplete="off" onkeyup="showHint()" />
-<span class=hint style="display: none; width: 320px; max-height: 300px; overflow-y: auto"></span>
-</span></td></tr>
-<tr><td style="vertical-align: top">Дополнительно:</td><td><input type="checkbox" name="checkexist" value="1">Не обновлять существующие в базе точки<br>(поставьте галку, если загружаете устаревшие данные, либо точки из других баз)</td></tr>
-<tr><td>Ход загрузки:</td><td><span class=perc></span><b id=percnum></b></td></tr>
-<tr><td><input type="submit" value="Отправить файл" onclick="startProcess()" disabled></td><td></td></tr>
-</table>
+<div id=formtable>
+	<table>
+	<tr><td>Отчёт Router Scan:</td><td><input name="userfile" type="file" accept=".csv,.txt" onchange="checkFile(this)" /> &nbsp;(в формате <b>CSV</b> или <b>TXT</b>)</td></tr>
+	<tr><td>Ваш комментарий:</td><td><span class=wrapper>
+		<input name="comment" type="text" placeholder="Город, провайдер, и т.п." autocomplete="off" onkeyup="showHint()" />
+		<span class=hint style="display: none; width: 320px; max-height: 300px; overflow-y: auto"></span>
+	</span></td></tr>
+	<tr><td style="vertical-align: top">Дополнительно:</td><td><input type="checkbox" name="checkexist" value="1">Не обновлять существующие в базе точки<br>(поставьте галку, если загружаете устаревшие данные, либо точки из других баз)</td></tr>
+	<tr><td>Ход загрузки:</td><td><span class=perc></span><b id=percnum></b></td></tr>
+	<tr><td><input type="submit" value="Отправить файл" onclick="startProcess()" disabled></td><td></td></tr>
+	</table>
+</div>
 <hr>
 <p id=output></p>
 </body>

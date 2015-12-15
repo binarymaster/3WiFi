@@ -179,31 +179,23 @@ function initpage()
 	cur_page = 0;
 	cnt_pages = 0;
 	switchLevel(ProfileInfo.Level < 2 ? 1 : 2);
-	$('#fuserform, #fadminform').find('input').bind('keydown', function (e) {
-		switch (e.keyCode)
-		{
-			case 13: // Enter
-			find(1);
-			break;
-		}
-	});
 }
 </script>
 </head>
 
 <body>
-<form enctype="multipart/form-data" method="POST">
+<form enctype="multipart/form-data" method="POST" onsubmit="find(1); return false">
 <table id=fuserform style="display:none">
 <tbody>
 <tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td>(* - заменяющий символ)</td></tr>
 <tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="%" /></td><td>(% и _ - заменяющие символы)</td></tr>
 <input name="page" type="hidden" value="1" />
-<tr><td><button onclick="find(1)">Найти</button></td><td id=found1></td></tr>
+<tr><td><input type=submit value="Найти" /></td><td id=found1></td></tr>
 </tbody>
 </table>
 </form>
 
-<form enctype="multipart/form-data" method="POST">
+<form enctype="multipart/form-data" method="POST" onsubmit="find(1); return false">
 <table id=fadminform style="display:none">
 <tbody>
 <tr><td>Комментарий:</td><td><input name="comment" type="text" value="*" /></td><td>Устройство:</td><td><input name="name" type="text" value="%" /></td></tr>
@@ -211,7 +203,7 @@ function initpage()
 <tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td>ESSID / Имя:</td><td><input name="essid" type="text" value="%" /></td></tr>
 <tr><td>Ключ сети:</td><td><input name="key" type="text" value="%" /></td><td>Пин код WPS:</td><td><input name="wps" type="text" value="" /></td></tr>
 <input name="page" type="hidden" value="1" />
-<tr><td><button onclick="find(1)">Найти</button></td><td id=found2></td></tr>
+<tr><td><input type=submit value="Найти" /></td><td id=found2></td></tr>
 </tbody>
 </table>
 </form>
