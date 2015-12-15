@@ -43,7 +43,12 @@ function getMyUploads()
 		$('#uploaded').empty();
 		if (!json.result)
 		{
-			alert(errorStr(json.error));
+			$('#uploaded').html('<tr><td colspan=11>'+errorStr(json.error)+'</td></tr>');
+			return;
+		}
+		if (json.data.length == 0)
+		{
+			$('#uploaded').html('<tr><td colspan=11>Загруженных вами точек пока нет</td></tr>');
 			return;
 		}
 		for (var i = 0; i < json.data.length; i++)
@@ -181,6 +186,10 @@ function getInvitesInfo()
 
 				table.append(tr1);
 			}
+		}
+		else
+		{
+			table.html('<tr><td colspan=6>Нет созданных приглашений</td></tr>');
 		}
 	});
 }
