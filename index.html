@@ -136,6 +136,7 @@ function doReg()
 	{
 		if (json.result)
 		{
+			$('#checkinv').empty();
 			$('#regstat').html('<img src="img/ok.png" style="position: relative; top: 3px"> Регистрация успешна!');
 			setTimeout('window.location.href = \'user\';', 2000);
 		}
@@ -210,6 +211,7 @@ function initmenu()
 			}
 			else
 			{
+				$('#checkinv').empty();
 				$('#checklogin').html('<img src="img/'+(json.result ? 'ok' : 'no')+'.png">');
 			}
 		});
@@ -231,6 +233,7 @@ function initmenu()
 			}
 			else
 			{
+				$('#checkinv').empty();
 				$('#checknick').html('<img src="img/'+(json.result ? 'ok' : 'no')+'.png">');
 			}
 		});

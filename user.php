@@ -8,6 +8,14 @@ global $db;
 $UserManager = new User();
 $UserManager->load();
 
+define('LOGIN_MIN', 5);
+define('LOGIN_MAX', 30);
+define('NICK_MIN', 5);
+define('NICK_MAX', 30);
+define('PASS_MIN', 6);
+define('PASS_MAX', 100);
+define('INVITE_LEN', 12);
+
 $json = array();
 $json['result'] = false;
 if (!db_connect())
@@ -66,13 +74,13 @@ switch($action)
 	}
 	if (isset($_POST['invite']) && isset($_POST['login']))
 	{
-		if (strlen($_POST['invite']) != 32 || !$UserManager->isValidInvite($_POST['invite']))
+		if (strlen($_POST['invite']) != INVITE_LEN || !$UserManager->isValidInvite($_POST['invite']))
 		{
 			$json['error'] = 'invite';
 			break;
 		}
 		filterLogin($_POST['login']);
-		if (strlen($_POST['login']) < 5 || strlen($_POST['login']) > 30)
+		if (strlen($_POST['login']) < LOGIN_MIN || strlen($_POST['login']) > LOGIN_MAX)
 		{
 			$json['result'] = 'form';
 			break;
@@ -92,13 +100,13 @@ switch($action)
 	}
 	if (isset($_POST['invite']) && isset($_POST['nick']))
 	{
-		if (strlen($_POST['invite']) != 32 || !$UserManager->isValidInvite($_POST['invite']))
+		if (strlen($_POST['invite']) != INVITE_LEN || !$UserManager->isValidInvite($_POST['invite']))
 		{
 			$json['error'] = 'invite';
 			break;
 		}
 		filterNick($_POST['nick']);
-		if (strlen($_POST['nick']) < 5 || strlen($_POST['nick']) > 30)
+		if (strlen($_POST['nick']) < NICK_MIN || strlen($_POST['nick']) > NICK_MAX)
 		{
 			$json['result'] = 'form';
 			break;
@@ -129,24 +137,24 @@ switch($action)
 		$json['error'] = 'form';
 		break;
 	}
-	if (strlen($newInvite) != 12 || !$UserManager->isValidInvite($newInvite))
+	if (strlen($newInvite) != INVITE_LEN || !$UserManager->isValidInvite($newInvite))
 	{
 		$json['error'] = 'invite';
 		break;
 	}
 	filterLogin($newLogin);
-	if (strlen($newLogin) < 5 || strlen($newLogin) > 30 || $UserManager->isUserLogin($newLogin))
+	if (strlen($newLogin) < LOGIN_MIN || strlen($newLogin) > LOGIN_MAX || $UserManager->isUserLogin($newLogin))
 	{
 		$json['error'] = 'login';
 		break;
 	}
 	filterNick($newNick);
-	if (strlen($newNick) < 5 || strlen($newNick) > 30 || $UserManager->isUserNick($newNick))
+	if (strlen($newNick) < NICK_MIN || strlen($newNick) > NICK_MAX || $UserManager->isUserNick($newNick))
 	{
 		$json['error'] = 'nick';
 		break;
 	}
-	if (strlen($newPassword) < 6 || strlen($newPassword) > 100)
+	if (strlen($newPassword) < PASS_MIN || strlen($newPassword) > PASS_MAX)
 	{
 		$json['error'] = 'password';
 		break;
@@ -185,7 +193,7 @@ switch($action)
 		$json['error'] = 'form';
 		break;
 	}
-	if (strlen($newPass) < 6 || strlen($newPass) > 100)
+	if (strlen($newPass) < PASS_MIN || strlen($newPass) > PASS_MAX)
 	{
 		$json['error'] = 'password';
 		break;
