@@ -484,15 +484,15 @@ switch ($action)
 		) IPTable ORDER BY CAST(IP AS UNSIGNED INTEGER)"));
 	{
 		require 'ipext.php';
-		$last_upper = '0.0.0.0';
+		$last_upper = 0;
 		while ($row = $res->fetch_row())
 		{
-			$row[0] = (int)$row[0];
-			if (compare_ip(long2ip($row[0]), $last_upper) <= 0)
+			$ip = (int)$row[0];
+			if (compare_ip($ip, $last_upper) <= 0)
 			{
 				continue;
 			}
-			$ip_range = GetIPRange($db, $row[0]);
+			$ip_range = get_ip_range($db, $ip);
 			if(is_null($ip_range))
 			{
 				continue;
@@ -500,11 +500,13 @@ switch ($action)
 			$last_upper = $ip_range['endIP'];
 			$json['data'][] = array(
 				'range' => pretty_range($ip_range['startIP'], $ip_range['endIP']),
-				'descr' => $ip_range['descr']);
+				'netname' => $ip_range['netname'],
+				'descr' => $ip_range['descr'],
+				'country' => $ip_range['country']);
 		}
 		$res->close();
 		usort($json['data'], function($a, $b) { return strcmp($a['descr'], $b['descr']); });
-		array_unique($json['data']);
+		array_unique($json['data'], SORT_REGULAR);
 	}
 	$db->close();
 	break;

@@ -89,7 +89,9 @@ CREATE TABLE `ranges` (
 	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`startIP` INT(10) UNSIGNED NOT NULL,
 	`endIP` INT(10) UNSIGNED NOT NULL,
-	`descr` TEXT NOT NULL,
+	`netname` TINYTEXT NOT NULL,
+	`descr` TINYTEXT NOT NULL,
+	`country` CHAR(2) NOT NULL,
 	PRIMARY KEY (`id`),
 	UNIQUE INDEX `RANGE` (`startIP`, `endIP`)
 ) COLLATE='utf8_general_ci' ENGINE=InnoDB;
@@ -193,7 +195,13 @@ CREATE TABLE `favorites` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Дамп данных таблицы 3wifi.users
-INSERT INTO `users` (`uid`, `puid`, `login`, `nick`, `pass_hash`, `autologin`, `salt`, `level`, `ip_hash`, `maxInvites`) VALUES
-	(0, 0, 'root', '3WiFi System', '', '', '', -1, '', 0);
-INSERT INTO `users` (`uid`, `puid`, `login`, `nick`, `pass_hash`, `autologin`, `salt`, `level`, `ip_hash`, `maxInvites`) VALUES
-	(1, 0, 'admin', 'Administrator', 'hash = md5(pass.salt)', '', 'salt = md5(invite)', 3, '', 65535);
+INSERT INTO `users` SET
+	`regdate`=CURRENT_TIMESTAMP,
+	`login`='admin',
+	`nick`='Administrator',
+	`salt`='2p8a!m%EFHr).djHO1uuIA^x82X$(988',
+	`pass_hash`=MD5(CONCAT('admin',`salt`)),
+	`autologin`='',
+	`level`=3,
+	`ip_hash`='',
+	`invites`=65535;
