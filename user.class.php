@@ -25,6 +25,10 @@ class User {
 	const LOG_REGISTRATION = 3;
 	const LOG_CREATEINVITE = 4;
 	const LOG_DELETEINVITE = 5;
+	const LOG_GET_RAPIKEY = 6;
+	const LOG_GET_WAPIKEY = 7;
+	const LOG_CREATE_RAPIKEY = 8;
+	const LOG_CREATE_WAPIKEY = 9;
 
 	public $uID = NULL;
 	public $puID = NULL;
@@ -577,6 +581,49 @@ class User {
 		if ($this->Level < 3) $res = self::$mysqli->query("UPDATE users SET invites=invites+1 WHERE uid=$uid");
 		$this->eventLog(self::LOG_DELETEINVITE, 1, $invite);
 		return true;
+	}
+
+	public function getApiKeys($type)
+	{
+		$uid = $this->uID;
+		if ($uid == NULL || $type == NULL || ($type != 1 &&  $type != 2)) return false;
+		if ($this->Level < 1) return false;
+		if ($this->Level < 1) return false;
+
+		$res = self::$mysqli->query('SELECT rapikey, wapikey FROM users WHERE uid='.(int)$uid);
+		if (self::$mysqli->errno != 0)
+		{
+			return false;
+		}
+		$data = $res->fetch_assoc();
+		$this->eventLog((6+$type-1), 1, '');
+		return $data;
+	}
+
+	public function createApiKey($type)
+	{
+		$uid = $this->uID;
+		if ($uid == NULL || $type == NULL) return false;
+		if ($this->Level < 1) return false;
+
+		$ApiKey = $this->GenerateRandomString(32, false);
+		switch($type)
+		{
+			case 1:
+				$sql = 'UPDATE users SET rapikey="'.$ApiKey.'" WHERE uid='.(int)$uid;
+				break;
+			case 2:
+				$sql = 'UPDATE users SET wapikey="'.$ApiKey.'" WHERE uid='.(int)$uid;
+				break;
+		}
+
+		$res = self::$mysqli->query($sql);
+		if (self::$mysqli->errno != 0)
+		{
+			return false;
+		}
+		$this->eventLog((8+$type-1), 1, $ApiKey);
+		return $ApiKey;
 	}
 
 	public function eventLog($Action, $Status, $Data='')

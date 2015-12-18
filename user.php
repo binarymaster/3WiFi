@@ -393,6 +393,46 @@ switch($action)
 	}
 	$json['result'] = $UserManager->deleteInvite($invite);
 	break;
+
+	// Создание API ключа
+	case 'createapikey':
+	$type = isset($_POST['type']) ? (int)$_POST['type'] : null;
+	$ApiKey = $UserManager->createApiKey($type);
+	if($ApiKey === false)
+	{
+		$json['result'] = false;
+		break;
+	}
+	$json['result'] = true;
+	$json['data'] = array();
+	switch($type)
+	{
+		case 1: $json['data']['r'] = $ApiKey;
+		break;
+		case 2: $json['data']['w'] = $ApiKey;	
+		break;
+	}
+	break;
+
+	// Получение API ключа
+	case 'getapikey':
+	$type = isset($_POST['type']) ? (int)$_POST['type'] : null;
+	$data = $UserManager->getApiKeys($type);
+	if($data === false) 
+	{
+		$json['result'] = false;
+		break;
+	}
+	$json['result'] = true;
+	$json['data'] = array();
+	switch($type)
+	{
+		case 1: $json['data']['r'] = $data['rapikey'];
+		break;
+		case 2: $json['data']['w'] = $data['wapikey'];	
+		break;
+	}
+	break;
 }
 $db->close();
 

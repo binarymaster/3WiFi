@@ -118,7 +118,7 @@ switch ($action)
 		$json['data']['features'][] = $ap;
 	}
 	$get_info_stmt->close();
-	echo "typeof $callback === 'function' && $callback(".json_encode($json).");";
+	echo 'typeof '.$callback.' === \'function\' && '.$callback.'('.json_encode($json).');';
 	exit;
 	break;
 

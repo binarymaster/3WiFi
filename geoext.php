@@ -1,4 +1,6 @@
 <?php
+require_once 'utils.php';
+
 function GeoLocateAP($bssid)
 {
 	$coords = GetFromYandex($bssid);
