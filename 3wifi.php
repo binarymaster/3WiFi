@@ -1223,7 +1223,7 @@ switch ($action)
 		$res->close();
 	}
 
-	if ($res = $db->query('SELECT nick, COUNT(id) FROM uploads LEFT JOIN users USING(uid) GROUP BY uploads.uid ORDER BY COUNT(id) DESC'))
+	if ($res = $db->query('SELECT nick, COUNT(id) FROM uploads LEFT JOIN users USING(uid) GROUP BY uploads.uid ORDER BY COUNT(id) DESC LIMIT '.$topSid))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
