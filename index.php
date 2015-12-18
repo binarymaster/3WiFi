@@ -45,9 +45,21 @@ if ($page == '') $page = '404';
 $lat = 55.76;
 $lon = 37.64;
 $rad = 2;
-if (isset($_GET['lat'])) $lat = (float)$_GET['lat'];
-if (isset($_GET['lon'])) $lon = (float)$_GET['lon'];
-if (isset($_GET['rad'])) $rad = (float)$_GET['rad'];
+if (isset($_GET['lat']))
+{
+	$_GET['lat'] = str_replace(',', '.', $_GET['lat']);
+	$lat = (float)$_GET['lat'];
+}
+if (isset($_GET['lon']))
+{
+	$_GET['lon'] = str_replace(',', '.', $_GET['lon']);
+	$lon = (float)$_GET['lon'];
+}
+if (isset($_GET['rad']))
+{
+	$_GET['rad'] = str_replace(',', '.', $_GET['rad']);
+	$rad = (float)$_GET['rad'];
+}
 
 if (!file_exists($page.'.html')) $page = '404';
 $hfile = file_get_contents($page.'.html');
