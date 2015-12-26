@@ -29,6 +29,7 @@ class User {
 	const LOG_GET_WAPIKEY = 7;
 	const LOG_CREATE_RAPIKEY = 8;
 	const LOG_CREATE_WAPIKEY = 9;
+	const LOG_AUTHORIZATION_DATAONLY = 10;
 
 	public $uID = NULL;
 	public $puID = NULL;
@@ -42,6 +43,8 @@ class User {
 	public $Level = self::USER_UNAUTHORIZED;
 	public $HashIP = NULL;
 	public $invites = 0;
+	public $ReadApiKey = 'N/A';
+	public $WriteApiKey = 'N/A';
 
 	public $LastUpdate = 0;
 
@@ -159,6 +162,8 @@ class User {
 			$this->Level	= (int)$row['level'];
 			$this->HashIP	=      $row['ip_hash'];
 			$this->invites	= (int)$row['invites'];
+			$this->ReadApiKey	=  $row['rapikey'];
+			$this->WriteApiKey	=  $row['wapikey'];
 
 			// 1. Вне зависимости от успеха загрузки проверим авторизацию.
 			// 2. Вне зависимости от успеха авторизации, если запрашивали
@@ -189,6 +194,8 @@ class User {
 		$_SESSION['Level'] 		= $this->Level;
 		$_SESSION['HashIP'] 	= $this->HashIP;
 		$_SESSION['invites'] 	= $this->invites;
+		$_SESSION['ReadApiKey'] 	= $this->ReadApiKey;
+		$_SESSION['WriteApiKey'] 	= $this->WriteApiKey;
 
 		return true;
 	}
@@ -212,6 +219,8 @@ class User {
 			$this->Level	  = $_SESSION['Level'];
 			$this->HashIP 	  = $_SESSION['HashIP'];
 			$this->invites    = $_SESSION['invites'];
+			$this->ReadApiKey  = $_SESSION['ReadApiKey'];
+			$this->WriteApiKey = $_SESSION['WriteApiKey'];
 			return true;
 		}
 		else return false;
@@ -382,7 +391,7 @@ class User {
 		return false;
 	}
 
-	public function Auth($password, $login = NULL) {
+	public function Auth($password, $login = NULL, $getDataOnly=false) {
 	/**
 	 * Авторизует пользователя по паролю:[логину],
 	 * возвращает удалось ли авторизоваться
@@ -394,16 +403,23 @@ class User {
 
 		$login = ( is_null($login) ? $this->Login : $login );
 		$res = self::$mysqli->query("SELECT * FROM `users` WHERE `login`='{$this->quote($login)}' LIMIT 1");
-
 		if ($res->num_rows == 1) // Если логин существует
 		{
 			$row = $res->fetch_assoc();
 			if (md5($password.$row['salt']) == $row['pass_hash'])
 			{
+				$this->loadDB($row['uid']);
 				$this->setUser($row['uid'], $row['puid'], $login, $row['nick'], $row['pass_hash'], $this->newHashKey(), $row['salt'], $row['level'], $this->newHashIP($_Salt), $row['invites']);
 				$this->RegDate = $row['regdate'];
-				$this->save(); // сохраним состояние
-				$this->eventLog(self::LOG_AUTHORIZATION, 1);
+				if(!$getDataOnly)
+				{
+					$this->save();
+					$this->eventLog(self::LOG_AUTHORIZATION, 1);
+				}
+				else
+				{
+					$this->eventLog(self::LOG_AUTHORIZATION_DATAONLY, 1);
+				}
 				return true;
 			}
 		}else { // Логин не существует, авторизация провалилась
@@ -639,6 +655,24 @@ class User {
 	public function isLogged()
 	{
 		return !is_null($this->uID);
+	}
+
+	public function AuthByApiKey($ApiKey, $loadData=false)
+	{
+		$ApiKey = self::quote($ApiKey);
+		$sql = 'SELECT uid FROM users WHERE rapikey="'.$ApiKey.'" OR wapikey="'.$ApiKey.'"';
+		$res = self::$mysqli->query($sql);
+
+		if($res->num_rows != 1)
+		{
+			return false;
+		}
+		if(!$loadData) return true;
+
+		$row = $res->fetch_assoc();
+		$this->loadDB($row['uid']);
+
+		return true;
 	}
 }
 ?>

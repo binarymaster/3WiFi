@@ -282,7 +282,7 @@ switch ($action)
 		else
 		{
 			$comment = $db->real_escape_string($comment);
-			$res = $db->query("SELECT `cmtid` FROM comments WHERE `cmtval`='$comment'");
+			$res = $db->query('SELECT `cmtid` FROM comments WHERE `cmtval`=\''.$comment.'\'');
 			if ($res->num_rows > 0)
 			{
 				$row = $res->fetch_row();
@@ -670,7 +670,7 @@ switch ($action)
 				$comment = $db->real_escape_string($comment);
 				$uid = $UserManager->uID;
 				if (is_null($uid) || $UserManager->Level < 1) $uid = 'NULL';
-				if ($db->query("INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`,`uid`) VALUES ('$tid',now(),now(),'$ext','$comment',$checkexist,$nowait,$uid)"))
+				if ($db->query('INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`,`uid`) VALUES (\''.$tid.'\', now(), now(), \''.$ext.'\', \''.$comment.'\', '.$checkexist.', '.$nowait.', '.$uid.')'))
 				{
 					$json['upload']['state'] = true;
 					$json['upload']['tid'] = $tid;
@@ -693,7 +693,7 @@ switch ($action)
 					$json['upload']['tid'] = $tid;
 					$filename = 'uploads/'.$tid.$task['ext'];
 					$comment = $db->real_escape_string($comment);
-					$db->query("UPDATE tasks SET `modified`=now(),`comment`='$comment',`checkexist`=$checkexist,`nowait`=$nowait WHERE `tid`='$tid')");
+					$db->query('UPDATE tasks SET `modified`=now(),`comment`=\''.$comment.'\',`checkexist`='.$checkexist.',`nowait`='.$nowait.' WHERE `tid`=\''.$tid.'\')');
 					if ($task['ext'] != $ext)
 					{
 						$error[] = 4; // Несовпадение с форматом файла задания
@@ -715,7 +715,7 @@ switch ($action)
 		if ($json['upload']['state'] && $done)
 		{
 			// Запуск обработки задания
-			$json['upload']['processing'] = $db->query("UPDATE tasks SET `tstate`=1 WHERE `tid`='$tid'");
+			$json['upload']['processing'] = $db->query('UPDATE tasks SET `tstate`=1 WHERE `tid`=\''.$tid.'\'');
 		}
 		$db->close();
 	} else
@@ -901,7 +901,7 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql('SELECT `cmtid`, COUNT(*) FROM BASE_TABLE GROUP BY `cmtid` ORDER BY COUNT(*) DESC'))
+	if ($res = QuerySql('SELECT `cmtid`, COUNT(cmtid) FROM BASE_TABLE GROUP BY `cmtid` ORDER BY COUNT(cmtid) DESC'))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -932,7 +932,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `name`, COUNT(*) FROM BASE_TABLE WHERE `name` != '' GROUP BY `name` ORDER BY COUNT(*) DESC LIMIT $topname"))
+	if ($res = QuerySql("SELECT `name`, COUNT(name) FROM BASE_TABLE WHERE `name` != '' GROUP BY `name` ORDER BY COUNT(name) DESC LIMIT $topname"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -963,7 +963,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `Port`, COUNT(*) FROM BASE_TABLE WHERE NOT(`Port` IS NULL) GROUP BY `Port` ORDER BY COUNT(*) DESC LIMIT $topPort"))
+	if ($res = QuerySql("SELECT `Port`, COUNT(Port) FROM BASE_TABLE WHERE NOT(`Port` IS NULL) GROUP BY `Port` ORDER BY COUNT(Port) DESC LIMIT $topPort"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -994,7 +994,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `Authorization`, COUNT(*) FROM BASE_TABLE WHERE `Authorization`!='' GROUP BY `Authorization` ORDER BY COUNT(*) DESC LIMIT $topauth"))
+	if ($res = QuerySql("SELECT `Authorization`, COUNT(Authorization) FROM BASE_TABLE WHERE `Authorization`!='' GROUP BY `Authorization` ORDER BY COUNT(Authorization) DESC LIMIT $topauth"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1025,7 +1025,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `BSSID`, COUNT(*) FROM BASE_TABLE WHERE `NoBSSID`=0 GROUP BY `BSSID` ORDER BY COUNT(*) DESC LIMIT $topbssid"))
+	if ($res = QuerySql("SELECT `BSSID`, COUNT(BSSID) FROM BASE_TABLE WHERE `NoBSSID`=0 GROUP BY `BSSID` ORDER BY COUNT(BSSID) DESC LIMIT $topbssid"))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1050,13 +1050,13 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(DISTINCT `ESSID`) FROM BASE_TABLE"))
+	if ($res = QuerySql('SELECT COUNT(DISTINCT `ESSID`) FROM BASE_TABLE'))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `ESSID`, COUNT(*) FROM BASE_TABLE GROUP BY `ESSID` ORDER BY COUNT(*) DESC LIMIT $topessid"))
+	if ($res = QuerySql('SELECT `ESSID`, COUNT(ESSID) FROM BASE_TABLE GROUP BY `ESSID` ORDER BY COUNT(ESSID) DESC LIMIT '.$topessid))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1081,13 +1081,13 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(DISTINCT `Security`) FROM BASE_TABLE"))
+	if ($res = QuerySql('SELECT COUNT(DISTINCT `Security`) FROM BASE_TABLE'))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `Security`, COUNT(*) FROM BASE_TABLE GROUP BY `Security` ORDER BY COUNT(*) DESC LIMIT $topSecurity"))
+	if ($res = QuerySql('SELECT `Security`, COUNT(Security) FROM BASE_TABLE GROUP BY `Security` ORDER BY COUNT(Security) DESC LIMIT '.$topSecurity))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1112,13 +1112,13 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(DISTINCT `WiFiKey`) FROM BASE_TABLE"))
+	if ($res = QuerySql('SELECT COUNT(DISTINCT `WiFiKey`) FROM BASE_TABLE'))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `WiFiKey`, COUNT(*) FROM BASE_TABLE GROUP BY `WiFiKey` ORDER BY COUNT(*) DESC LIMIT $topWiFiKey"))
+	if ($res = QuerySql('SELECT `WiFiKey`, COUNT(WiFiKey) FROM BASE_TABLE GROUP BY `WiFiKey` ORDER BY COUNT(WiFiKey) DESC LIMIT '.$topWiFiKey))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1143,13 +1143,13 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(DISTINCT `WPSPIN`) FROM BASE_TABLE WHERE `WPSPIN` != 1"))
+	if ($res = QuerySql('SELECT COUNT(DISTINCT `WPSPIN`) FROM BASE_TABLE WHERE `WPSPIN` != 1'))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `WPSPIN`, COUNT(*) FROM BASE_TABLE WHERE `WPSPIN` != 1 GROUP BY `WPSPIN` ORDER BY COUNT(*) DESC LIMIT $topWPSPIN"))
+	if ($res = QuerySql('SELECT `WPSPIN`, COUNT(WPSPIN) FROM BASE_TABLE WHERE `WPSPIN` != 1 GROUP BY `WPSPIN` ORDER BY COUNT(WPSPIN) DESC LIMIT '.$topWPSPIN))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1218,7 +1218,7 @@ switch ($action)
 		break;
 	}
 
-	if ($res = $db->query("SELECT COUNT(*) FROM users"))
+	if ($res = $db->query('SELECT COUNT(uid) FROM users'))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];

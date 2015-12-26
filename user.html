@@ -220,20 +220,6 @@ function createApiKey(type)
 	});
 }
 
-function getApiKey(type)
-{
-	$.post('user.php?a=getapikey', 'type='+type, function(json)
-	{
-		if (!json.result)
-		{
-			alert(errorStr(json.error));
-			return;	
-		}
-		if(json.data.r) $('#rapikey').text(json.data.r);
-		if(json.data.w) $('#wapikey').text(json.data.w);
-	});
-}
-
 function switchTab(num)
 {
 	$('.userTabActive').prop('class', 'userTab');
@@ -274,8 +260,8 @@ function switchTab(num)
 			<tr><td>Дата регистрации:</td><td>%regdate%</td></tr>
 			<tr><td>Уровень:</td><td id=userlevel></td></tr>
 			<tr><td>Пароль:</td><td><a href="javascript://" onclick="">Изменить</a></td></tr>
-			<tr><td>API ключ/чтение:</td><td><span id="rapikey">Нет</span> <a href="javascript://" onclick="getApiKey(1)">(показать)</a> <a href="javascript://" onclick="createApiKey(1)">(получить новый)</a></td></tr>
-			<tr><td>API ключ/запись:</td><td><span id="wapikey">Нет</span> <a href="javascript://" onclick="getApiKey(2)">(показать)</a> <a href="javascript://" onclick="createApiKey(2)">(получить новый)</a></td></tr>
+			<tr><td>API ключ/чтение:</td><td><span id="rapikey">%rapikey%</span> <a href="javascript://" onclick="createApiKey(1)">(получить новый)</a></td></tr>
+			<tr><td>API ключ/запись:</td><td><span id="wapikey">%wapikey%</span> <a href="javascript://" onclick="createApiKey(2)">(получить новый)</a></td></tr>
 			<tr><td>Пригласивший:</td><td>%refuser%</td></tr>
 			</table>
 		</div>

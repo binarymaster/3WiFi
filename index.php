@@ -5,6 +5,7 @@ function validPage($page)
 	if ($page == 'home' ||
 		$page == 'rules' ||
 		$page == 'faq' ||
+		$page == 'apidoc' ||
 		$page == 'map' ||
 		$page == 'find' ||
 		$page == 'ranges' ||
@@ -75,7 +76,7 @@ $content = str_replace('%head%', $head, $content);
 
 $mb = 'menubtn';
 $mbs = $mb.' mbsel';
-$content = str_replace('%chk_docs%', ($page == 'home' || $page == 'faq' || $page == 'rules' ? $mbs : $mb), $content);
+$content = str_replace('%chk_docs%', ($page == 'home' || $page == 'faq' || $page == 'apidoc' || $page == 'rules' ? $mbs : $mb), $content);
 $content = str_replace('%chk_map%', ($page == 'map' ? $mbs : $mb), $content);
 $content = str_replace('%chk_find%', ($page == 'find' ? $mbs : $mb), $content);
 $content = str_replace('%chk_tool%', ($page == 'ranges' || $page == 'devmac' ? $mbs : $mb), $content);
@@ -87,6 +88,7 @@ $sm = 'submbtn';
 $sms = $sm.' smsel';
 $content = str_replace('%chk_home%', ($page == 'home' ? $sms : $sm), $content);
 $content = str_replace('%chk_faq%', ($page == 'faq' ? $sms : $sm), $content);
+$content = str_replace('%chk_apidoc%', ($page == 'faq' ? $sms : $sm), $content);
 $content = str_replace('%chk_rul%', ($page == 'rules' ? $sms : $sm), $content);
 $content = str_replace('%chk_rang%', ($page == 'ranges' ? $sms : $sm), $content);
 $content = str_replace('%chk_dev%', ($page == 'devmac' ? $sms : $sm), $content);
@@ -102,6 +104,8 @@ $content = str_replace('%login%', htmlspecialchars($UserManager->Login), $conten
 $content = str_replace('%nick%', htmlspecialchars($UserManager->Nick), $content);
 $content = str_replace('%user_access_level%', $UserManager->Level, $content);
 $content = str_replace('%user_invites%', $UserManager->invites, $content);
+$content = str_replace('%rapikey%', $UserManager->ReadApiKey, $content);
+$content = str_replace('%wapikey%', $UserManager->WriteApiKey, $content);
 $content = str_replace('%regdate%', $UserManager->RegDate, $content);
 $content = str_replace('%refuser%', $UserManager->InviterNickName, $content);
 $content = str_replace('%var_lat%', $lat, $content);

@@ -160,6 +160,8 @@ CREATE TABLE `users` (
 	`level` TINYINT(4) NOT NULL DEFAULT '0',
 	`ip_hash` CHAR(32) NOT NULL,
 	`invites` SMALLINT(5) UNSIGNED NOT NULL DEFAULT '0',
+	`rapikey` CHAR(32) NULL DEFAULT NULL,
+	`wapikey` CHAR(32) NULL DEFAULT NULL,
 	PRIMARY KEY (`uid`),
 	UNIQUE INDEX `login` (`login`),
 	UNIQUE INDEX `nick` (`nick`)
