@@ -36,7 +36,7 @@ CREATE TABLE `base` (
 	INDEX `ESSID` (`ESSID`),
 	INDEX `Time` (`time`),
 	UNIQUE INDEX `WIFI` (`NoBSSID`, `BSSID`, `ESSID`, `WiFiKey`, `WPSPIN`)
-) COLLATE='utf8_general_ci' ENGINE=MyISAM ROW_FORMAT=FIXED;
+) COLLATE='utf8_general_ci' ENGINE=InnoDB ROW_FORMAT=FIXED;
 
 -- Дамп структуры таблицы 3wifi.geo
 CREATE TABLE `geo` (
@@ -64,7 +64,7 @@ CREATE TABLE `comments` (
 	`cmtval` VARCHAR(127) NOT NULL,
 	PRIMARY KEY (`cmtid`),
 	UNIQUE INDEX `comment` (`cmtval`)
-) COLLATE='utf8_general_ci' ENGINE=MyISAM;
+) COLLATE='utf8_general_ci' ENGINE=InnoDB;
 
 -- Дамп структуры таблицы 3wifi.tasks
 CREATE TABLE `tasks` (
@@ -148,7 +148,7 @@ CREATE TABLE `mem_geo` (
 
 -- Дамп структуры для таблицы 3wifi.users
 CREATE TABLE `users` (
-	`uid` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`uid` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`regdate` TIMESTAMP NULL DEFAULT NULL,
 	`lastupdate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`puid` INT(11) NOT NULL DEFAULT '0',
@@ -181,19 +181,25 @@ CREATE TABLE `logauth` (
 
 -- Дамп структуры для таблицы 3wifi.uploads
 CREATE TABLE `uploads` (
-	`uid` INT(10) UNSIGNED NULL DEFAULT NULL,
-	`id` INT(10) UNSIGNED NULL DEFAULT NULL,
+	`uid` INT(10) UNSIGNED NOT NULL,
+	`id` INT(10) UNSIGNED NOT NULL,
 	`creator` BIT(1) NOT NULL DEFAULT b'0',
 	UNIQUE INDEX `upload` (`uid`, `id`),
-	INDEX `uid` (`uid`)
+	INDEX `FK_uploads_base` (`id`),
+	INDEX `uid` (`uid`),
+	CONSTRAINT `FK_uploads_users` FOREIGN KEY (`uid`) REFERENCES `users` (`uid`) ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT `FK_uploads_base` FOREIGN KEY (`id`) REFERENCES `base` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Дамп структуры для таблицы 3wifi.favorites
 CREATE TABLE `favorites` (
-	`uid` INT(10) UNSIGNED NULL DEFAULT NULL,
-	`id` INT(10) UNSIGNED NULL DEFAULT NULL,
+	`uid` INT(10) UNSIGNED NOT NULL,
+	`id` INT(10) UNSIGNED NOT NULL,
 	UNIQUE INDEX `favorite` (`uid`, `id`),
-	INDEX `uid` (`uid`)
+	INDEX `FK_favorites_base` (`id`),
+	INDEX `uid` (`uid`),
+	CONSTRAINT `FK_favorites_users` FOREIGN KEY (`uid`) REFERENCES `users` (`uid`) ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT `FK_favorites_base` FOREIGN KEY (`id`) REFERENCES `base` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Дамп данных таблицы 3wifi.users
