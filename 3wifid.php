@@ -31,6 +31,8 @@ switch ($argv[1])
 	case 'uploads':
 	while (true)
 	{
+		logt('Cleaning up old tasks... (tstate = 0)');
+		$db->query('UPDATE tasks SET tstate=1,checkexist=1,nowait=1 WHERE tstate=0 AND modified < NOW() - INTERVAL 12 HOUR');
 		logt('Fetching a task... (tstate = 1)');
 		$res = $db->query('SELECT `tid` FROM tasks WHERE `tstate`=1 ORDER BY `created` LIMIT 1');
 		$tid = (($row = $res->fetch_row()) ? $row[0] : null);
@@ -166,8 +168,6 @@ switch ($argv[1])
 
 				fclose($handle);
 			}
-			logt('Removing temporary file...');
-			unlink($filename);
 
 			$hangcheck = 2;
 			$time = microtime(true);
@@ -201,6 +201,8 @@ switch ($argv[1])
 				}
 				sleep(2);
 			}
+			logt('Removing temporary file...');
+			unlink($filename);
 			logt('Status: '.$apschk[1].' found, '.$apschk[-1].' not found (Done!)');
 
 			logt("Set tstate = 3 (complete)");

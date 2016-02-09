@@ -15,6 +15,7 @@ function showLoads()
 			dt = d.data[i][0].split('.');
 			if (lo == 0) lo = dt[0] + '.' + dt[1];
 			hi = dt[0] + '.' + dt[1];
+			if (d.data.length-i < 5) dt[2] += ' '; // dirty hack to prevent graph overlapping
 			d.data[i][0] = dt[2];
 		}
 		d.label = (lo == hi ? lo : lo + '-' + hi);
