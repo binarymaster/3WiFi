@@ -18,8 +18,8 @@
 	opacity: 0.7;
 }
 .modal_cnt {
-	width: 400px;
-	height: 250px;
+	min-width: 400px;
+	min-height: 250px;
 	margin: 0 auto;
 	overflow: visible;
 	position: absolute;
@@ -161,7 +161,7 @@
 	font-weight: bold;
 	cursor: pointer;
 	width: 140px;
-	height: 23px;
+	min-height: 23px;
 	border-bottom: 1px solid white;
 }
 .submbtn p {
