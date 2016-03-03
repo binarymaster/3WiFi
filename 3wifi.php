@@ -10,9 +10,6 @@ require_once 'utils.php';
 require_once 'db.php';
 require_once 'quadkey.php';
 
-$UserManager = new User();
-$UserManager->loadSession();
-
 $topPort = 30;
 $topauth = 100;
 $topname = 30;
@@ -29,6 +26,12 @@ $action = $_GET['a'];
 $time = microtime(true);
 $json = array();
 $json['result'] = false;
+
+if ($action != 'hash')
+{
+	$UserManager = new User();
+	$UserManager->loadSession();
+}
 
 switch ($action)
 {
@@ -1241,7 +1244,7 @@ switch ($action)
 	break;
 }
 
-session_write_close();
+if ($action != 'hash') session_write_close();
 $time = microtime(true) - $time;
 $json['time'] = $time;
 
