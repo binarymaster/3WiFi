@@ -17,5 +17,7 @@ php -f 3wifid.php uploads
 php -f 3wifid.php finalize
 # Geolocate routine locates new added BSSIDs on map
 php -f 3wifid.php geolocate
+# Starts memory tables manager (use only with memory tables enabled)
+php -f 3wifid.php memory
 ```
 Before running the daemons, make sure that `php-cli` interpreter is accessible from your directory.

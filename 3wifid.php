@@ -272,6 +272,29 @@ switch ($argv[1])
 	// TODO
 	break;
 
+	// Обслуживание таблиц в памяти
+	case 'memory':
+	while (true)
+	{
+		if(!TRY_USE_MEMORY_TABLES)
+		{
+			logt('Memory tables are not used');
+			continue;
+		}
+		$DataBaseStatus = GetStatsValue(STATS_DATABASE_STATUS);
+		if($DataBaseStatus == -1) // Service table not initialized
+		{
+			SetStatsValue(STATS_DATABASE_STATUS, DATABASE_PREPARE, true);
+		}
+		MemoryDataBaseInit();
+		if($DataBaseStatus != DATABASE_ACTIVE)
+		{
+			SetStatsValue(STATS_DATABASE_STATUS, DATABASE_ACTIVE, true);
+		}
+		sleep(10);
+	}
+	break;
+
 	default:
 	logt("Error: Unsupported action `$argv[1]'");
 	break;

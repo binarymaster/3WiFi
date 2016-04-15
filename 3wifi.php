@@ -53,6 +53,7 @@ switch ($action)
 
 	// Координаты точек на карте (с кластеризацией)
 	case 'map':
+	set_time_limit(10);
 	list($tile_x1, $tile_y1, $tile_x2, $tile_y2) = explode(',', $_GET['tileNumber']);
 	$zoom = $_GET['zoom'];
 	$callback = $_GET['callback'];
@@ -799,6 +800,7 @@ switch ($action)
 
 	// Общая статистика
 	case 'stat':
+	set_time_limit(30);
 	$json['result'] = true;
 	date_default_timezone_set('UTC');
 	$json['stat']['date'] = date('Y.m.d H:i:s');
@@ -875,6 +877,7 @@ switch ($action)
 
 	// Динамика загрузок
 	case 'loads':
+	set_time_limit(30);
 	$json['result'] = true;
 	date_default_timezone_set('UTC');
 	if (!db_connect())
@@ -897,6 +900,7 @@ switch ($action)
 
 	// Комментарии
 	case 'stcmt':
+	set_time_limit(30);
 	$json['result'] = true;
 	if (!db_connect())
 	{
@@ -921,6 +925,7 @@ switch ($action)
 
 	// Названия устройств
 	case 'stdev':
+	set_time_limit(30);
 	$json['result'] = true;
 	$json['stat']['top'] = $topname;
 	if (!db_connect())
@@ -952,6 +957,7 @@ switch ($action)
 
 	// Порты
 	case 'stport':
+	set_time_limit(30);
 	$json['result'] = true;
 	$json['stat']['top'] = $topPort;
 	if (!db_connect())
@@ -983,6 +989,7 @@ switch ($action)
 
 	// Данные авторизации
 	case 'stauth':
+	set_time_limit(30);
 	$json['result'] = true;
 	$json['stat']['top'] = $topauth;
 	if (!db_connect())
@@ -1014,6 +1021,7 @@ switch ($action)
 
 	// BSSID точек доступа
 	case 'stbss':
+	set_time_limit(30);
 	$json['result'] = true;
 	$json['stat']['top'] = $topbssid;
 	if (!db_connect())
@@ -1045,6 +1053,7 @@ switch ($action)
 
 	// ESSID точек доступа
 	case 'stess':
+	set_time_limit(30);
 	$json['result'] = true;
 	$json['stat']['top'] = $topessid;
 	if (!db_connect())
@@ -1076,6 +1085,7 @@ switch ($action)
 
 	// Тип защиты точек доступа
 	case 'stsec':
+	set_time_limit(30);
 	$json['result'] = true;
 	$json['stat']['top'] = $topSecurity;
 	if (!db_connect())
@@ -1107,6 +1117,7 @@ switch ($action)
 
 	// Ключи точек доступа
 	case 'stkey':
+	set_time_limit(30);
 	$json['result'] = true;
 	$json['stat']['top'] = $topWiFiKey;
 	if (!db_connect())
@@ -1138,6 +1149,7 @@ switch ($action)
 
 	// WPS пин коды точек доступа
 	case 'stwps':
+	set_time_limit(30);
 	$json['result'] = true;
 	$json['stat']['top'] = $topWPSPIN;
 	if (!db_connect())
@@ -1169,6 +1181,7 @@ switch ($action)
 
 	// DNS серверы
 	case 'stdns':
+	set_time_limit(30);
 	$json['result'] = true;
 	$json['stat']['top'] = $topDNS;
 	if (!db_connect())
@@ -1211,6 +1224,7 @@ switch ($action)
 
 	// Активные участники (Сидеры)
 	case 'stsid':
+	set_time_limit(30);
 	$json['result'] = true;
 	$json['stat']['top'] = $topSid;
 

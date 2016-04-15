@@ -69,23 +69,27 @@ function db_connect()
 
 	$dbUseMemory = false;
 	$DataBaseStatus = GetStatsValue(STATS_DATABASE_STATUS);
-	if($DataBaseStatus == DATABASE_PREPARE) // Database not avaible
+	if($DataBaseStatus == DATABASE_PREPARE) // Database not avaible (now loading to mem)
 	{
 		$db = NULL;
 		$result = false;
 	}
 
-	if($DataBaseStatus == -1) // Service table not initialized
-	{
-		SetStatsValue(STATS_DATABASE_STATUS, DATABASE_PREPARE, true);
-	}
-	if(TRY_USE_MEMORY_TABLES)
-	{
-		MemoryDataBaseInit();
-	}
-	if($DataBaseStatus != DATABASE_ACTIVE)
+	if(!TRY_USE_MEMORY_TABLES && $DataBaseStatus != DATABASE_ACTIVE)
 	{
 		SetStatsValue(STATS_DATABASE_STATUS, DATABASE_ACTIVE, true);
+	}
+	else
+	{
+		if(TRY_USE_MEMORY_TABLES)
+		{
+			$dbUseMemory = true;
+			/*if ($DataBaseStatus == -1)
+			{	// Service table not initialized
+				$db = NULL;
+				$result = false;
+			}*/
+		}
 	}
 	return $result;
 }
@@ -219,6 +223,7 @@ function QuerySql($sql, &$affected_rows = NULL)
 
 	if(DEBUG_SQLQUERY) Debug($sql);
 
+	set_time_limit(0);
 	$res = $db->query($sql);
 	if($affected_rows != NULL)
 	{
