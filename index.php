@@ -10,6 +10,7 @@ function validPage($page)
 		$page == 'find' ||
 		$page == 'ranges' ||
 		$page == 'devmac' ||
+		$page == 'wpspin' ||
 		$page == 'upload' ||
 		$page == 'graph' ||
 		$page == 'stat' ||
@@ -79,7 +80,7 @@ $mbs = $mb.' mbsel';
 $content = str_replace('%chk_docs%', ($page == 'home' || $page == 'faq' || $page == 'apidoc' || $page == 'rules' ? $mbs : $mb), $content);
 $content = str_replace('%chk_map%', ($page == 'map' ? $mbs : $mb), $content);
 $content = str_replace('%chk_find%', ($page == 'find' ? $mbs : $mb), $content);
-$content = str_replace('%chk_tool%', ($page == 'ranges' || $page == 'devmac' ? $mbs : $mb), $content);
+$content = str_replace('%chk_tool%', ($page == 'ranges' || $page == 'devmac' || $page == 'wpspin' ? $mbs : $mb), $content);
 $content = str_replace('%chk_load%', ($page == 'upload' ? $mbs : $mb), $content);
 $content = str_replace('%chk_st%', ($page == 'stat' || $page == 'graph' ? $mbs : $mb), $content);
 $content = str_replace('%chk_user%', ($page == 'user' ? $mbs : $mb), $content);
@@ -92,6 +93,7 @@ $content = str_replace('%chk_apidoc%', ($page == 'faq' ? $sms : $sm), $content);
 $content = str_replace('%chk_rul%', ($page == 'rules' ? $sms : $sm), $content);
 $content = str_replace('%chk_rang%', ($page == 'ranges' ? $sms : $sm), $content);
 $content = str_replace('%chk_dev%', ($page == 'devmac' ? $sms : $sm), $content);
+$content = str_replace('%chk_wps%', ($page == 'wpspin' ? $sms : $sm), $content);
 $content = str_replace('%chk_stat%', ($page == 'stat' ? $sms : $sm), $content);
 $content = str_replace('%chk_grph%', ($page == 'graph' ? $sms : $sm), $content);
 

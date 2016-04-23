@@ -1,0 +1,831 @@
+<title>3WiFi: Генератор WPS PIN</title>
+
+<head>
+<script type="text/javascript">
+function zeroFill(number, width)
+{
+	width -= number.toString().length;
+	if (width > 0)
+	{
+		return new Array(width + (/\./.test( number ) ? 2 : 1)).join('0') + number;
+	}
+	return number + ""; // always return a string
+}
+function reverse(s)
+{
+	return s.split("").reverse().join("");
+}
+function insert(a, b, position)
+{
+	return [a.slice(0, position), b, a.slice(position)].join('');
+}
+function pinChecksum(pin)
+{
+	pin %= 10000000;
+	var a = 0, t = pin;
+	while (t)
+	{
+		a += 3 * (t % 10);
+		t = Math.floor(t / 10);
+		a += t % 10;
+		t = Math.floor(t / 10);
+	}
+	return (pin * 10) + ((10 - (a % 10)) % 10);
+}
+function pinSuggest()
+{
+	$('#result').empty();
+	var ln = $('#bssids').val().split("\n");
+	for (var j = 0; j < ln.length; j++)
+	{
+		var m = ln[j];
+		m = m.replace(/:/g, '').replace(/-/g, '').replace(/\./g, '').replace(/ /g, '');
+		m = parseInt(m, 16);
+		if (isNaN(m) || m > 0xFFFFFFFFFFFF) continue;
+		var mt = zeroFill(m.toString(16).toUpperCase(), 12);
+		mt = insert(mt, ':', 10);
+		mt = insert(mt, ':', 8);
+		mt = insert(mt, ':', 6);
+		mt = insert(mt, ':', 4);
+		mt = insert(mt, ':', 2);
+		$('#suggpin').text("Suggested PIN codes for "+mt+"\n\n");
+		var sugg = false;
+		for (var i = 0; i < algos.length; i++)
+		{
+			var info = $('#' + algos[i].id).val().split("\n");
+			for (var k = 0; k < info.length; k++)
+			{
+				if (info[k].indexOf('  ') == 0 && info[k].lastIndexOf(':xx') == 16)
+				{
+					info[k] = info[k].substr(2);
+					info[k] = info[k].substr(0, info[k].indexOf('x'));
+					if (mt.indexOf(info[k]) == 0)
+					{
+						sugg = true;
+						var pin = pinChecksum(algos[i].func(m));
+						pin = zeroFill(pin.toString(10), 8);
+						if (algos[i].stat)
+						{
+							$('#suggpin').append(pin + ' | Static PIN - ' + algos[i].name + "\n");
+						} else {
+							$('#suggpin').append(pin + ' | ' + algos[i].name + "\n");
+						}
+					}
+				}
+			}
+		}
+		if (sugg) $('#result').append($('#suggpin').val() + "\n");
+	}
+	$('#algosel').val('algonone');
+}
+function getAll()
+{
+	var m = $('#bssids').val().split("\n");
+	if (m.length > 1)
+		return alert('This function only for one BSSID.');
+	var bss = m[0].replace(/ /g, '').toUpperCase();
+	m = m[0].replace(/:/g, '').replace(/-/g, '').replace(/\./g, '').replace(/ /g, '');
+	m = parseInt(m, 16);
+	if (isNaN(m) || m > 0xFFFFFFFFFFFF)
+		return alert('Incorrect BSSID.');
+	$('#result').text("PIN codes for "+bss+"\n\n");
+	for (var i = 0; i < algos.length; i++)
+	{
+		var pin = pinChecksum(algos[i].func(m));
+		pin = zeroFill(pin.toString(10), 8);
+		if (algos[i].stat)
+		{
+			$('#result').append(pin + ' | Static PIN - ' + algos[i].name + "\n");
+		} else {
+			$('#result').append(pin + ' | ' + algos[i].name + "\n");
+		}
+	}
+	$('#algosel').val('algonone');
+}
+function showAlgo()
+{
+	var algo = $('#algosel').val();
+	$('#result').empty();
+	for (var i = 0; i < algos.length; i++)
+	{
+		if (algos[i].id == algo)
+		{
+			if (algos[i].stat)
+			{
+				$('#result').append(algos[i].name + " static PIN,\n");
+			} else {
+				$('#result').append(algos[i].name + " algorithm,\n");
+			}
+			$('#result').append("used by these devices:\n\n");
+			$('#result').append($('#' + algos[i].id).val());
+			break;
+		}
+	}
+}
+function initpage()
+{
+	algos = [];
+	algos.push({id: "pin24", name: "24-bit PIN", stat: false, func: function (mac) {return mac & 0xFFFFFF;}});
+	algos.push({id: "pin28", name: "28-bit PIN", stat: false, func: function (mac) {return mac & 0xFFFFFFF;}});
+	algos.push({id: "pin32", name: "32-bit PIN", stat: false, func: function (mac) {return mac & 0xFFFFFFFF;}});
+	algos.push({id: "pin36", name: "36-bit PIN", stat: false, func: function (mac) {return mac % 0x1000000000;}});
+	algos.push({id: "pin40", name: "40-bit PIN", stat: false, func: function (mac) {return mac % 0x10000000000;}});
+	algos.push({id: "pin44", name: "44-bit PIN", stat: false, func: function (mac) {return mac % 0x100000000000;}});
+	algos.push({id: "pin48", name: "48-bit PIN", stat: false, func: function (mac) {return mac;}});
+	algos.push({id: "pin24rh", name: "Reverse byte 24-bit", stat: false, func: function (mac)
+	{
+		mac &= 0xFFFFFF;
+		mac = zeroFill(mac.toString(16), 6);
+		mac = mac.substr(4,2)
+		+ mac.substr(2,2)
+		+ mac.substr(0,2);
+		return parseInt(mac, 16);
+	}});
+	algos.push({id: "pin32rh", name: "Reverse byte 32-bit", stat: false, func: function (mac)
+	{
+		mac &= 0xFFFFFFFF;
+		mac = zeroFill(mac.toString(16), 8);
+		mac = mac.substr(6,2)
+		+ mac.substr(4,2)
+		+ mac.substr(2,2)
+		+ mac.substr(0,2);
+		return parseInt(mac, 16);
+	}});
+	algos.push({id: "pin48rh", name: "Reverse byte 48-bit", stat: false, func: function (mac)
+	{
+		mac = zeroFill(mac.toString(16), 12);
+		mac = mac.substr(10,2)
+		+ mac.substr(8,2)
+		+ mac.substr(6,2)
+		+ mac.substr(4,2)
+		+ mac.substr(2,2)
+		+ mac.substr(0,2);
+		return parseInt(mac, 16);
+	}});
+	algos.push({id: "pin24rn", name: "Reverse nibble 24-bit", stat: false, func: function (mac)
+	{
+		mac &= 0xFFFFFF;
+		mac = zeroFill(mac.toString(16), 6);
+		return parseInt(reverse(mac), 16);
+	}});
+	algos.push({id: "pin32rn", name: "Reverse nibble 32-bit", stat: false, func: function (mac)
+	{
+		mac &= 0xFFFFFFFF;
+		mac = zeroFill(mac.toString(16), 8);
+		return parseInt(reverse(mac), 16);
+	}});
+	algos.push({id: "pin48rn", name: "Reverse nibble 48-bit", stat: false, func: function (mac)
+	{
+		mac = zeroFill(mac.toString(16), 12);
+		return parseInt(reverse(mac), 16);
+	}});
+	algos.push({id: "pin24rb", name: "Reverse bits 24-bit", stat: false, func: function (mac)
+	{
+		mac &= 0xFFFFFF;
+		mac = zeroFill(mac.toString(2), 24);
+		return parseInt(reverse(mac), 2);
+	}});
+	algos.push({id: "pin32rb", name: "Reverse bits 32-bit", stat: false, func: function (mac)
+	{
+		mac &= 0xFFFFFFFF;
+		mac = zeroFill(mac.toString(2), 32);
+		return parseInt(reverse(mac), 2);
+	}});
+	algos.push({id: "pin48rb", name: "Reverse bits 48-bit", stat: false, func: function (mac)
+	{
+		mac = zeroFill(mac.toString(2), 48);
+		return parseInt(reverse(mac), 2);
+	}});
+	algos.push({id: "pinDLink", name: "D-Link PIN", stat: false, func: function (mac)
+	{
+		mac &= 0xFFFFFF;
+		mac ^= 0x55AA55;
+		mac ^= ((mac & 0xF) << 4)
+		| ((mac & 0xF) << 8)
+		| ((mac & 0xF) << 12)
+		| ((mac & 0xF) << 16)
+		| ((mac & 0xF) << 20);
+		mac %= 10000000;
+		if (mac < 1000000) mac += ((mac % 9) * 1000000) + 1000000;
+		return mac;
+	}});
+	algos.push({id: "pinDLink1", name: "D-Link PIN +1", stat: false, func: function (mac)
+	{
+		mac++;
+		mac &= 0xFFFFFF;
+		mac ^= 0x55AA55;
+		mac ^= ((mac & 0xF) << 4)
+		| ((mac & 0xF) << 8)
+		| ((mac & 0xF) << 12)
+		| ((mac & 0xF) << 16)
+		| ((mac & 0xF) << 20);
+		mac %= 10000000;
+		if (mac < 1000000) mac += ((mac % 9) * 1000000) + 1000000;
+		return mac;
+	}});
+	algos.push({id: "pinNETGEAR", name: "NETGEAR WNR612v2", stat: false, func: function (mac) {return (mac & 0xFFFFFF) >> 1;}});
+	algos.push({id: "pinEasyBox", name: "Vodafone EasyBox", stat: false, func: function (mac)
+	{
+		var sn = zeroFill((mac & 0xFFFF).toString(10), 5);
+		var k1 = parseInt(sn[1]) + parseInt(sn[2]) + ((mac & 0xFF) >> 4) + (mac & 0xF);
+		k1 &= 0xF;
+		var k2 = parseInt(sn[3]) + parseInt(sn[4]) + ((mac & 0xFFFF) >> 12) + ((mac & 0xFFF) >> 8);
+		k2 &= 0xF;
+		var hpin = [];
+		hpin[0] = k1 ^ parseInt(sn[4]);
+		hpin[1] = k1 ^ parseInt(sn[3]);
+		hpin[2] = k2 ^ ((mac & 0xFFF) >> 8);
+		hpin[3] = k2 ^ ((mac & 0xFF) >> 4);
+		hpin[4] = ((mac & 0xFF) >> 4) ^ parseInt(sn[4]);
+		hpin[5] = (mac & 0xF) ^ parseInt(sn[3]);
+		hpin[6] = k1 ^ parseInt(sn[2]);
+		var hex = "";
+		for (var i = 0; i < hpin.length; i++) hex += hpin[i].toString(16);
+		return parseInt(hex, 16);
+	}});
+	algos.push({id: "pinAirocon", name: "Airocon Realtek", stat: false, func: function (mac)
+	{
+		mac = zeroFill(mac.toString(16), 12);
+		var b = [];
+		b[0] = parseInt(mac.substr(0, 2), 16);
+		b[1] = parseInt(mac.substr(2, 2), 16);
+		b[2] = parseInt(mac.substr(4, 2), 16);
+		b[3] = parseInt(mac.substr(6, 2), 16);
+		b[4] = parseInt(mac.substr(8, 2), 16);
+		b[5] = parseInt(mac.substr(10, 2), 16);
+		return ((b[0] + b[1]) % 10)
+		+ (((b[5] + b[0]) % 10) * 10)
+		+ (((b[4] + b[5]) % 10) * 100)
+		+ (((b[3] + b[4]) % 10) * 1000)
+		+ (((b[2] + b[3]) % 10) * 10000)
+		+ (((b[1] + b[2]) % 10) * 100000)
+		+ (((b[0] + b[1]) % 10) * 1000000);
+	}});
+	algos.push({id: "pinInvNIC", name: "Inv NIC to PIN", stat: false, func: function (mac)
+	{
+		mac &= 0xFFFFFF;
+		return ~mac & 0xFFFFFF;
+	}});
+	algos.push({id: "pinNIC2", name: "NIC * 2", stat: false, func: function (mac) {return (mac & 0xFFFFFF) * 2;}});
+	algos.push({id: "pinNIC3", name: "NIC * 3", stat: false, func: function (mac) {return (mac & 0xFFFFFF) * 3;}});
+	algos.push({id: "pinOUIaddNIC", name: "OUI + NIC", stat: false, func: function (mac)
+	{
+		mac = zeroFill(mac.toString(16), 12);
+		var oui = parseInt(mac.substr(0, 6), 16);
+		var nic = parseInt(mac.substr(6, 6), 16);
+		return (oui + nic) % 0x1000000;
+	}});
+	algos.push({id: "pinOUIsubNIC", name: "OUI - NIC", stat: false, func: function (mac)
+	{
+		mac = zeroFill(mac.toString(16), 12);
+		var oui = parseInt(mac.substr(0, 6), 16);
+		var nic = parseInt(mac.substr(6, 6), 16);
+		if (nic < oui)
+		{
+			return oui - nic;
+		} else {
+			return (oui + 0x1000000 - nic) & 0xFFFFFF;
+		}
+	}});
+	algos.push({id: "pinOUIxorNIC", name: "OUI ^ NIC", stat: false, func: function (mac)
+	{
+		mac = zeroFill(mac.toString(16), 12);
+		var oui = parseInt(mac.substr(0, 6), 16);
+		var nic = parseInt(mac.substr(6, 6), 16);
+		return oui ^ nic;
+	}});
+	algos.push({id: "pinCisco", name: "Cisco", stat: true, func: function (mac) {return 1234567;}});
+	algos.push({id: "pinBrcm1", name: "Broadcom 1", stat: true, func: function (mac) {return 2017252;}});
+	algos.push({id: "pinBrcm2", name: "Broadcom 2", stat: true, func: function (mac) {return 4626484;}});
+	algos.push({id: "pinBrcm3", name: "Broadcom 3", stat: true, func: function (mac) {return 7622990;}});
+	algos.push({id: "pinBrcm4", name: "Broadcom 4", stat: true, func: function (mac) {return 6232714;}});
+	algos.push({id: "pinDSL2740R", name: "DSL-2740R", stat: true, func: function (mac) {return 6817554;}});
+	algos.push({id: "pinRealtek", name: "Realtek", stat: true, func: function (mac) {return 9566146;}});
+	algos.push({id: "pinUpvel", name: "Upvel", stat: true, func: function (mac) {return 2085483;}});
+	algos.push({id: "pinUR814AC", name: "UR-814AC", stat: true, func: function (mac) {return 4397768;}});
+	algos.push({id: "pinUR825AC", name: "UR-825AC", stat: true, func: function (mac) {return 0529417;}});
+	algos.push({id: "pinOnlime", name: "Onlime", stat: true, func: function (mac) {return 9995604;}});
+	algos.push({id: "pinEdimax", name: "Edimax", stat: true, func: function (mac) {return 3561153;}});
+	algos.push({id: "pinThomson", name: "Thomson", stat: true, func: function (mac) {return 6795814;}});
+	algos.push({id: "pinHG532x", name: "HG532x", stat: true, func: function (mac) {return 3425928;}});
+	for (var i = 0; i < algos.length; i++)
+	{
+		if (algos[i].stat)
+		{
+			$('#algosel').append($('<option>').val(algos[i].id).text('Static PIN - ' + algos[i].name));
+		} else {
+			$('#algosel').append($('<option>').val(algos[i].id).text(algos[i].name));
+		}
+	}
+}
+</script>
+</head>
+
+<body>
+<table>
+
+<tr><td>
+	<textarea id=bssids rows=3 cols=22>12:34:56:78:9A:BC</textarea>
+</td><td>
+	<button onclick="pinSuggest()">Suggest</button> <button onclick="getAll()">Get All</button>
+</td></tr>
+
+<tr><td colspan=2>
+	<textarea id=result readonly rows=14 cols=42></textarea>
+</td></tr>
+
+</table>
+
+<div>Implemented algorithms (choose for info):</div>
+
+<select id=algosel onchange="showAlgo()"><option value=algonone>Not selected</option></select>
+
+<div style="display: none">
+<textarea id=suggpin rows=14 cols=38></textarea>
+
+<textarea id=pin24>ZyXEL NDMS
+  10:7B:EF:xx:xx:xx
+  14:A9:E3:xx:xx:xx
+  28:28:5D:xx:xx:xx
+  50:67:F0:xx:xx:xx
+  5C:F4:AB:xx:xx:xx
+  AA:28:5D:xx:xx:xx
+  B0:B2:DC:xx:xx:xx
+  C8:6C:87:xx:xx:xx
+  CC:5D:4E:xx:xx:xx
+  EA:28:5D:xx:xx:xx
+  EC:43:F6:xx:xx:xx
+  EE:43:F6:xx:xx:xx
+  F2:B2:DC:xx:xx:xx
+  FC:F5:28:xx:xx:xx
+  FE:F5:28:xx:xx:xx
+  WSC Device Names:
+    ZyXEL Internet Center
+    Keenetic Giga II
+    Keenetic Ultra
+TRENDnet (some firmwares)
+TRENDnet TEW-651BR
+  00:14:D1:xx:xx:xx
+D-Link DIR-300NRU B5
+  84:C9:B2:xx:xx:xx
+  WSC Device Names:
+    RalinkAPS
+D-Link DIR-620
+  14:D6:4D:xx:xx:xx
+  90:94:E4:xx:xx:xx
+  BC:F6:85:xx:xx:xx
+  WSC Device Names:
+    RalinkAPS
+Huawei HG532e
+  00:66:4B:xx:xx:xx
+  08:7A:4C:xx:xx:xx
+  14:B9:68:xx:xx:xx
+  20:08:ED:xx:xx:xx
+  34:6B:D3:xx:xx:xx
+  4C:ED:DE:xx:xx:xx
+  78:6A:89:xx:xx:xx
+  88:E3:AB:xx:xx:xx
+  D4:6E:5C:xx:xx:xx
+  E8:CD:2D:xx:xx:xx
+  EC:23:3D:xx:xx:xx
+  EC:CB:30:xx:xx:xx
+  F4:9F:F3:xx:xx:xx
+  WSC Device Names:
+    RalinkAPS
+ASUS RT-G32
+ASUS RT-N13U
+ASUS RT-N13U Rev.B1
+  20:CF:30:xx:xx:xx
+  90:E6:BA:xx:xx:xx
+  E0:CB:4E:xx:xx:xx
+Upvel UR-309BN
+Upvel UR-309NB
+  D4:BF:7F:4x:xx:xx
+Upvel (some firmwares)
+  F8:C0:91:xx:xx:xx
+
+Technical details:
+Pin = MAC[7..12]</textarea>
+
+<textarea id=pin28>Huawei HG8245H
+  20:0B:C7:xx:xx:xx
+  48:46:FB:xx:xx:xx
+  D4:6A:A8:xx:xx:xx
+  F8:4A:BF:xx:xx:xx
+
+Technical details:
+Pin = MAC[6..12]</textarea>
+
+<textarea id=pin32>D-Link DIR-300 (some firmwares)
+  00:07:26:xx:xx:xx
+  D8:FE:E3:xx:xx:xx
+Beeline DIR-300
+  2C:AB:25:xx:xx:xx
+ASUS (some firmwares)
+ASUS RT-N13U Rev.B1
+  10:BF:48:xx:xx:xx
+  14:DA:E9:xx:xx:xx
+  30:85:A9:xx:xx:xx
+  50:46:5D:xx:xx:xx
+  54:04:A6:xx:xx:xx
+  C8:60:00:xx:xx:xx
+  F4:6D:04:xx:xx:xx
+ASUS EA-N66
+  30:85:A9:xx:xx:xx
+EDIMAX BR6428GN
+EDIMAX BR6228GNS
+  80:1F:02:xx:xx:xx
+
+Technical details:
+Pin = MAC[5..12]</textarea>
+
+<textarea id=pin36>Unknown, for testing
+
+Technical details:
+Pin = MAC[4..12]</textarea>
+
+<textarea id=pin40>Unknown, for testing
+
+Technical details:
+Pin = MAC[3..12]</textarea>
+
+<textarea id=pin44>Unknown, for testing
+
+Technical details:
+Pin = MAC[2..12]</textarea>
+
+<textarea id=pin48>Unknown, for testing
+
+Technical details:
+Pin = MAC[1..12]</textarea>
+
+<textarea id=pin24rh>Unknown, for testing
+
+Technical details:
+Pin = MAC[12..7]</textarea>
+
+<textarea id=pin32rh>Unknown, for testing
+
+Technical details:
+Pin = MAC[12..5]</textarea>
+
+<textarea id=pin48rh>Unknown, for testing
+
+Technical details:
+Pin = MAC[12..1]</textarea>
+
+<textarea id=pin24rn>Unknown, for testing
+
+Technical details:
+Pin = MAC[12..7]</textarea>
+
+<textarea id=pin32rn>Unknown, for testing
+
+Technical details:
+Pin = MAC[12..5]</textarea>
+
+<textarea id=pin48rn>Unknown, for testing
+
+Technical details:
+Pin = MAC[12..1]</textarea>
+
+<textarea id=pin24rb>Unknown, for testing
+
+Technical details:
+Pin = MAC[12..7]</textarea>
+
+<textarea id=pin32rb>Unknown, for testing
+
+Technical details:
+Pin = MAC[12..5]</textarea>
+
+<textarea id=pin48rb>Unknown, for testing
+
+Technical details:
+Pin = MAC[12..1]</textarea>
+
+<textarea id=pinDLink>D-Link DAP-1155 Rev. A1
+D-Link DAP-1360 Rev. B1
+D-Link DIR-651
+  14:D6:4D:xx:xx:xx
+  1C:7E:E5:xx:xx:xx
+  28:10:7B:xx:xx:xx
+  84:C9:B2:xx:xx:xx
+  B8:A3:86:xx:xx:xx
+  C0:A0:BB:xx:xx:xx
+  CC:B2:55:xx:xx:xx
+  FC:75:16:xx:xx:xx
+TRENDnet TEW-432BRP
+TRENDnet TEW-651BR
+TRENDnet TEW-652BRP
+TRENDnet TEW-731BR
+  00:14:D1:xx:xx:xx
+  D8:EB:97:xx:xx:xx
+  WSC Device Names:
+    TEW-651BR
+
+Technical details:
+http://www.devttys0.com/2014/10/reversing-d-links-wps-pin-algorithm/</textarea>
+
+<textarea id=pinDLink1>D-Link DIR-400
+D-Link DIR-615 Rev. B2
+D-Link DIR-615 Rev. E4
+D-Link DIR-628 Rev. A2
+D-Link DIR-635 Rev. B1
+D-Link DIR-655
+D-Link DIR-825
+D-Link DIR-826L
+D-Link DIR-855 Rev. A2
+D-Link DIR-857
+  00:18:E7:xx:xx:xx
+  00:19:5B:xx:xx:xx
+  00:1C:F0:xx:xx:xx
+  00:1E:58:xx:xx:xx
+  00:21:91:xx:xx:xx
+  00:22:B0:xx:xx:xx
+  00:24:01:xx:xx:xx
+  00:26:5A:xx:xx:xx
+  14:D6:4D:xx:xx:xx
+  1C:7E:E5:xx:xx:xx
+  34:08:04:xx:xx:xx
+  5C:D9:98:xx:xx:xx
+  84:C9:B2:xx:xx:xx
+  B8:A3:86:xx:xx:xx
+  C8:BE:19:xx:xx:xx
+  C8:D3:A3:xx:xx:xx
+  CC:B2:55:xx:xx:xx
+  WSC Device Names:
+    D-Link Systems DIR-615
+    Wireless N Router
+TRENDnet TEW-652BRP
+TRENDnet TEW-673GRU
+  00:14:D1:xx:xx:xx
+
+Technical details:
+http://www.devttys0.com/2014/10/reversing-d-links-wps-pin-algorithm/</textarea>
+
+<textarea id=pinNETGEAR>D-Link DIR-615NRU
+D-Link DIR-620NRU
+  C4:A8:1D:xx:xx:xx
+  D8:FE:E3:xx:xx:xx
+NETGEAR WNR612v2
+  4C:60:DE:xx:xx:xx
+  WSC Device Names:
+    WNR612v2 (Wireless AP)
+NETGEAR WNR2000v3
+NETGEAR WNR2200
+  00:8E:F2:xx:xx:xx
+
+Technical details:
+Pin = MAC[7..12] / 2</textarea>
+
+<textarea id=pinEasyBox>Vodafone EasyBox 802
+Vodafone EasyBox 803
+  38:22:9D:xx:xx:xx
+
+Technical details:
+https://www.sec-consult.com/fxdata/seccons/prod/temedia/advisories_txt/20130805-0_Vodafone_EasyBox_Default_WPS_PIN_Vulnerability_v10.txt</textarea>
+
+<textarea id=pinAirocon>Airocon Realtek RTL867x
+  00:07:26:2F:xx:xx
+  00:0B:2B:4A:xx:xx
+  00:0E:F4:E7:xx:xx
+  00:13:33:Bx:xx:xx
+  00:17:7C:xx:xx:xx
+  00:1A:EF:xx:xx:xx
+  00:E0:4B:B3:xx:xx
+  02:10:18:01:xx:xx
+  08:10:73:4x:xx:xx
+  08:10:77:10:xx:xx
+  10:13:EE:0x:xx:xx
+  2C:AB:25:C7:xx:xx
+  78:8C:54:xx:xx:xx
+  80:3F:5D:F6:xx:xx
+  94:FB:B2:xx:xx:xx
+  BC:96:80:xx:xx:xx
+  F4:3E:61:xx:xx:xx
+  FC:8B:97:xx:xx:xx
+
+Technical details:
+https://forum.antichat.ru/posts/3975451/</textarea>
+
+<textarea id=pinInvNIC>Unknown, for testing
+
+Technical details:
+Pin = Inv(MAC[7..12])</textarea>
+
+<textarea id=pinNIC2>Unknown, for testing
+
+Technical details:
+Pin = MAC[7..12] * 2</textarea>
+
+<textarea id=pinNIC3>Unknown, for testing
+
+Technical details:
+Pin = MAC[7..12] * 3</textarea>
+
+<textarea id=pinOUIaddNIC>Unknown, for testing
+
+Technical details:
+Pin = MAC[1..6] + MAC[7..12]</textarea>
+
+<textarea id=pinOUIsubNIC>Unknown, for testing
+
+Technical details:
+Pin = MAC[1..6] - MAC[7..12]</textarea>
+
+<textarea id=pinOUIxorNIC>Unknown, for testing
+
+Technical details:
+Pin = MAC[1..6] ^ MAC[7..12]</textarea>
+
+<textarea id=pinCisco>Cisco DPC2420
+Cisco EPC2100R2
+Cisco EPC2325
+  00:24:8C:xx:xx:xx
+  00:26:18:xx:xx:xx
+  70:71:BC:xx:xx:xx
+  E0:69:95:xx:xx:xx
+  E0:CB:4E:xx:xx:xx
+
+Technical details:
+Pin = 1234567</textarea>
+
+<textarea id=pinBrcm1>Broadcom firmwares
+D-Link DSL-2640U
+D-Link DSL-2650U
+D-Link DSL-2740U
+D-Link DSL-2750U
+  AC:F1:DF:xx:xx:xx
+  BC:F6:85:xx:xx:xx
+  C8:D3:A3:xx:xx:xx
+Sagemcom F@ST3804
+  98:8B:5D:xx:xx:xx
+Starnet AR800
+  00:1A:A9:xx:xx:xx
+  14:14:4B:xx:xx:xx
+Modem Supply MSW41p4 v2.5
+  EC:62:64:xx:xx:xx
+
+Technical details:
+Pin = 2017252</textarea>
+
+<textarea id=pinBrcm2>D-Link DSL-2600U
+D-Link DSL-2640U
+D-Link DSL-2640NRU
+D-Link DSL-2740U
+  14:D6:4D:xx:xx:xx
+  1C:7E:E5:xx:xx:xx
+  28:10:7B:xx:xx:xx
+  B8:A3:86:xx:xx:xx
+  BC:F6:85:xx:xx:xx
+  C8:BE:19:xx:xx:xx
+  WSC Device Names:
+    BroadcomAP
+
+Technical details:
+Pin = 4626484</textarea>
+
+<textarea id=pinBrcm3>D-Link DSL-2600U
+D-Link DSL-2640U
+D-Link DSL-2640NRU
+D-Link DSL-2740U
+  14:D6:4D:xx:xx:xx
+  1C:7E:E5:xx:xx:xx
+  28:10:7B:xx:xx:xx
+  B8:A3:86:xx:xx:xx
+  BC:F6:85:xx:xx:xx
+  C8:BE:19:xx:xx:xx
+  WSC Device Names:
+    BroadcomAP
+Sagemcom F@ST2304v2 MTS
+  7C:03:4C:xx:xx:xx
+  WSC Device Names:
+    BroadcomAP
+
+Technical details:
+Pin = 7622990</textarea>
+
+<textarea id=pinBrcm4>D-Link DSL-2640U
+D-Link DSL-2650NRU
+D-Link DSL-2740U
+  14:D6:4D:xx:xx:xx
+  1C:7E:E5:xx:xx:xx
+  28:10:7B:xx:xx:xx
+  B8:A3:86:xx:xx:xx
+  BC:F6:85:xx:xx:xx
+  C8:BE:19:xx:xx:xx
+  FC:75:16:xx:xx:xx
+NETGEAR JDGN1000
+  20:4E:7F:xx:xx:xx
+Sagemcom F@ST2704v2
+  4C:17:EB:xx:xx:xx
+
+Technical details:
+Pin = 6232714</textarea>
+
+<textarea id=pinDSL2740R>D-Link DSL-2740R
+  00:26:5A:xx:xx:xx
+  1C:BD:B9:xx:xx:xx
+  34:08:04:xx:xx:xx
+  5C:D9:98:xx:xx:xx
+  84:C9:B2:xx:xx:xx
+  FC:75:16:xx:xx:xx
+
+Technical details:
+Pin = 6817554</textarea>
+
+<textarea id=pinRealtek>Realtek firmwares
+TRENDnet TEW-432BRP (Realtek)
+TRENDnet TEW-432BRP/C (Realtek)
+  00:14:D1:xx:xx:xx
+TechnicLAN WAR-54GS (Realtek)
+Intellinet 503693 (Realtek)
+  00:0C:42:xx:xx:xx
+  00:0E:E8:xx:xx:xx
+
+Technical details:
+Pin = 9566146</textarea>
+
+<textarea id=pinUpvel>Upvel (some firmwares)
+Upvel UR-315BN
+Upvel UR-325BN
+  F8:C0:91:xx:xx:xx
+
+Technical details:
+Pin = 2085483</textarea>
+
+<textarea id=pinUR814AC>Upvel UR-814AC
+  D4:BF:7F:60:xx:xx
+
+Technical details:
+Pin = 4397768</textarea>
+
+<textarea id=pinUR825AC>Upvel UR-825AC
+  D4:BF:7F:50:xx:xx
+
+Technical details:
+Pin = 0529417</textarea>
+
+<textarea id=pinOnlime>Upvel Onlime UR-315BN
+Upvel Onlime UR-319BN
+  D4:BF:7F:xx:xx:xx
+  F8:C0:91:xx:xx:xx
+  WSC Device Names:
+    RTK_AP
+    RTK_AP_2x
+TOTOLINK N150RT
+TOTOLINK N300RT
+  78:44:76:xx:xx:xx
+TRENDnet (rarely)
+TRENDnet TEW-637AP
+TRENDnet TEW-638APB
+  00:14:D1:xx:xx:xx
+
+Technical details:
+Pin = 9995604</textarea>
+
+<textarea id=pinEdimax>EDIMAX BR6228GNS
+EDIMAX BR6258GN
+EDIMAX BR6428GN
+EDIMAX BR6428NS
+  80:1F:02:xx:xx:xx
+  00:E0:4C:xx:xx:xx
+
+Technical details:
+Pin = 3561153</textarea>
+
+<textarea id=pinThomson>Thomson/Technicolor
+  00:26:24:xx:xx:xx
+  44:32:C8:xx:xx:xx
+  88:F7:C7:xx:xx:xx
+  CC:03:FA:xx:xx:xx
+
+Technical details:
+Pin = 6795814</textarea>
+
+<textarea id=pinHG532x>Huawei EchoLife HG532e
+Huawei EchoLife HG532n
+Huawei EchoLife HG532s
+  00:66:4B:xx:xx:xx
+  08:63:61:xx:xx:xx
+  08:7A:4C:xx:xx:xx
+  0C:96:BF:xx:xx:xx
+  14:B9:68:xx:xx:xx
+  20:08:ED:xx:xx:xx
+  24:69:A5:xx:xx:xx
+  34:6B:D3:xx:xx:xx
+  78:6A:89:xx:xx:xx
+  88:E3:AB:xx:xx:xx
+  9C:C1:72:xx:xx:xx
+  AC:E2:15:xx:xx:xx
+  D0:7A:B5:xx:xx:xx
+  CC:A2:23:xx:xx:xx
+  E8:CD:2D:xx:xx:xx
+  F8:01:13:xx:xx:xx
+  F8:3D:FF:xx:xx:xx
+
+Technical details:
+Pin = 3425928</textarea>
+</div>
+</body>
