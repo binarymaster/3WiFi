@@ -321,6 +321,7 @@ class User {
 	public function isActual($fix=true)
 	{
 		if ($this->uID == NULL) return false;
+		if (is_null(self::$mysqli)) return false;
 
 		$sql = 'SELECT UNIX_TIMESTAMP(lastupdate) FROM users WHERE uid='.$this->uID;
 		$res = self::$mysqli->query($sql);

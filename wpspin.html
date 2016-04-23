@@ -35,7 +35,7 @@ function pinChecksum(pin)
 function pinSuggest()
 {
 	$('#result').empty();
-	var ln = $('#bssids').val().split("\n");
+	var ln = $('#bssids').val().replace(/^\s+|\s+$/g, '').split("\n");
 	for (var j = 0; j < ln.length; j++)
 	{
 		var m = ln[j];
@@ -80,7 +80,7 @@ function pinSuggest()
 }
 function getAll()
 {
-	var m = $('#bssids').val().split("\n");
+	var m = $('#bssids').val().replace(/^\s+|\s+$/g, '').split("\n");
 	if (m.length > 1)
 		return alert('This function only for one BSSID.');
 	var bss = m[0].replace(/ /g, '').toUpperCase();
@@ -127,7 +127,7 @@ function initpage()
 	algos = [];
 	algos.push({id: "pin24", name: "24-bit PIN", stat: false, func: function (mac) {return mac & 0xFFFFFF;}});
 	algos.push({id: "pin28", name: "28-bit PIN", stat: false, func: function (mac) {return mac & 0xFFFFFFF;}});
-	algos.push({id: "pin32", name: "32-bit PIN", stat: false, func: function (mac) {return mac & 0xFFFFFFFF;}});
+	algos.push({id: "pin32", name: "32-bit PIN", stat: false, func: function (mac) {return mac % 0x100000000;}});
 	algos.push({id: "pin36", name: "36-bit PIN", stat: false, func: function (mac) {return mac % 0x1000000000;}});
 	algos.push({id: "pin40", name: "40-bit PIN", stat: false, func: function (mac) {return mac % 0x10000000000;}});
 	algos.push({id: "pin44", name: "44-bit PIN", stat: false, func: function (mac) {return mac % 0x100000000000;}});
@@ -143,7 +143,7 @@ function initpage()
 	}});
 	algos.push({id: "pin32rh", name: "Reverse byte 32-bit", stat: false, func: function (mac)
 	{
-		mac &= 0xFFFFFFFF;
+		mac %= 0x100000000;
 		mac = zeroFill(mac.toString(16), 8);
 		mac = mac.substr(6,2)
 		+ mac.substr(4,2)
@@ -170,7 +170,7 @@ function initpage()
 	}});
 	algos.push({id: "pin32rn", name: "Reverse nibble 32-bit", stat: false, func: function (mac)
 	{
-		mac &= 0xFFFFFFFF;
+		mac %= 0x100000000;
 		mac = zeroFill(mac.toString(16), 8);
 		return parseInt(reverse(mac), 16);
 	}});
@@ -187,7 +187,7 @@ function initpage()
 	}});
 	algos.push({id: "pin32rb", name: "Reverse bits 32-bit", stat: false, func: function (mac)
 	{
-		mac &= 0xFFFFFFFF;
+		mac %= 0x100000000;
 		mac = zeroFill(mac.toString(2), 32);
 		return parseInt(reverse(mac), 2);
 	}});
