@@ -243,6 +243,23 @@ function initpage()
 		for (var i = 0; i < hpin.length; i++) hex += hpin[i].toString(16);
 		return parseInt(hex, 16);
 	}});
+	algos.push({id: "pinASUS", name: "ASUS PIN", stat: false, func: function (mac)
+	{
+		mac = zeroFill(mac.toString(16), 12);
+		var b = [];
+		b[0] = parseInt(mac.substr(0, 2), 16);
+		b[1] = parseInt(mac.substr(2, 2), 16);
+		b[2] = parseInt(mac.substr(4, 2), 16);
+		b[3] = parseInt(mac.substr(6, 2), 16);
+		b[4] = parseInt(mac.substr(8, 2), 16);
+		b[5] = parseInt(mac.substr(10, 2), 16);
+		var pin = [];
+		for (var i = 0; i < 7; i++)
+		{
+			pin[i] = (b[i % 6] + b[5]) % (10 - ((i + b[1] + b[2] + b[3] + b[4] + b[5]) % 7));
+		}
+		return parseInt(pin.join(''));
+	}});
 	algos.push({id: "pinAirocon", name: "Airocon Realtek", stat: false, func: function (mac)
 	{
 		mac = zeroFill(mac.toString(16), 12);
@@ -585,6 +602,114 @@ Vodafone EasyBox 803
 
 Technical details:
 https://www.sec-consult.com/fxdata/seccons/prod/temedia/advisories_txt/20130805-0_Vodafone_EasyBox_Default_WPS_PIN_Vulnerability_v10.txt</textarea>
+
+<textarea id=pinASUS>ASUS DSL-N10 Rev.C1
+ASUS DSL-N10E
+ASUS DSL-N10S
+ASUS DSL-N12E
+ASUS DSL-N12E Rev.C1
+ASUS DSL-N12U Rev.C1
+ASUS DSL-N14U
+ASUS RT-AC51U
+ASUS RT-G32
+ASUS RT-G32 Rev.C1
+ASUS RT-N10
+ASUS RT-N10 Rev.B1
+ASUS RT-N10 Rev.C1
+ASUS RT-N10+
+ASUS RT-N10E
+ASUS RT-N10LX
+ASUS RT-N10P
+ASUS RT-N10PV2
+ASUS RT-N10U
+ASUS RT-N11P
+ASUS RT-N12
+ASUS RT-N12 Rev.C1
+ASUS RT-N12 Rev.D1
+ASUS RT-N12+
+ASUS RT-N12E
+ASUS RT-N12LX
+ASUS RT-N12VP
+ASUS RX3041 Rev.B
+  08:60:6E:xx:xx:xx
+  08:62:66:9x:xx:xx
+  10:BF:48:xx:xx:xx
+  10:C3:7B:xx:xx:xx
+  14:DD:A9:xx:xx:xx
+  1C:87:2C:xx:xx:xx
+  1C:B7:2C:xx:xx:xx
+  30:5A:3A:xx:xx:xx
+  38:2C:4A:xx:xx:xx
+  40:16:7E:xx:xx:xx
+  50:46:5D:xx:xx:xx
+  54:A0:50:xx:xx:xx
+  60:A4:4C:xx:xx:xx
+  74:D0:2B:xx:xx:xx
+  78:24:AF:xx:xx:xx
+  AC:22:0B:xx:xx:xx
+  AC:9E:17:xx:xx:xx
+  BC:EE:7B:xx:xx:xx
+  C8:60:00:7x:xx:xx
+  D8:50:E6:xx:xx:xx
+  E0:3F:49:xx:xx:xx
+  F0:79:59:78:xx:xx
+  F8:32:E4:xx:xx:xx
+Airocon Realtek RTL867x
+  00:07:26:24:xx:xx
+  00:08:A1:D3:xx:xx
+  00:17:7C:xx:xx:xx
+  00:1E:A6:xx:xx:xx
+  00:30:4F:Bx:xx:xx
+  00:E0:4C:0x:xx:xx
+  04:8D:38:xx:xx:xx
+  08:10:77:xx:xx:xx
+  08:10:78:xx:xx:xx
+  08:10:79:xx:xx:xx
+  10:FE:ED:3C:xx:xx
+  2C:AB:25:xx:xx:xx
+  30:85:A9:8C:xx:xx
+  3C:1E:04:xx:xx:xx
+  48:EE:0C:xx:xx:xx
+  54:B8:0A:xx:xx:xx
+  58:7B:E9:06:xx:xx
+  60:D1:AA:21:xx:xx
+  64:51:7E:xx:xx:xx
+  64:D9:54:xx:xx:xx
+  6C:19:8F:xx:xx:xx
+  6C:72:20:xx:xx:xx
+  6C:FD:B9:xx:xx:xx
+  78:D9:9F:Dx:xx:xx
+  80:3F:5D:F6:xx:xx
+  8C:88:2B:00:xx:xx
+  90:F6:52:90:xx:xx
+  94:FB:B2:xx:xx:xx
+  A0:F3:C1:Ex:xx:xx
+  A8:F7:E0:0x:xx:xx
+  AC:A2:13:xx:xx:xx
+  B8:55:10:xx:xx:xx
+  BC:34:00:xx:xx:xx
+  BC:96:80:xx:xx:xx
+  D0:0E:D9:0x:xx:xx
+  D8:FE:E3:xx:xx:xx
+  E8:94:F6:F6:xx:xx
+  EC:1A:59:71:xx:xx
+  F4:28:53:29:xx:xx
+  F4:3E:61:xx:xx:xx
+  FC:8B:97:xx:xx:xx
+D-Link DIR-600
+D-Link DIR-600M
+D-Link DIR-615
+  70:62:B8:xx:xx:xx
+  78:54:2E:xx:xx:xx
+  C0:A0:BB:8C:xx:xx
+  C4:12:F5:xx:xx:xx
+  C4:A8:1D:xx:xx:xx
+  E8:CC:18:xx:xx:xx
+  EC:22:80:xx:xx:xx
+  F8:E9:03:F4:xx:xx
+
+Technical details:
+https://forum.antichat.ru/posts/3978417/</textarea>
 
 <textarea id=pinAirocon>Airocon Realtek RTL867x
   00:07:26:2F:xx:xx
