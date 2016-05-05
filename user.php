@@ -180,15 +180,18 @@ switch($action)
 
 	// Смена пароля пользователя
 	case 'changepass':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
 	if ($UserManager->Level < 1)
 	{
 		$json['error'] = 'lowlevel';
 		break;
 	}
-	$oldPass = isset($_POST['oldpass']) ? $_POST['oldpass'] : null;
 	$newPass = isset($_POST['password']) ? $_POST['password'] : null;
-	if(is_null($oldPass)
-	|| is_null($newPass))
+	if(is_null($newPass))
 	{
 		$json['error'] = 'form';
 		break;
@@ -197,6 +200,14 @@ switch($action)
 	{
 		$json['error'] = 'password';
 		break;
+	}
+	if ($UserManager->changePass($newPass))
+	{
+		$json['result'] = true;
+	}
+	else
+	{
+		$json['error'] = '';
 	}
 	break;
 

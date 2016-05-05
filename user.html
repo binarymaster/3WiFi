@@ -194,16 +194,25 @@ function getInvitesInfo()
 	});
 }
 
-function changePassword(oldpass, password)
+function changePassword()
 {
-	$.post('user.php?a=changepass', 'oldpass='+encodeURIComponent(oldpass)+'&password='+encodeURIComponent(password), function()
+	var pass = $('#win_newpass [name=password]').val();
+	if (! (pass == $('#win_newpass [name=password2]').val())) {
+		alert("Пароли не совпадают");
+		return;
+	}
+	$.post('user.php?a=changepass', 'password='+encodeURIComponent(pass), function(json)
 	{
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
 			return;
+		} else {
+			alert("Пароль успешно изменён");
+			hideModal();
 		}
 	});
+	return;
 }
 
 function createApiKey(type)
@@ -259,7 +268,7 @@ function switchTab(num)
 			<tr><td>Никнейм:</td><td>%nick% <a href="javascript://" onclick="">(изменить)</a></td></tr>
 			<tr><td>Дата регистрации:</td><td>%regdate%</td></tr>
 			<tr><td>Уровень:</td><td id=userlevel></td></tr>
-			<tr><td>Пароль:</td><td><a href="javascript://" onclick="">Изменить</a></td></tr>
+			<tr><td>Пароль:</td><td><a href="javascript://" onclick="showModal('#win_newpass')">Изменить</a></td></tr>
 			<tr><td>API ключ/чтение:</td><td><span id="rapikey">%rapikey%</span> <a href="javascript://" onclick="createApiKey(1)">(получить новый)</a></td></tr>
 			<tr><td>API ключ/запись:</td><td><span id="wapikey">%wapikey%</span> <a href="javascript://" onclick="createApiKey(2)">(получить новый)</a></td></tr>
 			<tr><td>Пригласивший:</td><td>%refuser%</td></tr>

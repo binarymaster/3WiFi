@@ -57,11 +57,13 @@ function errorStr(error)
 		return 'Неизвестная ошибка';
 	}
 }
-function showModal()
+function showModal(frm)
 {
-	$('#win_login').css({left: '50%'});
-	$('#win_login').css({top: '50%'});
+	$('#win_login').css({left: '-9999px'});
 	$('#win_reg').css({left: '-9999px'});
+	$('#win_newpass').css({left: '-9999px'});
+	$(frm).css({left: '50%'});
+	$(frm).css({top: '50%'});
 	$('.modal').show();
 	$('.modal').animate({opacity: 1}, 250);
 }
@@ -153,7 +155,7 @@ function loginBtn()
 {
 	if (ProfileInfo.isUser == 0)
 	{
-		showModal();
+		showModal('#win_login');
 	} else {
 		doLogout();
 	}
@@ -193,6 +195,7 @@ function initmenu()
 
 	$('#frm_login :input').keydown(function(e) { if (e.keyCode==13) doLogin(); });
 	$('#frm_reg :input').keydown(function(e) { if (e.keyCode==13) doReg(); });
+	$('#frm_newpass :input').keydown(function(e) { if (e.keyCode==13) changePassword(); });
 	$('#frm_reg :input[name=invite]').keyup(function(e) { $('#checkinv').empty(); });
 	var reglog = $('#frm_reg :input[name=login]');
 	reglog.keyup(function(e)
@@ -316,6 +319,19 @@ function initmenu()
 				<tr><td align=right><input type=checkbox onclick="$('#frm_reg').find('input[type=button]').prop('disabled', !this.checked)"></td><td style="font-size: 12px">Я согласен с <a href="rules" target=_blank>условиями сайта</a>.</td></tr>
 				<tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr>
 				<tr><td><input type=button value="Зарегистрироваться" onclick="doReg()" disabled></td><td align=right><a href="javascript://" onclick="showFrm('#win_login')">Уже есть аккаунт</a></td></tr>
+				</table></form>
+			</div>
+		</div>
+	</div>
+	<div class=modal_cnt align=center id=win_newpass>
+		<div class=modal_main>
+			<div class=modal_div>
+				<h2>Смена пароля</h2>
+				<form id=frm_newpass method=post><table>
+				<tr><td>Пароль:</td><td><input type=password name=password></td></tr>
+				<tr><td>Подтвердите пароль:</td><td><input type=password name=password2></td></tr>
+				<tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr>
+				<tr><td><input type=button value="Сменить пароль" onclick="changePassword()"></td></tr>
 				</table></form>
 			</div>
 		</div>
