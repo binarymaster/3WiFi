@@ -360,6 +360,24 @@ class User {
 		$this->invites = $invites;
 	}
 
+	public function changePass($NewPass)
+	{
+		if (is_null($this->uID))
+		{
+			return false;
+		}
+
+		$Salt = $this->GenerateRandomString(32);
+
+		$this->Salt = $Salt;
+		$this->HashPass = md5($NewPass.$Salt);
+		$this->HashKey = $this->newHashKey();
+		$this->HashIP = $this->newHashIP();
+
+		$this->save();
+		return true;
+	}
+
 	public function Registration($Login, $Nick, $Password, $Invite)
 	{
 		$Salt = $this->GenerateRandomString(32);
@@ -410,7 +428,7 @@ class User {
 			if (md5($password.$row['salt']) == $row['pass_hash'])
 			{
 				$this->loadDB($row['uid']);
-				$this->setUser($row['uid'], $row['puid'], $login, $row['nick'], $row['pass_hash'], $this->newHashKey(), $row['salt'], $row['level'], $this->newHashIP($_Salt), $row['invites']);
+				$this->setUser($row['uid'], $row['puid'], $login, $row['nick'], $row['pass_hash'], $this->newHashKey(), $row['salt'], $row['level'], $this->newHashIP(), $row['invites']);
 				$this->RegDate = $row['regdate'];
 				if(!$getDataOnly)
 				{
