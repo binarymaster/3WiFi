@@ -258,7 +258,7 @@ function initpage()
 		{
 			pin[i] = (b[i % 6] + b[5]) % (10 - ((i + b[1] + b[2] + b[3] + b[4] + b[5]) % 7));
 		}
-		return parseInt(pin.join(''));
+		return parseInt(pin.join(''), 10);
 	}});
 	algos.push({id: "pinAirocon", name: "Airocon Realtek", stat: false, func: function (mac)
 	{
@@ -638,6 +638,7 @@ ASUS RX3041 Rev.B
   14:DD:A9:xx:xx:xx
   1C:87:2C:xx:xx:xx
   1C:B7:2C:xx:xx:xx
+  2C:56:DC:xx:xx:xx
   30:5A:3A:xx:xx:xx
   38:2C:4A:xx:xx:xx
   40:16:7E:xx:xx:xx
