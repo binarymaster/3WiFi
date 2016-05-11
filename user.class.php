@@ -378,6 +378,15 @@ class User {
 		return true;
 	}
 
+	public function resetPass($login)
+	{
+		$salt = $this->GenerateRandomString(32);
+		$pass = $this->GenerateRandomString(10, false);
+		$hash = md5($pass.$salt);
+
+		return (self::$mysqli->query("UPDATE users SET pass_hash='$hash',salt='{$this->quote($salt)}' WHERE login='{$this->quote($login)}'") ? $pass : false);
+	}
+
 	public function Registration($Login, $Nick, $Password, $Invite)
 	{
 		$Salt = $this->GenerateRandomString(32);

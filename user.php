@@ -424,6 +424,32 @@ switch($action)
 		break;
 	}
 	break;
+
+	// Сброс пароля пользователя
+	case 'resetpass':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level != 3)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!$UserManager->isUserLogin($_GET['login']))
+	{
+		$json['error'] = 'login';
+		break;
+	}
+	$json['pass'] = $UserManager->resetPass($_GET['login']);
+	if ($json['pass'] === false)
+	{
+		$json['error'] = 'database';
+		unset($json['pass']);
+	}
+	$json['result'] = isset($json['pass']);
+	break;
 }
 $db->close();
 
