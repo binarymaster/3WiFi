@@ -89,7 +89,7 @@ $sm = 'submbtn';
 $sms = $sm.' smsel';
 $content = str_replace('%chk_home%', ($page == 'home' ? $sms : $sm), $content);
 $content = str_replace('%chk_faq%', ($page == 'faq' ? $sms : $sm), $content);
-$content = str_replace('%chk_apidoc%', ($page == 'faq' ? $sms : $sm), $content);
+$content = str_replace('%chk_apidoc%', ($page == 'apidoc' ? $sms : $sm), $content);
 $content = str_replace('%chk_rul%', ($page == 'rules' ? $sms : $sm), $content);
 $content = str_replace('%chk_rang%', ($page == 'ranges' ? $sms : $sm), $content);
 $content = str_replace('%chk_dev%', ($page == 'devmac' ? $sms : $sm), $content);
