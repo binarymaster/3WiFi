@@ -323,6 +323,42 @@ function switchTab(num)
 			</div>
 		</div>
 		<div id=tab3 class=userCode dir=ltr style="display: none;">
+			<table>
+			<tr><td style="padding: 4 8 4 8" colspan=2>Избранные точки доступа.</td></tr>
+			<tr><td style="vertical-align: top">
+				<table class=st1>
+				<thead style="white-space: nowrap">
+				<tr><th><input type=checkbox /></th><th>Дата</th><th>Комментарий</th><th>Диапазон IP</th><th>BSSID</th><th>ESSID</th><th>Тип защиты</th><th>Ключ сети</th><th>WPS PIN</th><th>Ссылки</th></tr>
+				</thead>
+				<tbody id=favorited_aps style="font-size: 12px">
+				</tbody>
+				</table>
+			</td><td style="vertical-align: top">
+				<table class=graphbkg style="width: 200px; margin-left: 16px; padding: 8">
+				<tr><td colspan=2>Всего точек: <span id=favap_cnt>0</span></td></tr>
+				<tr><td align=left><button onclick="deleteFavorite()">Удалить</button></td><td></td></tr>
+				</table>
+			</td></tr>
+			<tr><td style="padding: 4 8 4 8" colspan=2>Избранные локации.</td></tr>
+			<tr><td style="vertical-align: top">
+				<table class=st1>
+				<thead style="white-space: nowrap">
+				<tr><th><input type=checkbox /></th><th>Широта</th><th>Долгота</th><th>Комментарий</th><th>Ссылки</th></tr>
+				</thead>
+				<tbody id=favorited_loc style="font-size: 12px">
+				</tbody>
+				</table>
+			</td><td style="vertical-align: top">
+				<table class=graphbkg style="margin-left: 16px; padding: 8">
+				<tr><td colspan=2>Всего локаций: <span id=favloc_cnt>0</span></td></tr>
+				<tr><td align=right>Широта:</td><td><input type=text /></td></tr>
+				<tr><td align=right>Долгота:</td><td><input type=text /></td></tr>
+				<tr><td align=right>Комментарий:</td><td><input type=text /></td></tr>
+				<tr><td align=right></td><td><button onclick="createLocation()">Добавить</button> <button onclick="updateLocation()">Сохранить</button></td></tr>
+				<tr><td align=right></td><td><button onclick="deleteLocation()">Удалить</button></td></tr>
+				</table>
+			</td></tr>
+			</table>
 		</div>
 		<div id=tab4 class=userCode dir=ltr style="display: none;">
 			<div style="display: flex">
