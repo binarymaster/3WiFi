@@ -194,6 +194,39 @@ function getInvitesInfo()
 	});
 }
 
+function editNick()
+{
+	if ($('#nickeditor').css('display') == 'none')
+	{
+		$('#nicklabel').hide();
+		$('#nickeditor').show();
+		$('#nickedit').val(ProfileInfo.Nickname).focus();
+	}
+	else
+	{
+		$('#nickeditor').hide();
+		$('#nicklabel').show();
+	}
+}
+
+function changeNick()
+{
+	var newnick = $('#nickedit').val();
+	$('#nickeditor').children().prop('disabled', true);
+	$.post('user.php?a=changenick', 'nick='+encodeURIComponent(newnick), function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			$('#nickeditor').children().prop('disabled', false);
+			return;
+		} else {
+			alert("Никнейм успешно изменён");
+			location.reload(true);
+		}
+	});
+}
+
 function changePassword()
 {
 	var pass = $('#win_newpass [name=password]').val();
@@ -265,7 +298,10 @@ function switchTab(num)
 		<div id=tab1 class=userCode dir=ltr style="display: block;">
 			<table>
 			<tr><td>Логин:</td><td>%login%</td></tr>
-			<tr><td>Никнейм:</td><td>%nick% <a href="javascript://" onclick="">(изменить)</a></td></tr>
+			<tr><td>Никнейм:</td><td>
+				<span id=nicklabel>%nick% <a href="javascript://" onclick="editNick()">(изменить)</a></span>
+				<span id=nickeditor style="display:none"><input type=text id=nickedit />&nbsp;<button onclick="changeNick()">Сохранить</button>&nbsp;<button onclick="editNick()">Отменить</button></span>
+			</td></tr>
 			<tr><td>Дата регистрации:</td><td>%regdate%</td></tr>
 			<tr><td>Уровень:</td><td id=userlevel></td></tr>
 			<tr><td>Пароль:</td><td><a href="javascript://" onclick="showModal('#win_newpass')">Изменить</a></td></tr>

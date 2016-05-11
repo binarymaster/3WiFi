@@ -360,6 +360,18 @@ class User {
 		$this->invites = $invites;
 	}
 
+	public function changeNick($NewNick)
+	{
+		if (is_null($this->uID))
+		{
+			return false;
+		}
+
+		$this->Nick = $NewNick;
+		$this->save();
+		return true;
+	}
+
 	public function changePass($NewPass)
 	{
 		if (is_null($this->uID))

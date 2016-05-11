@@ -176,6 +176,23 @@ switch($action)
 		break;
 	}
 	filterNick($_POST['nick']);
+	if (strlen($_POST['nick']) < NICK_MIN || strlen($_POST['nick']) > NICK_MAX)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if ($_POST['nick'] == $UserManager->Nick)
+	{
+		$json['result'] = true;
+		break;
+	}
+	if ($UserManager->isUserNick($_POST['nick']))
+	{
+		$json['error'] = 'nick';
+		break;
+	}
+	$json['result'] = $UserManager->changeNick($_POST['nick']);
+	if (!$json['result']) $json['error'] = 'database';
 	break;
 
 	// Смена пароля пользователя
