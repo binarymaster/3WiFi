@@ -1,0 +1,96 @@
+<title>3WiFi: WPS PIN по MAC</title>
+
+<head>
+<script type="text/javascript">
+function detect()
+{
+	var formdata = $($('form')[0]).serialize();
+	$('input').prop('disabled', true);
+	$('button').prop('disabled', true);
+	$('#fdata').empty();
+	$('#fhead').empty();
+	$('#fhead').append('<tr><th>Algorithm</th><th>WPS PIN</th><th>Probability</th></tr>');
+	$('#fdata').append('<tr><td colspan=3><img src="img/loading.gif"></td></tr>');
+
+	$.post('3wifi.php?a=wpspin', formdata, function(d)
+	{
+		$('input').prop('disabled', false);
+		$('button').prop('disabled', false);
+		if (!d.result)
+		{
+			if (d.error == 'database')
+			{
+				$('#fdata > tr:first-child > :first-child').text('Ошибка при обращении к базе.');
+			}
+			else if (d.error == 'bssid')
+			{
+				$('#fdata > tr:first-child > :first-child').text('Недопустимое значение BSSID.');
+			}
+			else
+			{
+				$('#fdata > tr:first-child > :first-child').text('Неизвестная ошибка.');
+			}
+			return;
+		}
+		if (!d.auth)
+		{
+			$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
+			return;
+		}
+		if (d.scores.length > 0)
+		{
+			$('#fdata').empty();
+			for (var i = 0; i < d.scores.length; i++)
+			{
+				$('#fdata').append('<tr><td>'+d.scores[i].name+'</td><td>'+d.scores[i].value+'</td><td  style="text-align: left;"><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
+				var perc = $('.perc:last');
+				var wid = 180;
+				perc.css('width', wid + 'px');
+				perc.css('height', '16px');
+				perc.css('border-width', '1');
+				perc.css('border-style', 'inset');
+				perc.css('background-color', '#C0C0C0');
+				perc.css('display', 'inline-flex');
+				perc.css('position', 'relative');
+				perc.css('top', '1px');
+				var chld = $('<span>');
+				chld.css('width', (d.scores[i].score * wid - 2) + 'px');
+				chld.css('height', '14px');
+				chld.css('background-color', '#5566CC');
+				chld.css('display', 'inherit');
+				chld.css('position', 'relative');
+				chld.css('left', '1px');
+				chld.css('top', '1px');
+				perc.html(chld);
+			}
+		} else {
+			$('#fdata > tr:first-child > :first-child').text('Устройства и/или подходящие алгоритмы не найдены.');
+		}
+	});
+}
+function initpage()
+{
+}
+</script>
+</head>
+
+<body>
+<form id=fdeviceform enctype="multipart/form-data" method="POST" onsubmit="detect(); return false">
+<table>
+	<tbody>
+		<tr>
+			<td>BSSID / MAC:</td>
+			<td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" autofocus/></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td>
+		</tr>
+	</tbody>
+	<tbody>
+		<tr><td><input type=submit value="Определить" /></td><td></td></tr>
+	</tbody>
+</table>
+</form>
+</br>
+<table class=st1>
+	<tbody id=fhead></tbody>
+	<tbody id=fdata></tbody>
+</table>
+</body>
