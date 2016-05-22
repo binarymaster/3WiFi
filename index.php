@@ -11,6 +11,7 @@ function validPage($page)
 		$page == 'ranges' ||
 		$page == 'devmac' ||
 		$page == 'wpspin' ||
+		$page == 'wpspin_db' ||
 		$page == 'upload' ||
 		$page == 'graph' ||
 		$page == 'stat' ||
@@ -93,6 +94,7 @@ $content = str_replace('%chk_apidoc%', ($page == 'apidoc' ? $sms : $sm), $conten
 $content = str_replace('%chk_rul%', ($page == 'rules' ? $sms : $sm), $content);
 $content = str_replace('%chk_rang%', ($page == 'ranges' ? $sms : $sm), $content);
 $content = str_replace('%chk_dev%', ($page == 'devmac' ? $sms : $sm), $content);
+$content = str_replace('%chk_wpsdb%', ($page == 'wpspin_db' ? $sms : $sm), $content);
 $content = str_replace('%chk_wps%', ($page == 'wpspin' ? $sms : $sm), $content);
 $content = str_replace('%chk_stat%', ($page == 'stat' ? $sms : $sm), $content);
 $content = str_replace('%chk_grph%', ($page == 'graph' ? $sms : $sm), $content);
