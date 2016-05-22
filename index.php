@@ -81,7 +81,7 @@ $mbs = $mb.' mbsel';
 $content = str_replace('%chk_docs%', ($page == 'home' || $page == 'faq' || $page == 'apidoc' || $page == 'rules' ? $mbs : $mb), $content);
 $content = str_replace('%chk_map%', ($page == 'map' ? $mbs : $mb), $content);
 $content = str_replace('%chk_find%', ($page == 'find' ? $mbs : $mb), $content);
-$content = str_replace('%chk_tool%', ($page == 'ranges' || $page == 'devmac' || $page == 'wpspin' ? $mbs : $mb), $content);
+$content = str_replace('%chk_tool%', ($page == 'ranges' || $page == 'devmac' || $page == 'wpspin' || $page == 'wpspin_db' ? $mbs : $mb), $content);
 $content = str_replace('%chk_load%', ($page == 'upload' ? $mbs : $mb), $content);
 $content = str_replace('%chk_st%', ($page == 'stat' || $page == 'graph' ? $mbs : $mb), $content);
 $content = str_replace('%chk_user%', ($page == 'user' ? $mbs : $mb), $content);
