@@ -153,22 +153,24 @@ function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
  * @param int $tile_x2 X coordinate of the bottom right tile
  * @param int $tile_y2 Y coordinate of the bottom right tile
  * @param int $zoom Level of detail
+ * @param bool $scatter Don't clusterize on large zoom
  * @return array Rerutn array of clusters: [quadkey => cluster], where cluster
  * is array ['count' => (int), 'lat' => (float), 'lon' => (float)/, bssids => []/]
  */
-function get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
+function get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom, $scatter)
 {
 	$quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom);
 
 	$clusters = array();
-	$group_level = $zoom + 2;
-	if ($zoom >= MAX_YANDEX_ZOOM)
+	if ($scatter && $zoom >= MAX_YANDEX_ZOOM - 1)
 	{
+		$group_level = MAX_ZOOM_LEVEL;
 		$fetch_all = true;
 	}
 	else
 	{
-		$fetch_all = false; 
+		$group_level = $zoom + 2;
+		$fetch_all = $zoom >= MAX_YANDEX_ZOOM;
 	}
 	foreach ($quadkeys as $quadkey)
 	{

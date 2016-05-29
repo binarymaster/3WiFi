@@ -79,8 +79,8 @@ function initpage()
 <form id=frangesform enctype="multipart/form-data" method="POST" onsubmit="find(); return false">
 <table>
 	<tbody>
-		<tr><td>Latitude / Широта:</td><td><input name="latitude" type="number" min="-90" max="90" step="0.000001" value="%var_lat%" /></td><td>° [-90; 90]</td></tr>
-		<tr><td>Longitude / Долгота:</td><td><input name="longitude" type="number" min="-180" max="180" step="0.000001" value="%var_lon%" /></td><td>° [-180; 180]</td></tr>
+		<tr><td>Latitude / Широта:</td><td><input name="latitude" type="number" min="-90" max="90" step="0.00000001" value="%var_lat%" /></td><td>° [-90; 90]</td></tr>
+		<tr><td>Longitude / Долгота:</td><td><input name="longitude" type="number" min="-180" max="180" step="0.00000001" value="%var_lon%" /></td><td>° [-180; 180]</td></tr>
 		<tr><td>Search radius / Радиус поиска:</td><td><input name="radius" type="number" min="0" max="25" step="0.1" value="%var_rad%" /></td><td>км (max 25)</td></tr>
 	</tbody>
 	<tbody>
