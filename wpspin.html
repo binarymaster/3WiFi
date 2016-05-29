@@ -410,7 +410,7 @@ function initpage()
 		<p>Использует известные алгоритмы, не подключается к базе.</p>
 		<table>
 			<tr><td>
-				<textarea id=bssids rows=3 cols=22>12:34:56:78:9A:BC</textarea>
+				<textarea id=bssids rows=3 cols=22 autofocus>12:34:56:78:9A:BC</textarea>
 			</td><td>
 				<button onclick="pinSuggest()">Suggest</button> <button onclick="getAll()">Get All</button>
 			</td></tr>
@@ -431,7 +431,7 @@ function initpage()
 			<tbody>
 				<tr>
 					<td>BSSID / MAC:</td>
-					<td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" autofocus/></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td>
+					<td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" /></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td>
 				</tr>
 			</tbody>
 			<tbody>

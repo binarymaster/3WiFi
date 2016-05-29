@@ -12,7 +12,7 @@ function initmap()
 		controls: ['geolocationControl','searchControl','typeSelector','fullscreenControl','zoomControl']
 	}),
 
-	remoteObjectManager = new ymaps.RemoteObjectManager('3wifi.php?a=map&tileNumber=%t&zoom=%z',
+	remoteObjectManager = new ymaps.RemoteObjectManager('3wifi.php?a=map&tileNumber=%t&zoom=%z&clat=%var_lat%&clon=%var_lon%',
 	{	// Разбивать запросы по тайлам
 		splitRequests: false,
 		// Опции кластеров задаются с префиксом cluster.

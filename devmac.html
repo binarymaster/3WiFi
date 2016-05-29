@@ -67,7 +67,7 @@ function initpage()
 <form id=fdeviceform enctype="multipart/form-data" method="POST" onsubmit="detect(); return false">
 <table>
 	<tbody>
-		<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td></tr>
+		<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" autofocus /></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td></tr>
 	</tbody>
 	<tbody>
 		<tr><td><input type=submit value="Определить" /></td><td></td></tr>

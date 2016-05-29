@@ -57,6 +57,8 @@ switch ($action)
 	list($tile_x1, $tile_y1, $tile_x2, $tile_y2) = explode(',', $_GET['tileNumber']);
 	$zoom = $_GET['zoom'];
 	$callback = $_GET['callback'];
+	$clat = (float)$_GET['clat'];
+	$clon = (float)$_GET['clon'];
 
 	if (!db_connect())
 	{
@@ -91,6 +93,23 @@ switch ($action)
 		$ap['geometry']['type'] = 'Point';
 		$ap['geometry']['coordinates'][0] = (float)$cluster['lat'];
 		$ap['geometry']['coordinates'][1] = (float)$cluster['lon'];
+
+		if (isset($ap['options'])) unset($ap['options']);
+		// Colorize single selected AP
+		if ($clat == $ap['geometry']['coordinates'][0] &&
+			$clon == $ap['geometry']['coordinates'][1])
+		{
+			$ap['options']['iconColor'] = '#FF1E1E';
+		}
+		// Colorize selected AP in cluster
+		if ($ap['type'] == 'Cluster' &&
+			$clat >= $ap['bbox'][0][0] &&
+			$clat <= $ap['bbox'][1][0] &&
+			$clon >= $ap['bbox'][0][1] &&
+			$clon <= $ap['bbox'][1][1])
+		{
+			$ap['options']['iconColor'] = '#FF1E1E';
+		}
 
 		$ap['properties']['hintContent'] = '';
 		if (!empty($cluster['bssids']))
