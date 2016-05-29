@@ -122,6 +122,72 @@ function showAlgo()
 		}
 	}
 }
+function detect()
+{
+	var formdata = $($('form')[0]).serialize();
+	$('input').prop('disabled', true);
+	$('button').prop('disabled', true);
+	$('#fdata').empty();
+	$('#fhead').empty();
+	$('#fhead').append('<tr><th>Algorithm</th><th>WPS PIN</th><th>Probability</th></tr>');
+	$('#fdata').append('<tr><td colspan=3><img src="img/loading.gif"></td></tr>');
+
+	$.post('3wifi.php?a=wpspin', formdata, function(d)
+	{
+		$('input').prop('disabled', false);
+		$('button').prop('disabled', false);
+		if (!d.result)
+		{
+			if (d.error == 'database')
+			{
+				$('#fdata > tr:first-child > :first-child').text('Ошибка при обращении к базе.');
+			}
+			else if (d.error == 'bssid')
+			{
+				$('#fdata > tr:first-child > :first-child').text('Недопустимое значение BSSID.');
+			}
+			else
+			{
+				$('#fdata > tr:first-child > :first-child').text('Неизвестная ошибка.');
+			}
+			return;
+		}
+		if (!d.auth)
+		{
+			$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
+			return;
+		}
+		if (d.scores.length > 0)
+		{
+			$('#fdata').empty();
+			for (var i = 0; i < d.scores.length; i++)
+			{
+				$('#fdata').append('<tr><td>'+d.scores[i].name+'</td><td>'+d.scores[i].value+'</td><td  style="text-align: left;"><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
+				var perc = $('.perc:last');
+				var wid = 180;
+				perc.css('width', wid + 'px');
+				perc.css('height', '16px');
+				perc.css('border-width', '1');
+				perc.css('border-style', 'inset');
+				perc.css('background-color', '#C0C0C0');
+				perc.css('display', 'inline-flex');
+				perc.css('position', 'relative');
+				perc.css('top', '1px');
+				var chld = $('<span>');
+				chld.css('width', (d.scores[i].score * wid - 2) + 'px');
+				chld.css('height', '14px');
+				chld.css('background-color', '#5566CC');
+				chld.css('display', 'inherit');
+				chld.css('position', 'relative');
+				chld.css('left', '1px');
+				chld.css('top', '1px');
+				perc.html(chld);
+			}
+		} else {
+			$('#fdata > tr:first-child > :first-child').text('Устройства и/или подходящие алгоритмы не найдены.');
+		}
+	});
+}
 function initpage()
 {
 	algos = [];
@@ -338,23 +404,47 @@ function initpage()
 </head>
 
 <body>
-<table>
+<table width=100%>
+	<tr><td width=50% style="vertical-align: top">
+		<p>Оффлайн генератор WPS PIN Companion из Router Scan.</p>
+		<p>Использует известные алгоритмы, не подключается к базе.</p>
+		<table>
+			<tr><td>
+				<textarea id=bssids rows=3 cols=22>12:34:56:78:9A:BC</textarea>
+			</td><td>
+				<button onclick="pinSuggest()">Suggest</button> <button onclick="getAll()">Get All</button>
+			</td></tr>
 
-<tr><td>
-	<textarea id=bssids rows=3 cols=22>12:34:56:78:9A:BC</textarea>
-</td><td>
-	<button onclick="pinSuggest()">Suggest</button> <button onclick="getAll()">Get All</button>
-</td></tr>
+			<tr><td colspan=2>
+				<textarea id=result readonly rows=14 cols=42></textarea>
+			</td></tr>
+		</table>
 
-<tr><td colspan=2>
-	<textarea id=result readonly rows=14 cols=42></textarea>
-</td></tr>
+		<div>Implemented algorithms (choose for info):</div>
 
+		<select id=algosel onchange="showAlgo()"><option value=algonone>Not selected</option></select>
+	</td><td width=50% style="vertical-align: top">
+		<p>Онлайн генератор 3WiFi WPS PIN.</p>
+		<p>Подключается к базе, определяет линейные последовательности, статические пин-коды, и другие алгоритмы.</p>
+		<form id=fdeviceform enctype="multipart/form-data" method="POST" onsubmit="detect(); return false">
+		<table>
+			<tbody>
+				<tr>
+					<td>BSSID / MAC:</td>
+					<td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" autofocus/></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td>
+				</tr>
+			</tbody>
+			<tbody>
+				<tr><td><input type=submit value="Определить" /></td><td></td></tr>
+			</tbody>
+		</table>
+		</form>
+		<table class=st1>
+			<tbody id=fhead></tbody>
+			<tbody id=fdata></tbody>
+		</table>
+	</td></tr>
 </table>
-
-<div>Implemented algorithms (choose for info):</div>
-
-<select id=algosel onchange="showAlgo()"><option value=algonone>Not selected</option></select>
 
 <div style="display: none">
 <textarea id=suggpin rows=14 cols=38></textarea>
