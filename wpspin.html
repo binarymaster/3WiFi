@@ -223,7 +223,6 @@ function initpage()
 		if (mac < 1000000) mac += ((mac % 9) * 1000000) + 1000000;
 		return mac;
 	}});
-	algos.push({id: "pinNETGEAR", name: "NETGEAR WNR612v2", stat: false, func: function (mac) {return (mac & 0xFFFFFF) >> 1;}});
 	algos.push({id: "pinEasyBox", name: "Vodafone EasyBox", stat: false, func: function (mac)
 	{
 		var sn = zeroFill((mac & 0xFFFF).toString(10), 5);
@@ -381,6 +380,7 @@ function initpage()
     ZyXEL Internet Center
     Keenetic Giga II
     Keenetic Ultra
+    RalinkAPS
 TRENDnet (some firmwares)
 TRENDnet TEW-651BR
   00:14:D1:xx:xx:xx
@@ -582,21 +582,6 @@ TRENDnet TEW-673GRU
 Technical details:
 http://www.devttys0.com/2014/10/reversing-d-links-wps-pin-algorithm/</textarea>
 
-<textarea id=pinNETGEAR>D-Link DIR-615NRU
-D-Link DIR-620NRU
-  C4:A8:1D:xx:xx:xx
-  D8:FE:E3:xx:xx:xx
-NETGEAR WNR612v2
-  4C:60:DE:xx:xx:xx
-  WSC Device Names:
-    WNR612v2 (Wireless AP)
-NETGEAR WNR2000v3
-NETGEAR WNR2200
-  00:8E:F2:xx:xx:xx
-
-Technical details:
-Pin = MAC[7..12] / 2</textarea>
-
 <textarea id=pinEasyBox>Vodafone EasyBox 802
 Vodafone EasyBox 803
   38:22:9D:xx:xx:xx
@@ -659,6 +644,7 @@ ASUS RX3041 Rev.B
   WSC Device Names:
     ASUS WPS Router
     RT-N10PV2
+    RT-N10U
     RT-N12
     RT-N12VP
 Airocon Realtek RTL867x
