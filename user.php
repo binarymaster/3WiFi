@@ -8,6 +8,17 @@ global $db;
 $UserManager = new User();
 $UserManager->load();
 
+$topPort = 30;
+$topauth = 100;
+$topname = 30;
+$topbssid = 30;
+$topessid = 30;
+$topSecurity = 30;
+$topWiFiKey = 30;
+$topWPSPIN = 30;
+$topDNS = 30;
+$topSid = 10;
+
 define('LOGIN_MIN', 5);
 define('LOGIN_MAX', 30);
 define('NICK_MIN', 5);
@@ -466,6 +477,418 @@ switch($action)
 		unset($json['pass']);
 	}
 	$json['result'] = isset($json['pass']);
+	break;
+
+	// Статистика пользователя
+	case 'stat':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	if (!$res = QuerySql("SELECT COUNT(id) FROM uploads WHERE uid=$uid"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$row = $res->fetch_row();
+	$res->close();
+	$json['stat']['total'] = (int)$row[0];
+	if (!$res = QuerySql("SELECT COUNT(id) FROM uploads JOIN BASE_TABLE USING(id) JOIN GEO_TABLE USING(BSSID) WHERE uid=$uid AND quadkey IS NOT NULL"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$row = $res->fetch_row();
+	$res->close();
+	$json['stat']['onmap'] = (int)$row[0];
+	if (!$res = QuerySql("SELECT COUNT(id) FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid AND NoBSSID=0"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$row = $res->fetch_row();
+	$res->close();
+	$json['stat']['bssids'] = (int)$row[0];
+	if (!$res = QuerySql("SELECT BSSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid GROUP BY BSSID"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$json['stat']['uniqbss'] = $res->num_rows;
+	$res->close();
+	$json['result'] = true;
+	break;
+
+	// Статистика пользователя по комментариям
+	case 'stcmt':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	if ($res = QuerySql("SELECT cmtid, COUNT(cmtid) FROM (SELECT cmtid FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) cmt GROUP BY cmtid ORDER BY COUNT(cmtid) DESC"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = ($row[0] == null ? 'no comment' : getCommentVal((int)$row[0]));
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$json['result'] = true;
+	break;
+
+	// Статистика пользователя по устройствам
+	case 'stdev':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$json['stat']['top'] = $topname;
+	if ($res = QuerySql("SELECT COUNT(DISTINCT name) FROM (SELECT name FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) dev WHERE name != ''"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT name, COUNT(name) FROM (SELECT name FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) dev WHERE name != '' GROUP BY name ORDER BY COUNT(name) DESC LIMIT $topname"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = $row[0];
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$json['result'] = true;
+	break;
+
+	// Статистика пользователя по портам
+	case 'stport':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$json['stat']['top'] = $topPort;
+	if ($res = QuerySql("SELECT COUNT(DISTINCT Port) FROM (SELECT Port FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) prt WHERE NOT(Port IS NULL)"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT Port, COUNT(Port) FROM (SELECT Port FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) prt WHERE NOT(Port IS NULL) GROUP BY Port ORDER BY COUNT(Port) DESC LIMIT $topPort"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = $row[0];
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$json['result'] = true;
+	break;
+
+	// Статистика пользователя по авторизации
+	case 'stauth':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$json['stat']['top'] = $topauth;
+	if ($res = QuerySql("SELECT COUNT(DISTINCT Authorization) FROM (SELECT Authorization FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) auth WHERE Authorization != ''"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT Authorization, COUNT(Authorization) FROM (SELECT Authorization FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) auth WHERE Authorization != '' GROUP BY Authorization ORDER BY COUNT(Authorization) DESC LIMIT $topauth"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = $row[0];
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$json['result'] = true;
+	break;
+
+	// Статистика пользователя по BSSID
+	case 'stbss':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$json['stat']['top'] = $topbssid;
+	if ($res = QuerySql("SELECT COUNT(DISTINCT BSSID) FROM (SELECT NoBSSID,BSSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) bss WHERE NoBSSID = 0"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT BSSID, COUNT(BSSID) FROM (SELECT NoBSSID,BSSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) bss WHERE NoBSSID = 0 GROUP BY BSSID ORDER BY COUNT(BSSID) DESC LIMIT $topbssid"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = dec2mac($row[0]);
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$json['result'] = true;
+	break;
+
+	// Статистика пользователя по ESSID
+	case 'stess':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$json['stat']['top'] = $topessid;
+	if ($res = QuerySql("SELECT COUNT(DISTINCT ESSID) FROM (SELECT ESSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) ess"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT ESSID, COUNT(ESSID) FROM (SELECT ESSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) ess GROUP BY ESSID ORDER BY COUNT(ESSID) DESC LIMIT $topessid"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = $row[0];
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$json['result'] = true;
+	break;
+
+	// Статистика пользователя по типам защиты
+	case 'stsec':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$json['stat']['top'] = $topSecurity;
+	if ($res = QuerySql("SELECT COUNT(DISTINCT Security) FROM (SELECT Security FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) sec"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT Security, COUNT(Security) FROM (SELECT Security FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) sec GROUP BY Security ORDER BY COUNT(Security) DESC LIMIT $topSecurity"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = sec2str($row[0]);
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$json['result'] = true;
+	break;
+
+	// Статистика пользователя по ключам
+	case 'stkey':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$json['stat']['top'] = $topWiFiKey;
+	if ($res = QuerySql("SELECT COUNT(DISTINCT WiFiKey) FROM (SELECT WiFiKey FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) wifi"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT WiFiKey, COUNT(WiFiKey) FROM (SELECT WiFiKey FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) wifi GROUP BY WiFiKey ORDER BY COUNT(WiFiKey) DESC LIMIT $topWiFiKey"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = $row[0];
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$json['result'] = true;
+	break;
+
+	// Статистика пользователя по WPS пинам
+	case 'stwps':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$json['stat']['top'] = $topWPSPIN;
+	if ($res = QuerySql("SELECT COUNT(DISTINCT WPSPIN) FROM (SELECT WPSPIN FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) pin WHERE WPSPIN != 1"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT WPSPIN, COUNT(WPSPIN) FROM (SELECT WPSPIN FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) pin WHERE WPSPIN != 1 GROUP BY WPSPIN ORDER BY COUNT(WPSPIN) DESC LIMIT $topWPSPIN"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = str_pad($row[0], 8, '0', STR_PAD_LEFT);
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$json['result'] = true;
+	break;
+
+	// Статистика пользователя по DNS
+	case 'stdns':
+	set_time_limit(30);
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$json['stat']['top'] = $topDNS;
+	if ($res = QuerySql("SELECT COUNT(DISTINCT DNS) FROM (
+	SELECT DNS1 AS DNS FROM (SELECT DNS1 FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) tdns1 WHERE DNS1 != 0 
+	UNION ALL 
+	SELECT DNS2 AS DNS FROM (SELECT DNS2 FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) tdns2 WHERE DNS2 != 0 
+	UNION ALL 
+	SELECT DNS3 AS DNS FROM (SELECT DNS3 FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) tdns3 WHERE DNS3 != 0) DNSTable"))
+	{
+		$row = $res->fetch_row();
+		$json['stat']['total'] = (int)$row[0];
+		$res->close();
+	}
+	if ($res = QuerySql("SELECT DNS, COUNT(DNS) FROM (
+	SELECT DNS1 AS DNS FROM (SELECT DNS1 FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) tdns1 WHERE DNS1 != 0 
+	UNION ALL 
+	SELECT DNS2 AS DNS FROM (SELECT DNS2 FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) tdns2 WHERE DNS2 != 0 
+	UNION ALL 
+	SELECT DNS3 AS DNS FROM (SELECT DNS3 FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) tdns3 WHERE DNS3 != 0) DNSTable 
+	GROUP BY DNS ORDER BY COUNT(DNS) DESC LIMIT $topDNS"))
+	{
+		$json['stat']['data'] = array();
+		while ($row = $res->fetch_row())
+		{
+			$data = array();
+			$data[] = (int)$row[1];
+			$data[] = _long2ip($row[0]);
+			$json['stat']['data'][] = $data;
+		}
+		$res->close();
+	}
+	$json['result'] = true;
 	break;
 }
 $db->close();

@@ -233,6 +233,35 @@ TABLE.st1 TH {
 TABLE.st1 TR:nth-child(2n) {
 	background: #fff8dc; /* Цвет фона четных строк */
 }
+TABLE.st2 {
+}
+TABLE.st2 TD#stat_es {
+	cursor: pointer;
+	padding-left: 24px;
+	border-left: solid 1px #939393;
+	border-right: solid 1px #939393;
+	border-top: solid 1px #939393;
+	min-width: 128px;
+	width: 128px;
+	height: 36px;
+	font-family: sans-serif;
+	font-weight: bold;
+}
+TABLE.st2 TD.stat_sel {
+	background-color: black;
+    color: white;	
+}
+TABLE.st2 TD#stat_ft {
+	border-right: solid 1px #939393;
+}
+TABLE.st2 TD#stat_cn {
+	width: 100%;
+	padding: 8px;
+	vertical-align: top;
+	border-top: solid 1px #939393;
+	border-right: solid 1px #939393;
+	border-bottom: solid 1px #939393;
+}
 .la {
 	text-align: left; /* Выравнивание по левому краю */
 }
@@ -273,6 +302,10 @@ TABLE.st1 TR:nth-child(2n) {
 	height: 95%;
 	font-size: 14px;
 	line-height: 1.2em;
+}
+.header_cap {
+	font-family: monospace;
+    font-size: 18pt;
 }
 
 /* User Tabs */

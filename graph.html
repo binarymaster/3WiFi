@@ -55,6 +55,7 @@ function showTasks()
 }
 function initpage()
 {
+	$('.content').css('padding-top', '0px');
 	$("<div id='tooltip'></div>").css({
 		position: 'absolute',
 		display: 'none',
@@ -133,7 +134,7 @@ function initpage()
 </head>
 
 <body>
-<h2 align=center>Динамика состояния 3WiFi</h2>
+<h2 align=center class=header_cap>Динамика состояния 3WiFi</h2>
 <div align=center>
 <div class=graphbkg>
 	<div id=graphload class=graph></div>

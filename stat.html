@@ -41,16 +41,21 @@ function parsestat(st, d)
 		appendRow('stat', i, d.stat.data[i][0], d.stat.data[i][1], tt, of);
 	}
 }
-function loadstat(st)
+function loadstat(e, st)
 {
+	if (stLoading) return;
+
+	stLoading = true;
+	$('td#stat_es').removeClass('stat_sel');
+	e.className = 'stat_sel';
 	$('.st1').show();
-	$('button').prop('disabled', true);
 	$('#stval').text('Загрузка...');
 	$('#sttot').empty();
 	$('#stcnt').empty();
 	$('#stat').html('<tr><td></td><td><img src="img/loading.gif"></td></tr>');
 	$.get('3wifi.php?a=' + st, function(d)
 	{
+		stLoading = false;
 		if (d.result)
 		{
 			$('#stat').empty();
@@ -116,40 +121,45 @@ function loadstat(st)
 				break;
 			}
 		} else {
-			$('#stat > tr:nth-child(2) > :nth-child(2)').text('Ошибка загрузки данных.');
+			$('#stval').text('Нет данных');
+			$('#stat > tr > :nth-child(2)').text('Ошибка загрузки данных.');
 		}
-		$('button').prop('disabled', false);
 	});
 }
 function initpage()
 {
+	stLoading = false;
 	$('.content').css('padding-top', '0px');
-	loadstat('stat');
+	$('td#stat_es')[0].click();
 }
 </script>
 </head>
 
 <body>
-<h2 align=center><span id=stat_cap>Статистика загружается...</span></h2>
+<h2 align=center><span class=header_cap id=stat_cap>Статистика загружается...</span></h2>
 <noscript>Включите JavaScript для отображения данных.</noscript>
 
-<p align=center><button onclick="loadstat('stat')">Сводная</button>&nbsp;
-<button onclick="loadstat('stcmt')">Комментарии</button>&nbsp;
-<button onclick="loadstat('stdev')">Устройства</button>&nbsp;
-<button onclick="loadstat('stport')">Порты</button>&nbsp;
-<button onclick="loadstat('stauth')">Авторизация</button>&nbsp;
-<button onclick="loadstat('stbss')">BSSID</button>&nbsp;
-<button onclick="loadstat('stess')">ESSID</button>&nbsp;
-<button onclick="loadstat('stsec')">Защита</button>&nbsp;
-<button onclick="loadstat('stkey')">Ключи</button>&nbsp;
-<button onclick="loadstat('stwps')">WPS</button>&nbsp;
-<button onclick="loadstat('stdns')">DNS</button>&nbsp;
-<button onclick="loadstat('stsid')">Участники</button></p>
-
-<table class=st1 style="display: none;">
-<tbody>
-<tr><th>Кол-во <span id=sttot></span></th><th><span id=stval>Значение</span> <span id=stcnt></span></th></tr>
-</tbody>
-<tbody id=stat></tbody>
+<table class=st2 cellspacing=0>
+<tr><td id=stat_es onclick="loadstat(this,'stat')" style="border-top-left-radius: 8px;">Сводная</td>
+	<td rowspan=13 id=stat_cn>
+		<table class=st1 style="display: none;">
+		<tbody>
+		<tr><th>Кол-во <span id=sttot></span></th><th><span id=stval>Значение</span> <span id=stcnt></span></th></tr>
+		</tbody>
+		<tbody id=stat></tbody>
+		</table>
+	</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stcmt')">Комментарии</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stdev')">Устройства</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stport')">Порты</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stauth')">Авторизация</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stbss')">BSSID</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stess')">ESSID</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stsec')">Защита</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stkey')">Ключи</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stwps')">WPS</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stdns')">DNS</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stsid')" style="border-bottom: solid 1px #939393; border-bottom-left-radius: 8px;">Участники</td></tr>
+<tr><td id=stat_ft>&nbsp;</td></tr>
 </table>
 </body>

@@ -19,6 +19,9 @@ function initpage()
 {
 	if (ProfileInfo.isUser == 0) window.location.href = 'home';
 
+	$('.content').css('padding-top', '0px');
+	stLoading = false;
+
 	$('.user_tab').click(function()
 	{
 		var elem_content = this.getElementsByClassName('user_tab_content')[0];
@@ -276,15 +279,136 @@ function switchTab(num)
 		break;
 		case 4: getInvitesInfo();
 		break;
+		case 5: $('td#stat_em')[0].click();
+		break;
 	}
+}
+
+function appendRow(rowid, idx, p1, p2, tt, of, th)
+{
+	var td1 = $((th ? '<th>' : '<td>')).text(p1);
+	var td2 = $((th ? '<th>' : '<td>')).text(p2);
+	if (tt) td2.css('font-family', 'monospace');
+	if (of && (p2.length > 64))
+	{
+		td2.css('max-width', '700px');
+		td2.css('overflow-x', 'scroll');
+	}
+	var tr = $('<tr>');
+	tr.append(td1);
+	tr.append(td2);
+	$('#'+rowid).append(tr);
+}
+
+function parsestat(st, d)
+{
+	if(!d.stat.data) return;
+	
+	if (typeof d.stat.top == 'number')
+	{
+		$('#sttot').text('('+d.stat.total+')');
+		$('#stcnt').text('(топ'+d.stat.top+')');
+	} else {
+		var total = 0;
+		for (var i = 0; i < d.stat.data.length; i++)
+		{
+			total += d.stat.data[i][0];
+		}
+		$('#sttot').text('('+total+')');
+		$('#stcnt').text('('+d.stat.data.length+')');
+	}
+	var tt = (st == 'stbss' || st == 'stwps');
+	var of = (st == 'stauth');
+	for (var i = 0; i < d.stat.data.length; i++)
+	{
+		appendRow('stat', i, d.stat.data[i][0], d.stat.data[i][1], tt, of);
+	}
+}
+
+function loadstat(e, st)
+{
+	if (stLoading) return;
+
+	stLoading = true;
+	$('td#stat_em').removeClass('stat_sel');
+	e.className = 'stat_sel';
+	$('.st1').show();
+	$('#stval').text('Загрузка...');
+	$('#sttot').empty();
+	$('#stcnt').empty();
+	$('#stat').html('<tr><td></td><td><img src="img/loading.gif"></td></tr>');
+	$.get('user.php?a=' + st, function(d)
+	{
+		stLoading = false;
+		if (d.result)
+		{
+			$('#stat').empty();
+			switch (st)
+			{
+				case 'stat':
+				$('#stval').text('Сводная таблица');
+				appendRow('stat', 0, d.stat.total, 'Загружено точек вами');
+				appendRow('stat', 1, d.stat.bssids, 'С корректным BSSID');
+				appendRow('stat', 2, d.stat.uniqbss, 'С уникальным BSSID');
+				appendRow('stat', 3, d.stat.onmap, 'Найдено на карте');
+				break;
+				case 'stcmt':
+				$('#stval').text('Комментарии');
+				parsestat(st, d);
+				break;
+				case 'stdev':
+				$('#stval').text('Названия устройств / прошивок');
+				parsestat(st, d);
+				break;
+				case 'stport':
+				$('#stval').text('Порты');
+				parsestat(st, d);
+				break;
+				case 'stauth':
+				$('#stval').text('Данные авторизации');
+				parsestat(st, d);
+				break;
+				case 'stbss':
+				$('#stval').text('BSSID / MAC-адрес');
+				parsestat(st, d);
+				break;
+				case 'stess':
+				$('#stval').text('ESSID / Имя сети');
+				parsestat(st, d);
+				break;
+				case 'stsec':
+				$('#stval').text('Тип защиты');
+				parsestat(st, d);
+				break;
+				case 'stkey':
+				$('#stval').text('Ключ сети');
+				parsestat(st, d);
+				break;
+				case 'stwps':
+				$('#stval').text('Пин код WPS');
+				parsestat(st, d);
+				break;
+				case 'stdns':
+				$('#stval').text('Серверы доменных имён');
+				parsestat(st, d);
+				break;
+				case 'stsid':
+				$('#stval').text('Активные участники');
+				parsestat(st, d);
+				break;
+			}
+		} else {
+			$('#stval').text('Нет данных');
+			$('#stat > tr > :nth-child(2)').text(errorStr(d.error));
+		}
+	});
 }
 
 </script>
 </head>
 
 <body>
-<h2 align=center><span id=stat_cap>Управление пользователем %nick%</span></h2>
-<hr>
+<h2 align=center><span class=header_cap>Управление пользователем %nick%</span></h2>
 
 <div class=usetTabContainer>
 	<div class=userTabs>
@@ -312,7 +436,7 @@ function switchTab(num)
 		</div>
 		<div id=tab2 class=userCode dir=ltr style="display: none;">
 			<div style="max-height: 100%; overflow: auto">
-				<p>Отображается 200 последних загруженных точек. <a href="javascript://" onclick="myDownload()">Скачать все (.txt)</a>.</p>
+				<p style="margin-top: 7px">Отображается 200 последних загруженных точек. <a href="javascript://" onclick="myDownload()">Скачать все (.txt)</a>.</p>
 				<table class=st1 align=center>
 				<thead style="white-space: nowrap">
 				<tr><th>Дата</th><th>Комментарий</th><th>IP / Порт</th><th>Авторизация</th><th>Имя устройства</th><th>BSSID</th><th>ESSID</th><th>Тип защиты</th><th>Ключ сети</th><th>WPS PIN</th><th>Ссылки</th></tr>
@@ -380,7 +504,30 @@ function switchTab(num)
 				</div>
 			</div>
 		</div>
-		<div id=tab5 class=userCode dir=ltr style="display: none;">
+		<div id=tab5 class=userCode dir=ltr style="display: none; padding: 0">
+			<table class=st2 cellspacing=0>
+			<tr><td id=stat_em onclick="loadstat(this,'stat')" style="border-top: none">Сводная</td>
+				<td rowspan=11 style="width: 100%; vertical-align: top; padding: 0">
+				<div style="max-height: 396px; overflow-y: auto">
+					<table class=st1 style="display: none;">
+					<tbody>
+					<tr><th>Кол-во <span id=sttot></span></th><th><span id=stval>Значение</span> <span id=stcnt></span></th></tr>
+					</tbody>
+					<tbody id=stat></tbody>
+					</table>
+				</div>
+				</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stcmt')">Комментарии</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stdev')">Устройства</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stport')">Порты</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stauth')">Авторизация</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stbss')">BSSID</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stess')">ESSID</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stsec')">Защита</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stkey')">Ключи</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stwps')">WPS</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stdns')">DNS</td></tr>
+			</table>
 		</div>
 	</div>
 </div>
