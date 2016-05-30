@@ -10,9 +10,14 @@ function GeoLocateAP($bssid)
 }
 function GetFromYandex($bssid)
 {
+	$tries = 3;
 	$bssid = str_replace(":","",$bssid);
 	$bssid = str_replace("-","",$bssid);
-	$data = cURL_Get("https://mobile.maps.yandex.net/cellid_location/?clid=1866854&lac=-1&cellid=-1&operatorid=null&countrycode=null&signalstrength=-1&wifinetworks=$bssid:-65&app");
+	while (!($data = cURL_Get("https://mobile.maps.yandex.net/cellid_location/?clid=1866854&lac=-1&cellid=-1&operatorid=null&countrycode=null&signalstrength=-1&wifinetworks=$bssid:0&app")) && ($tries > 0))
+	{
+		$tries--;
+		sleep(2);
+	}
 
 	$result = '';
 	$latitude = getStringBetween($data, ' latitude="', '"');
@@ -25,8 +30,13 @@ function GetFromYandex($bssid)
 }
 function GetFromAlterGeo($bssid)
 {
+	$tries = 3;
 	$bssid = strtolower(str_replace(":","-",$bssid));
-	$data = cURL_Get("http://api.platform.altergeo.ru/loc/json?browser=firefox&sensor=false&wifi=mac:$bssid|ss:0");
+	while (!($data = cURL_Get("http://api.platform.altergeo.ru/loc/json?browser=firefox&sensor=false&wifi=mac:$bssid|ss:0")) && ($tries > 0))
+	{
+		$tries--;
+		sleep(2);
+	}
 
 	$result = '';
 	$json = json_decode($data);
@@ -70,7 +80,7 @@ function cURL_Get($url)
 	curl_setopt($ch, CURLOPT_TIMEOUT, 3);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); 
-	curl_setopt($ch, CURLOPT_USERAGENT, 'PHP/'.phpversion());
+	curl_setopt($ch, CURLOPT_USERAGENT, 'PHP/'.phpversion().' 3WiFi/2.0');
 	curl_setopt($ch, CURLOPT_URL, $url);
 	$data = curl_exec($ch);
 	curl_close($ch);
