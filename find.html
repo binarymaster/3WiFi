@@ -171,6 +171,10 @@ function find(page)
 		}
 		$('input').prop('disabled', false);
 		$('button').prop('disabled', false);
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
+		$('input').prop('disabled', false);
+		$('button').prop('disabled', false);
 	});
 }
 function initpage()

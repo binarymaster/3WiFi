@@ -77,6 +77,8 @@ function getMyUploads()
 			tr.append($('<td>').html(urls));
 			$('#uploaded').append(tr);
 		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#uploaded').html('<tr><td colspan=11>Ошибка загрузки данных</td></tr>');
 	});
 }
 
@@ -100,6 +102,8 @@ function myDownload()
 		a.target = '_blank';
 		a.click();
 		a.remove();
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		alert('Ошибка загрузки данных');
 	});
 }
 
@@ -114,6 +118,8 @@ function createInvite()
 		}
 		ProfileInfo.invites--;
 		getInvitesInfo();
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		alert('Ошибка загрузки данных');
 	});
 }
 
@@ -131,6 +137,8 @@ function updateInvite()
 				return;
 			}
 			getInvitesInfo();
+		}).fail(function(jqXHR, textStatus, errorThrown) {
+			alert('Ошибка загрузки данных');
 		});
 	}
 	$('#invchkall').prop('checked', false);
@@ -151,6 +159,8 @@ function deleteInvite()
 			}
 			ProfileInfo.invites++;
 			getInvitesInfo();
+		}).fail(function(jqXHR, textStatus, errorThrown) {
+			alert('Ошибка загрузки данных');
 		});
 	}
 	$('#invchkall').prop('checked', false);
@@ -194,6 +204,8 @@ function getInvitesInfo()
 		{
 			table.html('<tr><td colspan=6>Нет созданных приглашений</td></tr>');
 		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		alert('Ошибка загрузки данных');
 	});
 }
 
@@ -227,6 +239,8 @@ function changeNick()
 			alert("Никнейм успешно изменён");
 			location.reload(true);
 		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		alert('Ошибка загрузки данных');
 	});
 }
 
@@ -247,6 +261,8 @@ function changePassword()
 			alert("Пароль успешно изменён");
 			hideModal();
 		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		alert('Ошибка загрузки данных');
 	});
 	return;
 }
@@ -262,6 +278,8 @@ function createApiKey(type)
 		}
 		if(json.data.r) $('#rapikey').text(json.data.r);
 		if(json.data.w) $('#wapikey').text(json.data.w);
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		alert('Ошибка загрузки данных');
 	});
 }
 
@@ -401,6 +419,10 @@ function loadstat(e, st)
 			$('#stval').text('Нет данных');
 			$('#stat > tr > :nth-child(2)').text(errorStr(d.error));
 		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#stval').text('Нет данных');
+		$('#stat > tr > :nth-child(2)').text('Ошибка загрузки данных');
+		stLoading = false;
 	});
 }
 

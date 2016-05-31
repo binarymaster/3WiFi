@@ -124,6 +124,10 @@ function loadstat(e, st)
 			$('#stval').text('Нет данных');
 			$('#stat > tr > :nth-child(2)').text('Ошибка загрузки данных.');
 		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#stval').text('Нет данных');
+		$('#stat > tr > :nth-child(2)').text('Ошибка загрузки данных.');
+		stLoading = false;
 	});
 }
 function initpage()

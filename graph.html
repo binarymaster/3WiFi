@@ -27,6 +27,9 @@ function showLoads()
 		gl_data.push(d);
 		$.plot('#graphload', gl_data, gl_opts);
 		setTimeout(showLoads, 600000); // 10 min
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#stat').text('Ошибка загрузки данных');
+		setTimeout(showLoads, 5000);
 	});
 }
 function zip(arr)
@@ -51,6 +54,9 @@ function showTasks()
 		gt_geo.data = zip(gtv_geo);
 		$.plot('#graphtask', [gt_geo,gt_load,gt_proc], gt_opts);
 		setTimeout(showTasks, 1000);
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#task').text('Ошибка загрузки данных');
+		setTimeout(showTasks, 5000);
 	});
 }
 function initpage()
