@@ -71,8 +71,8 @@ function getMyUploads()
 			var urls = '';
 			if (typeof ap.lat == 'number')
 			{
-				urls += '<a href="map?lat='+ap.lat+'&lon='+ap.lon+'">map</a>&nbsp;';
-				urls += '<a href="ranges?lat='+ap.lat+'&lon='+ap.lon+'">ranges</a>';
+				urls += '<a href="map?lat='+ap.lat+'&lon='+ap.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
+				urls += '<a href="ranges?lat='+ap.lat+'&lon='+ap.lon+'"><img src="img/icon-ip.png"></a>';
 			}
 			tr.append($('<td>').html(urls));
 			$('#uploaded').append(tr);

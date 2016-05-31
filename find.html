@@ -134,8 +134,8 @@ function find(page)
 						var links = '';
 						if (!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lon)))
 						{
-							links += '<a href="map?lat='+e.lat+'&lon='+e.lon+'">map</a>&nbsp;';
-							links += '<a href="ranges?lat='+e.lat+'&lon='+e.lon+'&rad=1">ranges</a>';
+							links += '<a href="map?lat='+e.lat+'&lon='+e.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
+							links += '<a href="ranges?lat='+e.lat+'&lon='+e.lon+'&rad=1"><img src="img/icon-ip.png"></a>';
 						}
 						var nw = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
 						var mnw = {raw: false, mono: true, nowrap: true, over: false, cs: 1};
