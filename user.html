@@ -34,7 +34,7 @@ function initpage()
 		var tab = 'a[href='+window.location.hash+']';
 		if ($(tab).length > 0) $(tab).click();
 	}
- 	for (var i = 0; i <= (ProfileInfo.Level < 3 ? 1 : 3); i++)
+ 	for (var i = (ProfileInfo.Level < 3 ? 1 : 0); i <= (ProfileInfo.Level < 3 ? 1 : 3); i++)
 		$('#invlevel').append($('<option>').val(i).text(levelToText(i)));
 	var login = $('#tab1').find('td')[1].textContent;
 	if (ProfileInfo.Level > 0 && (ProfileInfo.Nickname.toLowerCase() == login.toLowerCase()))

@@ -572,8 +572,8 @@ class User {
 
 		// Если не осталось инвайтов (и не админ)
 		if ($this->invites <= 0 && $this->Level < 3) return false;
-		// Только админ может пригласить пользователя с уровнем выше обычного
-		if ($this->Level <= 2 && $level > 1) return false;
+		// Только админ может пригласить пользователя с нестандартным уровнем
+		if ($this->Level <= 2 && $level != 1) return false;
 		// Нельзя создавать инвайты с отрицательным уровнем
 		if ($level < 0) return false;
 
@@ -594,7 +594,7 @@ class User {
 		$uid = $this->uID;
 		if ($uid == null) return false;
 
-		if ($this->Level <= 2 && $level > 1) return false;
+		if ($this->Level <= 2 && $level != 1) return false;
 		if ($level < 0) return false;
 
 		$res = self::$mysqli->query("SELECT invite, uid FROM invites WHERE puid=$uid AND invite='".self::quote($invite)."'");
