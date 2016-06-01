@@ -26,7 +26,21 @@ define('NICK_MAX', 30);
 define('PASS_MIN', 6);
 define('PASS_MAX', 100);
 define('FAV_MAX', 200);
+define('LOC_MAX', 100);
 define('INVITE_LEN', 12);
+
+function getFloatCoord($coord)
+{
+	global $db;
+	$name = randomStr(12, false);
+	if (!QuerySql("CREATE TEMPORARY TABLE `$name` (coord FLOAT(12,8))")) return null;
+	QuerySql("INSERT INTO `$name` (coord) VALUES ($coord)");
+	$res = QuerySql("SELECT coord FROM `$name`");
+	$row = $res->fetch_row();
+	$res->close();
+	QuerySql("DROP TABLE `$name`");
+	return $row[0];
+}
 
 $json = array();
 $json['result'] = false;
@@ -501,6 +515,129 @@ switch($action)
 		break;
 	}
 	$json['fav'] = true;
+	$json['result'] = true;
+	break;
+
+	// Просмотр избранных локаций
+	case 'mylocs':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	if (!$res = QuerySql("SELECT latitude,longitude,comment FROM locations WHERE uid=$uid"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$json['result'] = true;
+	$json['data'] = array();
+	while ($row = $res->fetch_row())
+	{
+		$loc = array();
+		$loc['lat'] = (float)$row[0];
+		$loc['lon'] = (float)$row[1];
+		$loc['cmt'] = $row[2];
+		$json['data'][] = $loc;
+		unset($loc);
+	}
+	$res->close();
+	break;
+
+	// Добавление/изменение локации
+	case 'addloc':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$lat = isset($_GET['lat']) ? (float)$_GET['lat'] : null;
+	$lon = isset($_GET['lon']) ? (float)$_GET['lon'] : null;
+	$cmt = isset($_GET['cmt']) ? trim(preg_replace('/\s+/', ' ', $_GET['cmt'])) : null;
+	if ($cmt == '') $cmt = null;
+
+	if ($lat == null || $lon == null || $cmt == null)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	$lat = getFloatCoord($lat);
+	$lon = getFloatCoord($lon);
+	if (!$res = QuerySql("SELECT uid FROM locations WHERE uid=$uid AND latitude=$lat AND longitude=$lon"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$cmt = $db->real_escape_string($cmt);
+	$exist = $res->num_rows > 0;
+	$res->close();
+	$json['lat'] = (float)$lat;
+	$json['lon'] = (float)$lon;
+	$json['cmt'] = $cmt;
+	if ($exist)
+	{
+		QuerySql("UPDATE locations SET comment='$cmt' WHERE uid=$uid AND latitude=$lat AND longitude=$lon");
+		$json['new'] = false;
+		$json['result'] = true;
+		break;
+	}
+	$res = QuerySql("SELECT COUNT(uid) FROM locations WHERE uid=$uid");
+	$row = $res->fetch_row();
+	$res->close();
+	if ($row[0] >= LOC_MAX)
+	{
+		$json['error'] = 'limit';
+		break;
+	}
+	if (!QuerySql("INSERT INTO locations (uid,latitude,longitude,comment) VALUES ($uid,$lat,$lon,'$cmt')"))
+	{
+		$json['error'] = 'unknown';
+		break;
+	}
+	$json['new'] = true;
+	$json['result'] = true;
+	break;
+
+	// Удаление локации
+	case 'delloc':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$lat = isset($_GET['lat']) ? (float)$_GET['lat'] : null;
+	$lon = isset($_GET['lon']) ? (float)$_GET['lon'] : null;
+
+	if ($lat == null || $lon == null)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	$lat = getFloatCoord($lat);
+	$lon = getFloatCoord($lon);
+	if (!QuerySql("DELETE FROM locations WHERE uid=$uid AND latitude=$lat AND longitude=$lon"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
 	$json['result'] = true;
 	break;
 

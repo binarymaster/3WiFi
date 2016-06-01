@@ -30,6 +30,33 @@ function getStringBetween($string, $start, $end)
 	$len = strpos($string, $end, $ini) - $ini;
 	return substr($string, $ini, $len);
 }
+function randomStr($size=32, $syms = true)
+{
+	$Str = '';
+
+	$arr = array('a','b','c','d','e','f',
+			 'g','h','i','j','k','l',
+			 'm','n','o','p','r','s',
+			 't','u','v','x','y','z',
+			 'A','B','C','D','E','F',
+			 'G','H','I','J','K','L',
+			 'M','N','O','P','R','S',
+			 'T','U','V','X','Y','Z',
+			 '1','2','3','4','5','6',
+			 '7','8','9','0');
+	$symb_arr = Array( '!', '@',
+			 '#', '$', '%', '^', '&',
+			 '*', '(', ')', '-', '_',
+			 '+', '=', '|', '.', ',');
+
+	if ($syms) $arr = array_merge($arr, $symb_arr);
+
+	for($i = 0; $i < $size; $i++)
+	{
+	  $Str .= $arr[rand(0, sizeof($arr) - 1)];
+	}
+	return $Str;
+}
 
 // IP block
 function _long2ip($arg)

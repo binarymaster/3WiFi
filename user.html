@@ -178,6 +178,8 @@ function markFav(e,id)
 			}
 			$(e).parent().parent().remove();
 			$('#favap_cnt').text(parseInt($('#favap_cnt').text()) - 1);
+			if (parseInt($('#favap_cnt').text()) == 0)
+				$('#favorited_aps').html('<tr><td colspan=9>Избранных точек пока нет</td></tr>');
 		}).fail(function(jqXHR, textStatus, errorThrown) {
 			$(e).find('img').attr('src', 'img/no.png');
 			alert('Ошибка загрузки данных');
@@ -195,6 +197,118 @@ function markFav(e,id)
 	}).fail(function(jqXHR, textStatus, errorThrown) {
 		alert('Ошибка загрузки данных');
 	});
+}
+
+function getMyLocations()
+{
+	$('#favorited_loc').html('<tr><td colspan=4><img src="img/loading.gif"></td></tr>');
+	$.get('user.php?a=mylocs', function(json)
+	{
+		$('#favorited_loc').empty();
+		if (!json.result)
+		{
+			$('#favorited_loc').html('<tr><td colspan=4>'+errorStr(json.error)+'</td></tr>');
+			return;
+		}
+		$('#favloc_cnt').text(json.data.length);
+		if (json.data.length == 0)
+		{
+			$('#favorited_loc').html('<tr><td colspan=4>Избранных локаций пока нет</td></tr>');
+			return;
+		}
+		for (var i = 0; i < json.data.length; i++)
+		{
+			var loc = json.data[i];
+			var tr = $('<tr onclick="modifyLocation(this)">');
+			tr.append($('<td>').text(loc.lat));
+			tr.append($('<td>').text(loc.lon));
+			tr.append($('<td>').text(loc.cmt));
+			var urls = '';
+			urls += '<a href="map?lat='+loc.lat+'&lon='+loc.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
+			urls += '<a href="ranges?lat='+loc.lat+'&lon='+loc.lon+'"><img src="img/icon-ip.png"></a>&nbsp;';
+			urls += '<a href="javascript://" onclick="deleteLocation(this,'+loc.lat+','+loc.lon+')"><img src="img/no.png"></a>';
+			tr.append($('<td>').html(urls));
+			$('#favorited_loc').append(tr);
+		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#favorited_loc').html('<tr><td colspan=4>Ошибка загрузки данных</td></tr>');
+	});
+}
+
+function createLocation()
+{
+	var lat = $('#floclat').val();
+	var lon = $('#floclon').val();
+	var cmt = $('#floccmt').val();
+	$('#tab3').find('input,button').prop('disabled', true);
+	$.get('user.php?a=addloc&lat='+lat+'&lon='+lon+'&cmt='+cmt, function(json)
+	{
+		$('#tab3').find('input,button').prop('disabled', false);
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return;
+		}
+		if ($($('#favorited_loc').find('td')[0]).attr('colspan') == 4)
+			$('#favorited_loc').empty();
+		if (json.new)
+		{
+			var tr = $('<tr onclick="modifyLocation(this)">');
+			tr.append($('<td>').text(json.lat));
+			tr.append($('<td>').text(json.lon));
+			tr.append($('<td>').text(json.cmt));
+			var urls = '';
+			urls += '<a href="map?lat='+json.lat+'&lon='+json.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
+			urls += '<a href="ranges?lat='+json.lat+'&lon='+json.lon+'"><img src="img/icon-ip.png"></a>&nbsp;';
+			urls += '<a href="javascript://" onclick="deleteLocation(this,'+json.lat+','+json.lon+')"><img src="img/no.png"></a>';
+			tr.append($('<td>').html(urls));
+			$('#favorited_loc').append(tr);
+			$('#favloc_cnt').text(parseInt($('#favloc_cnt').text()) + 1);
+			return;
+		}
+		var trs = $('#favorited_loc').find('tr');
+		for (var i = 0; i < trs.length; i++)
+		{
+			var tds = $(trs[i]).find('td');
+			if ((tds[0].textContent == json.lat.toString()) && (tds[1].textContent == json.lon.toString()))
+			{
+				tds[2].textContent = json.cmt;
+				break;
+			}
+		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#tab3').find('input,button').prop('disabled', false);
+		alert('Ошибка загрузки данных');
+	});
+}
+
+function deleteLocation(e, lat, lon)
+{
+	$(e).find('img').attr('src', 'img/loadsm.gif');
+	$.get('user.php?a=delloc&lat='+lat+'&lon='+lon, function(json)
+	{
+		if (!json.result)
+		{
+			$(e).find('img').attr('src', 'img/no.png');
+			alert(errorStr(json.error));
+			return;
+		}
+		$(e).parent().parent().remove();
+		$('#favloc_cnt').text(parseInt($('#favloc_cnt').text()) - 1);
+		if (parseInt($('#favloc_cnt').text()) == 0)
+			$('#favorited_loc').html('<tr><td colspan=4>Избранных локаций пока нет</td></tr>');
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		$(e).find('img').attr('src', 'img/no.png');
+		alert('Ошибка загрузки данных');
+	});
+}
+
+function modifyLocation(e)
+{
+	var tds = $(e).find('td');
+	$('#floclat').val($(tds[0]).text());
+	$('#floclon').val($(tds[1]).text());
+	$('#floccmt').val($(tds[2]).text());
 }
 
 function createInvite()
@@ -385,7 +499,7 @@ function switchTab(num)
 	{
 		case 2: getMyUploads();
 		break;
-		case 3: getMyFavorites();
+		case 3: getMyFavorites(); getMyLocations();
 		break;
 		case 4: getInvitesInfo();
 		break;
@@ -576,18 +690,17 @@ function loadstat(e, st)
 			<tr><td style="vertical-align: top">
 				<table class=st1>
 				<thead style="white-space: nowrap">
-				<tr><th><input type=checkbox /></th><th>Широта</th><th>Долгота</th><th>Комментарий</th><th>Ссылки</th></tr>
+				<tr><th>Широта</th><th>Долгота</th><th>Комментарий</th><th>Ссылки</th></tr>
 				</thead>
 				<tbody id=favorited_loc style="font-size: 12px">
 				</tbody>
 				</table>
 			</td><td style="vertical-align: top">
 				<table class=graphbkg style="margin-left: 16px; padding: 8">
-				<tr><td align=right>Широта:</td><td><input type=text /></td></tr>
-				<tr><td align=right>Долгота:</td><td><input type=text /></td></tr>
-				<tr><td align=right>Комментарий:</td><td><input type=text /></td></tr>
-				<tr><td align=right></td><td><button onclick="createLocation()">Добавить</button> <button onclick="updateLocation()">Сохранить</button></td></tr>
-				<tr><td align=right></td><td><button onclick="deleteLocation()">Удалить</button></td></tr>
+				<tr><td align=right>Широта:</td><td><input id=floclat type="number" min="-90" max="90" step="0.00000001" /></td></tr>
+				<tr><td align=right>Долгота:</td><td><input id=floclon type="number" min="-180" max="180" step="0.00000001" /></td></tr>
+				<tr><td align=right>Комментарий:</td><td><input id=floccmt type=text /></td></tr>
+				<tr><td align=right></td><td><button onclick="createLocation()">Добавить / Сохранить</button></td></tr>
 				</table>
 			</td></tr>
 			</table>

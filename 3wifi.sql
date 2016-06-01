@@ -202,6 +202,18 @@ CREATE TABLE `favorites` (
 	CONSTRAINT `FK_favorites_base` FOREIGN KEY (`id`) REFERENCES `base` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- Дамп структуры для таблицы 3wifi.locations
+CREATE TABLE `locations` (
+	`uid` INT(10) UNSIGNED NOT NULL,
+	`latitude` FLOAT(12,8) NOT NULL,
+	`longitude` FLOAT(12,8) NOT NULL,
+	`comment` VARCHAR(127) NOT NULL,
+	UNIQUE INDEX `uniq` (`uid`, `latitude`, `longitude`),
+	INDEX `uid` (`uid`),
+	INDEX `coords` (`latitude`, `longitude`),
+	CONSTRAINT `FK_locations_users` FOREIGN KEY (`uid`) REFERENCES `users` (`uid`) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 -- Дамп данных таблицы 3wifi.users
 INSERT INTO `users` SET
 	`regdate`=CURRENT_TIMESTAMP,
