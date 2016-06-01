@@ -119,7 +119,7 @@ function find(page)
 
 				if (d.data.length > 0)
 				{
-					if (typeof d.data[0].id == 'number')
+					if (typeof d.data[0].id == 'number' && ProfileInfo.Level > 1)
 					{
 						switchLevel(2);
 						$('#found'+level).text(res);
@@ -135,8 +135,10 @@ function find(page)
 						if (!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lon)))
 						{
 							links += '<a href="map?lat='+e.lat+'&lon='+e.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
-							links += '<a href="ranges?lat='+e.lat+'&lon='+e.lon+'&rad=1"><img src="img/icon-ip.png"></a>';
+							links += '<a href="ranges?lat='+e.lat+'&lon='+e.lon+'&rad=1"><img src="img/icon-ip.png"></a>&nbsp;';
 						}
+						if (typeof e.id != 'number') e.id = 0;
+						links += '<a href="javascript://" onclick="markFav(this,'+e.id+')"><img src="img/icon-fav-'+(e.fav ? 'on' : 'off')+'.png"></a>';
 						var nw = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
 						var mnw = {raw: false, mono: true, nowrap: true, over: false, cs: 1};
 						var mn = {raw: false, mono: true, nowrap: false, over: false, cs: 1};
@@ -175,6 +177,20 @@ function find(page)
 		$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
 		$('input').prop('disabled', false);
 		$('button').prop('disabled', false);
+	});
+}
+function markFav(e,id)
+{
+	$.get('user.php?a=fav&id='+id, function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return;
+		}
+		$(e).find('img').attr('src', 'img/icon-fav-'+(json.fav ? 'on' : 'off')+'.png');
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		alert('Ошибка загрузки данных');
 	});
 }
 function initpage()

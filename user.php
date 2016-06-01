@@ -25,6 +25,7 @@ define('NICK_MIN', 5);
 define('NICK_MAX', 30);
 define('PASS_MIN', 6);
 define('PASS_MAX', 100);
+define('FAV_MAX', 200);
 define('INVITE_LEN', 12);
 
 $json = array();
@@ -252,8 +253,18 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	if (!$res = QuerySql("SELECT id, time, cmtval, IP, Port, Authorization, name, NoBSSID, BSSID, ESSID, Security, WiFiKey, WPSPIN, latitude, longitude 
-						FROM BASE_TABLE RIGHT JOIN uploads USING(id) LEFT JOIN comments USING (cmtid) LEFT JOIN GEO_TABLE USING (BSSID) WHERE uid=$uid ORDER BY time DESC LIMIT 200"))
+	if (!$res = QuerySql(
+		"SELECT id, time, cmtval, 
+		IP, Port, Authorization, name, 
+		NoBSSID, BSSID, ESSID, Security, 
+		WiFiKey, WPSPIN, latitude, longitude, 
+		fuid IS NOT NULL fav 
+		FROM uploads 
+		INNER JOIN BASE_TABLE USING(id) 
+		LEFT JOIN comments USING (cmtid) 
+		LEFT JOIN GEO_TABLE USING (BSSID) 
+		LEFT JOIN (SELECT uid AS fuid,id FROM favorites WHERE uid=$uid) ufav USING(id) 
+		WHERE uid=$uid ORDER BY time DESC LIMIT 200"))
 	{
 		$json['error'] = 'database';
 		break;
@@ -282,6 +293,7 @@ switch($action)
 			$ap['lat'] = (float)$row[13];
 			$ap['lon'] = (float)$row[14];
 		}
+		$ap['fav'] = (bool)$row[15];
 		$json['data'][] = $ap;
 		unset($ap);
 	}
@@ -368,6 +380,128 @@ switch($action)
 		echo $line;
 	}
 	$res->close();
+	break;
+
+	// Просмотр избранных точек
+	case 'myfavs':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	if (!$res = QuerySql(
+		"SELECT id,time,cmtval,IP,
+		NoBSSID,BSSID,ESSID,
+		Security,WiFiKey,WPSPIN,
+		WANIP,latitude,longitude 
+		FROM favorites 
+		INNER JOIN BASE_TABLE USING(id) 
+		LEFT JOIN comments USING(cmtid) 
+		LEFT JOIN GEO_TABLE USING(BSSID) 
+		WHERE uid=$uid"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$json['result'] = true;
+	$json['data'] = array();
+	while ($row = $res->fetch_row())
+	{
+		$ap = array();
+		$ap['id'] = (int)$row[0];
+		$ap['time'] = $row[1];
+		$ap['comment'] = $row[2];
+		$ip = _long2ip($row[3]);
+		$wanip = _long2ip($row[10]);
+		$ap['range'] = ($ip != '' ? $ip : ($wanip != '' ? $wanip : ''));
+		if (isLocalIP($ap['range'])
+		&& $ap['range'] != $wanip
+		&& isValidIP($wanip)
+		&& !isLocalIP($wanip))
+		{
+			$ap['range'] = $wanip;
+		}
+		if (isValidIP($ap['range']))
+		{
+			$oct = explode('.', $ap['range']);
+			array_pop($oct);
+			array_pop($oct);
+			$ap['range'] = implode('.', $oct).'.0.0/16';
+		} else
+			$ap['range'] = '';
+		$ap['bssid'] = ($row[4] == 0 ? dec2mac($row[5]) : '');
+		$ap['essid'] = $row[6];
+		$ap['sec'] = sec2str((int)$row[7]);
+		$ap['key'] = $row[8];
+		$ap['wps'] = ($row[9] == 1 ? '' : str_pad($row[9], 8, '0', STR_PAD_LEFT));
+		$ap['lat'] = null;
+		$ap['lon'] = null;
+		if ($row[4] == 0 && $row[11] != 0 && $row[12] != 0)
+		{
+			$ap['lat'] = (float)$row[11];
+			$ap['lon'] = (float)$row[12];
+		}
+		$json['data'][] = $ap;
+		unset($ap);
+	}
+	$res->close();
+	break;
+
+	// Добавление/удаление точки в избранное
+	case 'fav':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$uid = $UserManager->uID;
+	$id = isset($_GET['id']) ? (int)$_GET['id'] : null;
+
+	if ($id == null)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if (!$res = QuerySql("SELECT id FROM favorites WHERE uid=$uid AND id=$id"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$isfav = $res->num_rows > 0;
+	$res->close();
+	if ($isfav)
+	{
+		QuerySql("DELETE FROM favorites WHERE uid=$uid AND id=$id");
+		$json['fav'] = false;
+		$json['result'] = true;
+		break;
+	}
+	$res = QuerySql("SELECT COUNT(id) FROM favorites WHERE uid=$uid");
+	$row = $res->fetch_row();
+	$res->close();
+	if ($row[0] >= FAV_MAX)
+	{
+		$json['error'] = 'limit';
+		break;
+	}
+	if (!QuerySql("INSERT INTO favorites (uid,id) VALUES ($uid,$id)"))
+	{
+		$json['error'] = 'unknown';
+		break;
+	}
+	$json['fav'] = true;
+	$json['result'] = true;
 	break;
 
 	// Управление приглашениями

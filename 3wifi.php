@@ -179,6 +179,8 @@ switch ($action)
 			$_SESSION['Search']['FirstId'] = -1;
 			$_SESSION['Search']['LastId'] = -1;
 		}
+		global $UserManager;
+		$uid = $UserManager->uID;
 
 		$sql = 'SELECT SQL_CALC_FOUND_ROWS 
 				`id`,`time`,
@@ -186,10 +188,11 @@ switch ($action)
 				`IP`,`Port`,`Authorization`,`name`,
 				`NoBSSID`,`BSSID`,`ESSID`,`Security`,
 				`WiFiKey`,`WPSPIN`,`WANIP`,
-				`latitude`,`longitude` 
+				`latitude`,`longitude`, uid IS NOT NULL fav 
 				FROM `BASE_TABLE` 
 				LEFT JOIN `comments` USING(cmtid) 
 				LEFT JOIN `GEO_TABLE` USING(BSSID) 
+				LEFT JOIN (SELECT uid,id FROM favorites WHERE uid='.$uid.') ufav USING(id) 
 				WHERE 1';
 		if ($cmtid != -1)
 		{
@@ -358,7 +361,7 @@ switch ($action)
 			$LastId = (int)$row[0];
 
 			$entry = array();
-			if ($UserManager->Level > 1) $entry['id'] = (int)$row[0];
+			if ($UserManager->Level >= 1) $entry['id'] = (int)$row[0];
 			$entry['time'] = $row[1];
 			$entry['comment'] = ($row[2] == null ? '' : $row[3]);
 			$ip = _long2ip($row[4]);
@@ -412,6 +415,7 @@ switch ($action)
 					$entry['lon'] = 'not found';
 				}
 			}
+			$entry['fav'] = (bool)$row[17];
 
 			$json['data'][] = $entry;
 			unset($entry);

@@ -72,8 +72,9 @@ function getMyUploads()
 			if (typeof ap.lat == 'number')
 			{
 				urls += '<a href="map?lat='+ap.lat+'&lon='+ap.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
-				urls += '<a href="ranges?lat='+ap.lat+'&lon='+ap.lon+'"><img src="img/icon-ip.png"></a>';
+				urls += '<a href="ranges?lat='+ap.lat+'&lon='+ap.lon+'"><img src="img/icon-ip.png"></a>&nbsp;';
 			}
+			urls += '<a href="javascript://" onclick="markFav(this,'+ap.id+')"><img src="img/icon-fav-'+(ap.fav ? 'on' : 'off')+'.png"></a>';
 			tr.append($('<td>').html(urls));
 			$('#uploaded').append(tr);
 		}
@@ -102,6 +103,89 @@ function myDownload()
 		a.target = '_blank';
 		a.click();
 		a.remove();
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		alert('Ошибка загрузки данных');
+	});
+}
+
+function getMyFavorites()
+{
+	$('#favorited_aps').html('<tr><td colspan=9><img src="img/loading.gif"></td></tr>');
+	$.get('user.php?a=myfavs', function(json)
+	{
+		$('#favorited_aps').empty();
+		if (!json.result)
+		{
+			$('#favorited_aps').html('<tr><td colspan=9>'+errorStr(json.error)+'</td></tr>');
+			return;
+		}
+		$('#favap_cnt').text(json.data.length);
+		if (json.data.length == 0)
+		{
+			$('#favorited_aps').html('<tr><td colspan=9>Избранных точек пока нет</td></tr>');
+			return;
+		}
+		for (var i = 0; i < json.data.length; i++)
+		{
+			var ap = json.data[i];
+			var tr = $('<tr>');
+			tr.append($('<td>').css({'font-family': 'monospace', 'white-space': 'nowrap'}).text(ap.time.split(' ')[0]));
+			tr.append($('<td>').text(ap.comment));
+			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.range));
+			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.bssid));
+			tr.append($('<td>').css({'white-space': 'nowrap'}).text(ap.essid));
+			tr.append($('<td>').text(ap.sec));
+			tr.append($('<td>').css({'white-space': 'nowrap'}).text(ap.key));
+			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.wps));
+			var urls = '';
+			if (typeof ap.lat == 'number')
+			{
+				urls += '<a href="map?lat='+ap.lat+'&lon='+ap.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
+				urls += '<a href="ranges?lat='+ap.lat+'&lon='+ap.lon+'"><img src="img/icon-ip.png"></a>&nbsp;';
+			}
+			urls += '<a href="javascript://" onclick="markFav(this,'+ap.id+')"><img src="img/no.png"></a>';
+			tr.append($('<td>').html(urls));
+			$('#favorited_aps').append(tr);
+		}
+	}).fail(function(jqXHR, textStatus, errorThrown) {
+		$('#favorited_aps').html('<tr><td colspan=9>Ошибка загрузки данных</td></tr>');
+	});
+}
+
+function markFav(e,id)
+{
+	if ($('.userTabActive')[0].id == 'tab3b')
+	{
+		$(e).find('img').attr('src', 'img/loadsm.gif');
+		$.get('user.php?a=fav&id='+id, function(json)
+		{
+			if (!json.result)
+			{
+				$(e).find('img').attr('src', 'img/no.png');
+				alert(errorStr(json.error));
+				return;
+			}
+			if (json.fav)
+			{
+				$(e).find('img').attr('src', 'img/no.png');
+				return;
+			}
+			$(e).parent().parent().remove();
+			$('#favap_cnt').text(parseInt($('#favap_cnt').text()) - 1);
+		}).fail(function(jqXHR, textStatus, errorThrown) {
+			$(e).find('img').attr('src', 'img/no.png');
+			alert('Ошибка загрузки данных');
+		});
+		return;
+	}
+	$.get('user.php?a=fav&id='+id, function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return;
+		}
+		$(e).find('img').attr('src', 'img/icon-fav-'+(json.fav ? 'on' : 'off')+'.png');
 	}).fail(function(jqXHR, textStatus, errorThrown) {
 		alert('Ошибка загрузки данных');
 	});
@@ -295,6 +379,8 @@ function switchTab(num)
 	{
 		case 2: getMyUploads();
 		break;
+		case 3: getMyFavorites();
+		break;
 		case 4: getInvitesInfo();
 		break;
 		case 5: $('td#stat_em')[0].click();
@@ -470,22 +556,17 @@ function loadstat(e, st)
 		</div>
 		<div id=tab3 class=userCode dir=ltr style="display: none;">
 			<table>
-			<tr><td style="padding: 4 8 4 8" colspan=2>Избранные точки доступа.</td></tr>
-			<tr><td style="vertical-align: top">
+			<tr><td style="padding: 4 8 4 8" colspan=2>Избранные точки доступа (<span id=favap_cnt>0</span> из 200).</td></tr>
+			<tr><td style="vertical-align: top" colspan=2>
 				<table class=st1>
 				<thead style="white-space: nowrap">
-				<tr><th><input type=checkbox /></th><th>Дата</th><th>Комментарий</th><th>Диапазон IP</th><th>BSSID</th><th>ESSID</th><th>Тип защиты</th><th>Ключ сети</th><th>WPS PIN</th><th>Ссылки</th></tr>
+				<tr><th>Дата</th><th>Комментарий</th><th>Диапазон IP</th><th>BSSID</th><th>ESSID</th><th>Тип защиты</th><th>Ключ сети</th><th>WPS PIN</th><th>Ссылки</th></tr>
 				</thead>
 				<tbody id=favorited_aps style="font-size: 12px">
 				</tbody>
 				</table>
-			</td><td style="vertical-align: top">
-				<table class=graphbkg style="width: 200px; margin-left: 16px; padding: 8">
-				<tr><td colspan=2>Всего точек: <span id=favap_cnt>0</span></td></tr>
-				<tr><td align=left><button onclick="deleteFavorite()">Удалить</button></td><td></td></tr>
-				</table>
 			</td></tr>
-			<tr><td style="padding: 4 8 4 8" colspan=2>Избранные локации.</td></tr>
+			<tr><td style="padding: 4 8 4 8" colspan=2>Избранные локации (<span id=favloc_cnt>0</span> из 100).</td></tr>
 			<tr><td style="vertical-align: top">
 				<table class=st1>
 				<thead style="white-space: nowrap">
@@ -496,7 +577,6 @@ function loadstat(e, st)
 				</table>
 			</td><td style="vertical-align: top">
 				<table class=graphbkg style="margin-left: 16px; padding: 8">
-				<tr><td colspan=2>Всего локаций: <span id=favloc_cnt>0</span></td></tr>
 				<tr><td align=right>Широта:</td><td><input type=text /></td></tr>
 				<tr><td align=right>Долгота:</td><td><input type=text /></td></tr>
 				<tr><td align=right>Комментарий:</td><td><input type=text /></td></tr>
