@@ -87,6 +87,9 @@ function switchPage(num)
 	var pages = buildPages(cnt_pages, num);
 	$('#pages_t').html(pages);
 	$('#pages_b').html(pages);
+	$('input[type=number]').attr('max', cnt_pages);
+	$('input[type=number]').val(num);
+	$('#page_seeker').css('display', (pages == '' ? 'none' : 'inherit'));
 
 	find(num);
 }
@@ -116,6 +119,9 @@ function find(page)
 				var pages = buildPages(cnt_pages, cur_page);
 				$('#pages_t').html(pages);
 				$('#pages_b').html(pages);
+				$('input[type=number]').attr('max', cnt_pages);
+				$('input[type=number]').val(cur_page);				
+				$('#page_seeker').css('display', (pages == '' ? 'none' : 'inherit'));
 
 				if (d.data.length > 0)
 				{
@@ -199,6 +205,10 @@ function initpage()
 	cur_page = 0;
 	cnt_pages = 0;
 	switchLevel(ProfileInfo.Level < 2 ? 1 : 2);
+	$('input[type=number]').keydown(function(e) {
+		if (e.keyCode != 13) return;
+		switchPage(parseInt($('input[type=number]').val()));
+	});
 }
 </script>
 </head>
@@ -229,8 +239,10 @@ function initpage()
 </table>
 </form>
 
-<table class=st1 id=pages_t style="margin-top: 2px; margin-bottom: 4px">
-</table>
+<span style="margin-top: 2px; margin-bottom: 4px; display: flex">
+<table class=st1 id=pages_t>
+</table><span id=page_seeker style="display: none">&nbsp;<input type=number value=1 min=1 max=1 step=1>&nbsp;<button onclick="switchPage(parseInt($('input[type=number]').val()))">Перейти</button></span>
+</span>
 
 <table class=st1>
 <tbody id=fhead>
