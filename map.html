@@ -22,6 +22,16 @@ function initmap()
 		geoObjectOpenBalloonOnClick: false
 	});
 
+	userLocations = new ymaps.RemoteObjectManager('user.php?a=mylocmap&bbox=%b',
+	{	// Разбивать запросы по тайлам
+		splitRequests: false,
+		// Опции объектов задаются с префиксом geoObject
+		geoObjectOpenBalloonOnClick: false
+	});
+
+	if (ProfileInfo.Level >= 1)
+		myMap.geoObjects.add(userLocations);
+
 	myMap.geoObjects.add(remoteObjectManager);
 
 	// Кнопка скрытия/показа точек доступа
@@ -90,6 +100,45 @@ function initmap()
 			}
 		);
 	myMap.controls.add(clustButton);
+
+	// Кнопка добавления локации в избранное
+	var faveButton = new ymaps.control.Button({
+		data: {
+			title: 'Добавить локацию в избранное',
+			image: 'img/icon-fav-on.png'
+		},
+		options: {
+			float: 'right',
+			selectOnClick: false
+		}
+	});
+	faveButton.events
+		.add(
+			'click',
+			function () {
+				var cmt = prompt("Текущая локация будет сохранена в избранное.\n\nКомментарий к локации:", 'Город A, район B');
+				if (cmt == null || cmt == '') return;
+				var coords = myMap.getCenter();
+				$.get('user.php?a=addloc&lat='+coords[0]+'&lon='+coords[1]+'&cmt='+cmt, function(json)
+				{
+					if (!json.result)
+					{
+						alert(errorStr(json.error));
+						return;
+					}
+					userLocations.reloadData();
+					if (json.new)
+					{
+						alert('Локация успешно добавлена');
+						return;
+					}
+					alert('Локация успешно обновлена');
+				}).fail(function(jqXHR, textStatus, errorThrown) {
+					alert('Ошибка загрузки данных');
+				});
+			}
+		);
+	myMap.controls.add(faveButton);
 
 	// Кнопка сохранения точек в файл
 	var iconSave = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjxzdmcgaGVpZ2h0PSIxNnB4IiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxNiAxNiIgd2lkdGg9IjE2cHgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6c2tldGNoPSJodHRwOi8vd3d3LmJvaGVtaWFuY29kaW5nLmNvbS9za2V0Y2gvbnMiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj48dGl0bGUvPjxkZWZzLz48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGlkPSJJY29ucyB3aXRoIG51bWJlcnMiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIj48ZyBmaWxsPSIjMDAwMDAwIiBpZD0iR3JvdXAiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC03MjAuMDAwMDAwLCAtNDMyLjAwMDAwMCkiPjxwYXRoIGQ9Ik03MjEsNDQ2IEw3MzMsNDQ2IEw3MzMsNDQzIEw3MzUsNDQzIEw3MzUsNDQ2IEw3MzUsNDQ4IEw3MjEsNDQ4IFogTTcyMSw0NDMgTDcyMyw0NDMgTDcyMyw0NDYgTDcyMSw0NDYgWiBNNzI2LDQzMyBMNzMwLDQzMyBMNzMwLDQ0MCBMNzMyLDQ0MCBMNzI4LDQ0NSBMNzI0LDQ0MCBMNzI2LDQ0MCBaIE03MjYsNDMzIiBpZD0iUmVjdGFuZ2xlIDIxNyIvPjwvZz48L2c+PC9zdmc+';

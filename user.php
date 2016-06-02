@@ -550,6 +550,52 @@ switch($action)
 	$res->close();
 	break;
 
+	// Избранные локации на карте
+	case 'mylocmap':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$bbox = explode(',', $_GET['bbox']);
+	$lat1 = (float)$bbox[0];
+	$lon1 = (float)$bbox[1];
+	$lat2 = (float)$bbox[2];
+	$lon2 = (float)$bbox[3];
+	$callback = $_GET['callback'];
+	$uid = $UserManager->uID;
+	if (!$res = QuerySql("SELECT latitude,longitude,comment FROM locations WHERE uid=$uid AND latitude BETWEEN $lat1 AND $lat2 AND longitude BETWEEN $lon1 AND $lon2"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	unset($json); // здесь используется JSON-P
+	Header('Content-Type: application/json-p');
+	$json['error'] = null;
+	$json['data']['type'] = 'FeatureCollection';
+	$json['data']['features'] = array();
+	$loc['type'] = 'Feature';
+	$loc['options']['iconColor'] = '#00D000';
+	$loc['geometry']['type'] = 'Point';
+	while ($row = $res->fetch_row())
+	{
+		$loc['geometry']['coordinates'][0] = (float)$row[0];
+		$loc['geometry']['coordinates'][1] = (float)$row[1];
+		$loc['id'] = 'loc'.substr(md5($row[0].$row[1]), 0, 4);
+		$loc['properties']['hintContent'] = '<b>Локация:</b><br>'.htmlspecialchars($row[2]);
+		$json['data']['features'][] = $loc;
+	}
+	$res->close();
+	$db->close();
+	echo 'typeof '.$callback.' === \'function\' && '.$callback.'('.json_encode($json).');';
+	exit;
+	break;
+
 	// Добавление/изменение локации
 	case 'addloc':
 	if (!$UserManager->isLogged())
