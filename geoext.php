@@ -55,7 +55,7 @@ function GetFromMylnikov($bssid)
 {
 	$tries = 3;
 	$proto = 'https:';
-	while (!($data = cURL_Get("$proto//api.mylnikov.org/wifi/main.py/get?bssid=$bssid")) && ($tries > 0))
+	while (!($data = cURL_Get("$proto//api.mylnikov.org/wifi/main.py/get?bssid=$bssid", ''/* 127.0.0.1:3128 */)) && ($tries > 0))
 	{
 		$tries--;
 		$proto = ($tries % 2 == 0 ? 'http:' : 'https:');
@@ -72,7 +72,7 @@ function GetFromMylnikov($bssid)
 	}
 	return $result;
 }
-function cURL_Get($url)
+function cURL_Get($url, $proxy = '')
 {
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -81,6 +81,11 @@ function cURL_Get($url)
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); 
 	curl_setopt($ch, CURLOPT_USERAGENT, 'PHP/'.phpversion().' 3WiFi/2.0');
+	if ($proxy != '')
+	{
+		curl_setopt($ch, CURLOPT_PROXY, $proxy);
+		//curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxyauth);
+	}
 	curl_setopt($ch, CURLOPT_URL, $url);
 	$data = curl_exec($ch);
 	curl_close($ch);

@@ -152,6 +152,24 @@ switch ($action)
 	$json['auth'] = $UserManager->Level >= 0;
 	if (!$json['auth']) break;
 
+	function HasWildcards($str, $wc)
+	{
+		return StrInStr($str, $wc[0]) || StrInStr($str, $wc[1]);
+	}
+	function FilterWildcards($str, $wc)
+	{
+		$str = str_replace($wc[0], '', $str);
+		$str = str_replace($wc[1], '', $str);
+		return $str;
+	}
+	function UniStrWildcard($str, $wc)
+	{
+		$str = str_replace('_', '\\_', $str);
+		$str = str_replace('%', '\\%', $str);
+		$str = str_replace($wc[0], '_', $str);
+		$str = str_replace($wc[1], '%', $str);
+		return $str;
+	}
 	function GenerateFindQuery($cmtid, $BSSID, $ESSID, $Name, $Key, $Page, $Limit)
 	{
 		if(!isset($_SESSION['Search'])) $_SESSION['Search'] = array();
@@ -169,7 +187,9 @@ switch ($action)
 		$SplitCount = substr_count($TestBSSID, ':') + substr_count($TestBSSID, '.')+ substr_count($TestBSSID, '-');
 		$UnkCount = substr_count($TestBSSID, '*');
 
-		if(($SplitCount < $UnkCount || $TestBSSID == '*' || $BSSID == '') && ($ESSID == '%' || $ESSID == ''))
+		$Wildcards = array('□','◯');
+
+		if(($SplitCount < $UnkCount || $TestBSSID == '*' || $BSSID == '') && (FilterWildcards($ESSID, $Wildcards) == ''))
 		{
 			$isLimitedRequest = true;
 		}
@@ -210,17 +230,17 @@ switch ($action)
 		}
 		if ($ESSID != '')
 		{
-			if (StrInStr($ESSID, '%') || StrInStr($ESSID, '_')) $sql .= ' AND `ESSID` LIKE \''.$ESSID.'\'';
+			if (HasWildcards($ESSID, $Wildcards)) $sql .= ' AND `ESSID` LIKE \''.UniStrWildcard($ESSID, $Wildcards).'\'';
 			else $sql .= ' AND `ESSID` = \''.$ESSID.'\'';
 		}
 		if ($Name != '')
 		{
-			if (StrInStr($Name, '%') || StrInStr($Name, '_')) $sql .= ' AND `name` LIKE \''.$Name.'\'';
+			if (HasWildcards($Name, $Wildcards)) $sql .= ' AND `name` LIKE \''.UniStrWildcard($Name, $Wildcards).'\'';
 			else $sql .= ' AND `name` = \''.$Name.'\'';
 		}
 		if ($Key != '')
 		{
-			if (StrInStr($Key, '%') || StrInStr($Key, '_')) $sql .= ' AND `WiFiKey` LIKE \''.$Key.'\'';
+			if (HasWildcards($Key, $Wildcards)) $sql .= ' AND `WiFiKey` LIKE \''.UniStrWildcard($Key, $Wildcards).'\'';
 			else $sql .= ' AND `WiFiKey` = \''.$Key.'\'';
 		}
 
@@ -274,12 +294,12 @@ switch ($action)
 	$comment = '*';
 	$cmtid = -1;
 	$ipaddr = '';
-	$auth = '%';
-	$name = '%';
+	$auth = '◯';
+	$name = '◯';
 	$bssid = '';
-	$essid = '%';
-	$key = '%';
-	$wps = '%';
+	$essid = '◯';
+	$key = '◯';
+	$wps = '◯';
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
 	if (isset($_POST['essid'])) $essid = $_POST['essid'];
 	$bssid = str_replace('-', ':', $bssid);
