@@ -199,6 +199,41 @@ function markFav(e,id)
 		alert('Ошибка загрузки данных');
 	});
 }
+function insertAtCaret(text)
+{
+	if (typeof lastInp != 'object') return;
+	var txtarea = lastInp;
+	var scrollPos = txtarea.scrollTop;
+	var strPos = 0;
+	var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ? 
+		"ff" : (document.selection ? "ie" : false ) );
+	if (br == "ie") { 
+		txtarea.focus();
+		var range = document.selection.createRange();
+		range.moveStart ('character', -txtarea.value.length);
+		strPos = range.text.length;
+	}
+	else if (br == "ff") strPos = txtarea.selectionStart;
+
+	var front = (txtarea.value).substring(0,strPos);  
+	var back = (txtarea.value).substring(strPos,txtarea.value.length); 
+	txtarea.value=front+text+back;
+	strPos = strPos + text.length;
+	if (br == "ie") { 
+		txtarea.focus();
+		var range = document.selection.createRange();
+		range.moveStart ('character', -txtarea.value.length);
+		range.moveStart ('character', strPos);
+		range.moveEnd ('character', 0);
+		range.select();
+	}
+	else if (br == "ff") {
+		txtarea.selectionStart = strPos;
+		txtarea.selectionEnd = strPos;
+		txtarea.focus();
+	}
+	txtarea.scrollTop = scrollPos;
+}
 function initpage()
 {
 	level = 0;
@@ -209,6 +244,9 @@ function initpage()
 		if (e.keyCode != 13) return;
 		switchPage(parseInt($('input[type=number]').val()));
 	});
+	$('input[type=text]').blur(function(e) {
+		lastInp = e.currentTarget;
+	});
 }
 </script>
 </head>
@@ -217,8 +255,8 @@ function initpage()
 <form enctype="multipart/form-data" method="POST" onsubmit="find(1); return false">
 <table id=fuserform style="display:none">
 <tbody>
-<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td style="font-size: small">(* - заменяющий символ)</td></tr>
-<tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="◯" /></td><td style="font-size: small">(□ - любой символ, ◯ - любой набор символов)</td></tr>
+<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td style="font-weight: bold">(&nbsp;* - заменяющий символ&nbsp;)</td></tr>
+<tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('□')">□</button> - любой символ, <button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - любой набор символов&nbsp;)</td></tr>
 <input name="page" type="hidden" value="1" />
 <tr><td><input type=submit value="Найти" /></td><td id=found1></td></tr>
 </tbody>
@@ -228,11 +266,10 @@ function initpage()
 <form enctype="multipart/form-data" method="POST" onsubmit="find(1); return false">
 <table id=fadminform style="display:none">
 <tbody>
-<tr><td>Комментарий:</td><td><input name="comment" type="text" value="*" /></td><td>Устройство:</td><td><input name="name" type="text" value="◯" /></td></tr>
-<tr><td>IP-адрес:</td><td><input name="ipaddr" type="text" value="" /></td><td>Авторизация:</td><td><input name="auth" type="text" value="◯" /></td></tr>
-<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td>ESSID / Имя:</td><td><input name="essid" type="text" value="◯" /></td></tr>
+<tr><td>Комментарий:</td><td><input name="comment" type="text" value="*" /></td><td>Устройство:</td><td><input name="name" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;* - заменяющий символ для комментария и BSSID&nbsp;)</td></tr>
+<tr><td>IP-адрес:</td><td><input name="ipaddr" type="text" value="" /></td><td>Авторизация:</td><td><input name="auth" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('□')">□</button> - любой символ&nbsp;)</td></tr>
+<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td>ESSID / Имя:</td><td><input name="essid" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - любой набор символов&nbsp;)</td></tr>
 <tr><td>Ключ сети:</td><td><input name="key" type="text" value="◯" /></td><td>Пин код WPS:</td><td><input name="wps" type="text" value="" /></td></tr>
-<tr><td colspan=4 style="font-size: small">(□ - любой символ, ◯ - любой набор символов, * - заменяющий символ для комментария и BSSID)</td></tr>
 <input name="page" type="hidden" value="1" />
 <tr><td><input type=submit value="Найти" /></td><td id=found2></td></tr>
 </tbody>
