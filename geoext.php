@@ -1,10 +1,21 @@
 <?php
 require_once 'utils.php';
 
+function gzdecode($data)
+{
+	$g = tempnam('', 'gztmp');
+	@file_put_contents($g, $data);
+	ob_start();
+	readgzfile($g);
+	$d = ob_get_clean();
+	unlink($g);
+	return $d;
+}
 function GeoLocateAP($bssid)
 {
 	$coords = GetFromYandex($bssid);
 	if ($coords == '') $coords = GetFromAlterGeo($bssid);
+	if ($coords == '') $coords = GetFromMicrosoft($bssid);
 	if ($coords == '') $coords = GetFromMylnikov($bssid);
 	return $coords;
 }
@@ -48,6 +59,53 @@ function GetFromAlterGeo($bssid)
 			$longitude = $json->location->lng;
 			$result = $latitude.';'.$longitude.';altergeo';
 		}
+	}
+	return $result;
+}
+function GetFromMicrosoft($bssid)
+{
+	$headers = array(
+		'Accept: */*',
+		'Accept-Language: en-us',
+		'Content-Type: text/xml',
+		'Accept-Encoding: gzip, deflate',
+		'User-Agent: PHP/'.phpversion().' 3WiFi/2.0',
+		'Cache-Control: no-cache',
+	);
+	$tries = 2;
+	$bssid = strtolower(str_replace("-",":",$bssid));
+
+	$data = null;
+	while (!$data && ($tries > 0))
+	{
+		$time = date('Y-m-d\TH:i:s.uP');
+		$xmlRequest = '<GetLocationUsingFingerprint xmlns="http://inference.location.live.com"><RequestHeader><Timestamp>'.$time.'</Timestamp><ApplicationId>e1e71f6b-2149-45f3-a298-a20682ab5017</ApplicationId><TrackingId>21BF9AD6-CFD3-46B3-B041-EE90BD34FDBC</TrackingId><DeviceProfile ClientGuid="0fc571be-4624-4ce0-b04e-911bdeb1a222" Platform="Windows7" DeviceType="PC" OSVersion="7600.16695.amd64fre.win7_gdr.101026-1503" LFVersion="9.0.8080.16413" ExtendedDeviceInfo="" /><Authorization /></RequestHeader><BeaconFingerprint><Detections><Wifi7 BssId="'.$bssid.'" rssi="-1" /></Detections></BeaconFingerprint></GetLocationUsingFingerprint>';
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, 'https://inference.location.live.net/inferenceservice/v21/Pox/GetLocationUsingFingerprint');
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $xmlRequest);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_VERBOSE, 0);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		$data = gzdecode(curl_exec($ch));
+		curl_close($ch);
+
+		$tries--;
+		sleep(2);
+	}
+
+	$result = '';
+	$xml = simplexml_load_string($data);
+	if ($xml->GetLocationUsingFingerprintResult->ResponseStatus == 'Success' &&
+		$xml->GetLocationUsingFingerprintResult->LocationResult->ResolverStatus->attributes()->Status == 'Success' &&
+		$xml->GetLocationUsingFingerprintResult->LocationResult->ResolverStatus->attributes()->Source == 'Internal' &&
+		$xml->GetLocationUsingFingerprintResult->LocationResult->RadialUncertainty < 500
+	)
+	{
+		$geo = $xml->GetLocationUsingFingerprintResult->LocationResult->ResolvedPosition->attributes();
+		$result = $geo->Latitude.';'.$geo->Longitude.';microsoft';
 	}
 	return $result;
 }
