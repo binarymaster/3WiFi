@@ -106,6 +106,10 @@ function GetFromMicrosoft($bssid)
 	{
 		$geo = $xml->GetLocationUsingFingerprintResult->LocationResult->ResolvedPosition->attributes();
 		$result = $geo->Latitude.';'.$geo->Longitude.';microsoft';
+		if ($geo->Latitude == 12.3456 && $geo->Longitude == -7.891)
+		{
+			$result = '';
+		}
 	}
 	return $result;
 }
