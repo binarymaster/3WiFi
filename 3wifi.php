@@ -495,7 +495,7 @@ switch ($action)
 	}
 
 	$lat_km = 111.143 - 0.562 * cos(2 * deg2rad($lat));
-	$lon_km = 111.321 * cos(deg2rad($lon)) - 0.094 * cos(3 * deg2rad($lon));
+	$lon_km = abs(111.321 * cos(deg2rad($lon)) - 0.094 * cos(3 * deg2rad($lon)));
 	$lat1 = min(max($lat - $radius / $lat_km, -90), 90);
 	$lat2 = min(max($lat + $radius / $lat_km, -90), 90);
 	$lon1 = min(max($lon - $radius / $lon_km, -180), 180);
