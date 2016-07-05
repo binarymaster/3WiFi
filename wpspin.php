@@ -175,7 +175,7 @@ class WpsGenDlink extends WpspinGenerator
 	public function getBasePin($bssid)
 	{
 		$pin = hexdec(substr($bssid, 6, 6));
-		$pin ^= hexdec(str_repeat($bssid[11], 6));
+		$pin ^= hexdec(str_repeat($bssid[11], 5)) * 16 + 5;
 		$pin ^= 0xFF00;
 		$pin %= 10000000;
 		if ($pin < 1000000)
@@ -206,7 +206,7 @@ class WpsGenDlink1 extends WpspinGenerator
 	public function getBasePin($bssid)
 	{
 		$pin = hexdec(substr($bssid, 6, 6)) + 1;
-		$pin ^= hexdec(str_repeat(dechex($pin & 0xF), 6));
+		$pin ^= hexdec(str_repeat(dechex($pin & 0xF), 5)) * 16 + 5;
 		$pin ^= 0xFF00;
 		$pin %= 10000000;
 		if ($pin < 1000000)
