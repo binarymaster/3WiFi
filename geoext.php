@@ -1,15 +1,17 @@
 <?php
 require_once 'utils.php';
 
-function gzdecode($data)
-{
-	$g = tempnam('', 'gztmp');
-	@file_put_contents($g, $data);
-	ob_start();
-	readgzfile($g);
-	$d = ob_get_clean();
-	unlink($g);
-	return $d;
+if (version_compare(phpversion(), '5.4', '<')) {
+	function gzdecode($data)
+	{
+		$g = tempnam('', 'gztmp');
+		@file_put_contents($g, $data);
+		ob_start();
+		readgzfile($g);
+		$d = ob_get_clean();
+		unlink($g);
+		return $d;
+	}
 }
 function GeoLocateAP($bssid)
 {
