@@ -31,6 +31,7 @@ function GetFromYandex($bssid)
 	}
 
 	$result = '';
+	if (!$data) return $result;
 	$latitude = getStringBetween($data, ' latitude="', '"');
 	$longitude = getStringBetween($data, ' longitude="', '"');
 	if ($latitude != '' && $longitude != '')
@@ -50,6 +51,7 @@ function GetFromAlterGeo($bssid)
 	}
 
 	$result = '';
+	if (!$data) return $result;
 	$json = json_decode($data);
 	if ($json->status == 'OK')
 	{
@@ -97,6 +99,7 @@ function GetFromMicrosoft($bssid)
 	}
 
 	$result = '';
+	if (!$data) return $result;
 	$xml = simplexml_load_string($data);
 	if ($xml->GetLocationUsingFingerprintResult->ResponseStatus == 'Success' &&
 		$xml->GetLocationUsingFingerprintResult->LocationResult->ResolverStatus->attributes()->Status == 'Success' &&
@@ -125,6 +128,7 @@ function GetFromMylnikov($bssid)
 	}
 
 	$result = '';
+	if (!$data) return $result;
 	$json = json_decode($data);
 	if ($json->result == 200)
 	{
