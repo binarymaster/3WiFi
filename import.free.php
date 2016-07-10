@@ -7,6 +7,7 @@
 
 set_time_limit(0);
 //ignore_user_abort(true);
+include 'config.php';
 require 'utils.php';
 require 'db.php';
 

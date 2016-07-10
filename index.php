@@ -1,4 +1,6 @@
 <?php
+include 'config.php';
+
 function validPage($page)
 {
 	$result = '';
@@ -44,9 +46,10 @@ $incscript = file_get_contents('counter.txt');
 $page = validPage(isset($_GET['page']) ? $_GET['page'] : 'home');
 if ($page == '') $page = '404';
 
-$lat = 55.76;
-$lon = 37.64;
-$rad = 2;
+$lat = DEFAULT_LAT;
+$lon = DEFAULT_LON;
+$rad = DEFAULT_RAD;
+
 if (isset($_GET['lat']))
 {
 	$_GET['lat'] = str_replace(',', '.', $_GET['lat']);

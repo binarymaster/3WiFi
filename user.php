@@ -1,4 +1,5 @@
 <?php
+include 'config.php';
 require_once 'db.php';
 require_once 'utils.php';
 require_once 'user.class.php';
@@ -7,27 +8,6 @@ global $db;
 
 $UserManager = new User();
 $UserManager->load();
-
-$topPort = 30;
-$topauth = 100;
-$topname = 30;
-$topbssid = 30;
-$topessid = 30;
-$topSecurity = 30;
-$topWiFiKey = 30;
-$topWPSPIN = 30;
-$topDNS = 30;
-$topSid = 10;
-
-define('LOGIN_MIN', 5);
-define('LOGIN_MAX', 30);
-define('NICK_MIN', 5);
-define('NICK_MAX', 30);
-define('PASS_MIN', 6);
-define('PASS_MAX', 100);
-define('FAV_MAX', 200);
-define('LOC_MAX', 100);
-define('INVITE_LEN', 12);
 
 function getFloatCoord($coord)
 {
@@ -887,14 +867,14 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	$json['stat']['top'] = $topname;
+	$json['stat']['top'] = TOP_NAME;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT name) FROM (SELECT name FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) dev WHERE name != ''"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT name, COUNT(name) FROM (SELECT name FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) dev WHERE name != '' GROUP BY name ORDER BY COUNT(name) DESC LIMIT $topname"))
+	if ($res = QuerySql("SELECT name, COUNT(name) FROM (SELECT name FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) dev WHERE name != '' GROUP BY name ORDER BY COUNT(name) DESC LIMIT ".TOP_NAME))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -923,14 +903,14 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	$json['stat']['top'] = $topPort;
+	$json['stat']['top'] = TOP_PORT;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT Port) FROM (SELECT Port FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) prt WHERE NOT(Port IS NULL)"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT Port, COUNT(Port) FROM (SELECT Port FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) prt WHERE NOT(Port IS NULL) GROUP BY Port ORDER BY COUNT(Port) DESC LIMIT $topPort"))
+	if ($res = QuerySql("SELECT Port, COUNT(Port) FROM (SELECT Port FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) prt WHERE NOT(Port IS NULL) GROUP BY Port ORDER BY COUNT(Port) DESC LIMIT ".TOP_PORT))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -959,14 +939,14 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	$json['stat']['top'] = $topauth;
+	$json['stat']['top'] = TOP_AUTH;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT Authorization) FROM (SELECT Authorization FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) auth WHERE Authorization != ''"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT Authorization, COUNT(Authorization) FROM (SELECT Authorization FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) auth WHERE Authorization != '' GROUP BY Authorization ORDER BY COUNT(Authorization) DESC LIMIT $topauth"))
+	if ($res = QuerySql("SELECT Authorization, COUNT(Authorization) FROM (SELECT Authorization FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) auth WHERE Authorization != '' GROUP BY Authorization ORDER BY COUNT(Authorization) DESC LIMIT ".TOP_AUTH))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -995,14 +975,14 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	$json['stat']['top'] = $topbssid;
+	$json['stat']['top'] = TOP_BSSID;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT BSSID) FROM (SELECT NoBSSID,BSSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) bss WHERE NoBSSID = 0"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT BSSID, COUNT(BSSID) FROM (SELECT NoBSSID,BSSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) bss WHERE NoBSSID = 0 GROUP BY BSSID ORDER BY COUNT(BSSID) DESC LIMIT $topbssid"))
+	if ($res = QuerySql("SELECT BSSID, COUNT(BSSID) FROM (SELECT NoBSSID,BSSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) bss WHERE NoBSSID = 0 GROUP BY BSSID ORDER BY COUNT(BSSID) DESC LIMIT ".TOP_BSSID))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1031,14 +1011,14 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	$json['stat']['top'] = $topessid;
-	if ($res = QuerySql("SELECT COUNT(DISTINCT ESSID) FROM (SELECT ESSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) ess"))
+	$json['stat']['top'] = TOP_ESSID;
+	if ($res = QuerySql("SELECT COUNT(DISTINCT ESSID) FROM (SELECT ESSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid)"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT ESSID, COUNT(ESSID) FROM (SELECT ESSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) ess GROUP BY ESSID ORDER BY COUNT(ESSID) DESC LIMIT $topessid"))
+	if ($res = QuerySql("SELECT ESSID, COUNT(ESSID) FROM (SELECT ESSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) ess GROUP BY ESSID ORDER BY COUNT(ESSID) DESC LIMIT ".TOP_ESSID))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1067,14 +1047,14 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	$json['stat']['top'] = $topSecurity;
+	$json['stat']['top'] = TOP_SECURITY;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT Security) FROM (SELECT Security FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) sec"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT Security, COUNT(Security) FROM (SELECT Security FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) sec GROUP BY Security ORDER BY COUNT(Security) DESC LIMIT $topSecurity"))
+	if ($res = QuerySql("SELECT Security, COUNT(Security) FROM (SELECT Security FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) sec GROUP BY Security ORDER BY COUNT(Security) DESC LIMIT ".TOP_SECURITY))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1103,14 +1083,14 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	$json['stat']['top'] = $topWiFiKey;
+	$json['stat']['top'] = TOP_WIFI_KEY;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT WiFiKey) FROM (SELECT WiFiKey FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) wifi"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT WiFiKey, COUNT(WiFiKey) FROM (SELECT WiFiKey FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) wifi GROUP BY WiFiKey ORDER BY COUNT(WiFiKey) DESC LIMIT $topWiFiKey"))
+	if ($res = QuerySql("SELECT WiFiKey, COUNT(WiFiKey) FROM (SELECT WiFiKey FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) wifi GROUP BY WiFiKey ORDER BY COUNT(WiFiKey) DESC LIMIT ".TOP_WIFI_KEY))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1139,14 +1119,14 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	$json['stat']['top'] = $topWPSPIN;
+	$json['stat']['top'] = TOP_WPS_PIN;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT WPSPIN) FROM (SELECT WPSPIN FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) pin WHERE WPSPIN != 1"))
 	{
 		$row = $res->fetch_row();
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT WPSPIN, COUNT(WPSPIN) FROM (SELECT WPSPIN FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) pin WHERE WPSPIN != 1 GROUP BY WPSPIN ORDER BY COUNT(WPSPIN) DESC LIMIT $topWPSPIN"))
+	if ($res = QuerySql("SELECT WPSPIN, COUNT(WPSPIN) FROM (SELECT WPSPIN FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) pin WHERE WPSPIN != 1 GROUP BY WPSPIN ORDER BY COUNT(WPSPIN) DESC LIMIT ".TOP_WPS_PIN))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1175,7 +1155,7 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	$json['stat']['top'] = $topDNS;
+	$json['stat']['top'] = TOP_DNS;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT DNS) FROM (
 	SELECT DNS1 AS DNS FROM (SELECT DNS1 FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) tdns1 WHERE DNS1 != 0 
 	UNION ALL 
@@ -1193,7 +1173,7 @@ switch($action)
 	SELECT DNS2 AS DNS FROM (SELECT DNS2 FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) tdns2 WHERE DNS2 != 0 
 	UNION ALL 
 	SELECT DNS3 AS DNS FROM (SELECT DNS3 FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) tdns3 WHERE DNS3 != 0) DNSTable 
-	GROUP BY DNS ORDER BY COUNT(DNS) DESC LIMIT $topDNS"))
+	GROUP BY DNS ORDER BY COUNT(DNS) DESC LIMIT ".TOP_DNS))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())

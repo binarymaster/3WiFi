@@ -5,21 +5,12 @@ if (!isset($_GET['a']))
 	Header('Location: /');
 	exit;
 }
+include 'config.php';
 require_once 'user.class.php';
 require_once 'utils.php';
 require_once 'db.php';
 require_once 'quadkey.php';
 
-$topPort = 30;
-$topauth = 100;
-$topname = 30;
-$topbssid = 30;
-$topessid = 30;
-$topSecurity = 30;
-$topWiFiKey = 30;
-$topWPSPIN = 30;
-$topDNS = 30;
-$topSid = 10;
 
 $action = $_GET['a'];
 
@@ -1127,7 +1118,7 @@ switch ($action)
 	case 'stdev':
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = $topname;
+	$json['stat']['top'] = TOP_NAME;
 	if (!db_connect())
 	{
 		$json['result'] = false;
@@ -1140,7 +1131,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `name`, COUNT(name) FROM BASE_TABLE WHERE `name` != '' GROUP BY `name` ORDER BY COUNT(name) DESC LIMIT $topname"))
+	if ($res = QuerySql("SELECT `name`, COUNT(name) FROM BASE_TABLE WHERE `name` != '' GROUP BY `name` ORDER BY COUNT(name) DESC LIMIT ".TOP_NAME))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1159,7 +1150,7 @@ switch ($action)
 	case 'stport':
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = $topPort;
+	$json['stat']['top'] = TOP_PORT;
 	if (!db_connect())
 	{
 		$json['result'] = false;
@@ -1172,7 +1163,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `Port`, COUNT(Port) FROM BASE_TABLE WHERE NOT(`Port` IS NULL) GROUP BY `Port` ORDER BY COUNT(Port) DESC LIMIT $topPort"))
+	if ($res = QuerySql("SELECT `Port`, COUNT(Port) FROM BASE_TABLE WHERE NOT(`Port` IS NULL) GROUP BY `Port` ORDER BY COUNT(Port) DESC LIMIT ".TOP_PORT))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1191,7 +1182,7 @@ switch ($action)
 	case 'stauth':
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = $topauth;
+	$json['stat']['top'] = TOP_AUTH;
 	if (!db_connect())
 	{
 		$json['result'] = false;
@@ -1204,7 +1195,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `Authorization`, COUNT(Authorization) FROM BASE_TABLE WHERE `Authorization`!='' GROUP BY `Authorization` ORDER BY COUNT(Authorization) DESC LIMIT $topauth"))
+	if ($res = QuerySql("SELECT `Authorization`, COUNT(Authorization) FROM BASE_TABLE WHERE `Authorization`!='' GROUP BY `Authorization` ORDER BY COUNT(Authorization) DESC LIMIT ".TOP_AUTH))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1223,7 +1214,7 @@ switch ($action)
 	case 'stbss':
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = $topbssid;
+	$json['stat']['top'] = TOP_BSSID;
 	if (!db_connect())
 	{
 		$json['result'] = false;
@@ -1236,7 +1227,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql("SELECT `BSSID`, COUNT(BSSID) FROM BASE_TABLE WHERE `NoBSSID`=0 GROUP BY `BSSID` ORDER BY COUNT(BSSID) DESC LIMIT $topbssid"))
+	if ($res = QuerySql("SELECT `BSSID`, COUNT(BSSID) FROM BASE_TABLE WHERE `NoBSSID`=0 GROUP BY `BSSID` ORDER BY COUNT(BSSID) DESC LIMIT ".TOP_BSSID))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1255,7 +1246,7 @@ switch ($action)
 	case 'stess':
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = $topessid;
+	$json['stat']['top'] = TOP_ESSID;
 	if (!db_connect())
 	{
 		$json['result'] = false;
@@ -1268,7 +1259,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql('SELECT `ESSID`, COUNT(ESSID) FROM BASE_TABLE GROUP BY `ESSID` ORDER BY COUNT(ESSID) DESC LIMIT '.$topessid))
+	if ($res = QuerySql('SELECT `ESSID`, COUNT(ESSID) FROM BASE_TABLE GROUP BY `ESSID` ORDER BY COUNT(ESSID) DESC LIMIT '.TOP_ESSID))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1287,7 +1278,7 @@ switch ($action)
 	case 'stsec':
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = $topSecurity;
+	$json['stat']['top'] = TOP_SECURITY;
 	if (!db_connect())
 	{
 		$json['result'] = false;
@@ -1300,7 +1291,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql('SELECT `Security`, COUNT(Security) FROM BASE_TABLE GROUP BY `Security` ORDER BY COUNT(Security) DESC LIMIT '.$topSecurity))
+	if ($res = QuerySql('SELECT `Security`, COUNT(Security) FROM BASE_TABLE GROUP BY `Security` ORDER BY COUNT(Security) DESC LIMIT '.TOP_SECURITY))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1319,7 +1310,7 @@ switch ($action)
 	case 'stkey':
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = $topWiFiKey;
+	$json['stat']['top'] = TOP_WIFI_KEY;
 	if (!db_connect())
 	{
 		$json['result'] = false;
@@ -1332,7 +1323,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql('SELECT `WiFiKey`, COUNT(WiFiKey) FROM BASE_TABLE GROUP BY `WiFiKey` ORDER BY COUNT(WiFiKey) DESC LIMIT '.$topWiFiKey))
+	if ($res = QuerySql('SELECT `WiFiKey`, COUNT(WiFiKey) FROM BASE_TABLE GROUP BY `WiFiKey` ORDER BY COUNT(WiFiKey) DESC LIMIT '.TOP_WIFI_KEY))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1351,7 +1342,7 @@ switch ($action)
 	case 'stwps':
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = $topWPSPIN;
+	$json['stat']['top'] = TOP_WPS_PIN;
 	if (!db_connect())
 	{
 		$json['result'] = false;
@@ -1364,7 +1355,7 @@ switch ($action)
 		$json['stat']['total'] = (int)$row[0];
 		$res->close();
 	}
-	if ($res = QuerySql('SELECT `WPSPIN`, COUNT(WPSPIN) FROM BASE_TABLE WHERE `WPSPIN` != 1 GROUP BY `WPSPIN` ORDER BY COUNT(WPSPIN) DESC LIMIT '.$topWPSPIN))
+	if ($res = QuerySql('SELECT `WPSPIN`, COUNT(WPSPIN) FROM BASE_TABLE WHERE `WPSPIN` != 1 GROUP BY `WPSPIN` ORDER BY COUNT(WPSPIN) DESC LIMIT '.TOP_WPS_PIN))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1383,7 +1374,7 @@ switch ($action)
 	case 'stdns':
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = $topDNS;
+	$json['stat']['top'] = TOP_DNS;
 	if (!db_connect())
 	{
 		$json['result'] = false;
@@ -1407,7 +1398,7 @@ switch ($action)
 	SELECT DNS2 AS DNS FROM BASE_TABLE WHERE DNS2 != 0 
 	UNION ALL 
 	SELECT DNS3 AS DNS FROM BASE_TABLE WHERE DNS3 != 0) DNSTable 
-	GROUP BY DNS ORDER BY COUNT(DNS) DESC LIMIT $topDNS"))
+	GROUP BY DNS ORDER BY COUNT(DNS) DESC LIMIT ".TOP_DNS))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())
@@ -1426,7 +1417,7 @@ switch ($action)
 	case 'stsid':
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = $topSid;
+	$json['stat']['top'] = TOP_SSID;
 
 	if (!db_connect())
 	{
@@ -1442,7 +1433,7 @@ switch ($action)
 		$res->close();
 	}
 
-	if ($res = $db->query('SELECT nick, COUNT(id) FROM uploads LEFT JOIN users USING(uid) GROUP BY uploads.uid ORDER BY COUNT(id) DESC LIMIT '.$topSid))
+	if ($res = $db->query('SELECT nick, COUNT(id) FROM uploads LEFT JOIN users USING(uid) GROUP BY uploads.uid ORDER BY COUNT(id) DESC LIMIT '.TOP_SSID))
 	{
 		$json['stat']['data'] = array();
 		while ($row = $res->fetch_row())

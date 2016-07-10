@@ -1,19 +1,6 @@
 <?php
 require_once 'utils.php';
 
-// Settings block
-define('TRY_USE_MEMORY_TABLES', false);
-define('DEBUG_SQLQUERY', false);
-define('MEMORY_TABLES_RELEVANCE_EXPIRES', 60*60*6); // 6 hours
-
-// Tables
-define('BASE_TABLE', 'base');
-define('GEO_TABLE', 'geo');
-define('BASE_TABLE_CONST', BASE_TABLE);
-define('GEO_TABLE_CONST', GEO_TABLE);
-define('BASE_MEM_TABLE', 'mem_base');
-define('GEO_MEM_TABLE', 'mem_geo');
-define('STATS_TABLE', 'stats');
 
 // Stats table ids
 define('STATS_DATABASE_STATUS', 1);
@@ -41,11 +28,6 @@ define('SQL_BASE_UPDATE', 7);
 
 function db_connect()
 {
-	/* Данные входа в БД */
-	$db_serv = 'localhost';
-	$db_name = '3wifi';
-	$db_user = 'root';
-	$db_pass = '';
 	global $db;
 	global $dbUseMemory;
 
@@ -54,7 +36,7 @@ function db_connect()
 	while (!$result && $tries--)
 	{
 		/* Подключаемся к БД */
-		$db = mysqli_connect($db_serv, $db_user, $db_pass, $db_name);
+		$db = mysqli_connect(DB_SERV, DB_USER, DB_PASS, DB_NAME);
 
 		/* Проверка подключения */
 		if($db->connect_errno)
