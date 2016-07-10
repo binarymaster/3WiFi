@@ -1,7 +1,4 @@
 <?php
-define('MAX_ZOOM_LEVEL', 23);
-define('MAX_YANDEX_ZOOM', 18);
-
 /**
  * Clips a number to the specified minimum and maximum values.
  * 
