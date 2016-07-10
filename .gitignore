@@ -1,0 +1,18 @@
+# Конфиг
+/config.php
+
+# Загрузки, кроме .htaccess
+/uploads/*
+!/uploads/.htaccess
+
+# Счетчик
+/counter.txt
+
+# Лог отладки
+/Debug.log
+
+# Среда разработки
+/.idea/*
+
+# SypexDumper
+/sxd/*
