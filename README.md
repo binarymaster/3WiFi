@@ -7,9 +7,11 @@ This project was created to collect data from Router Scan log reports, search fo
 ## Installation steps:
 1. Copy all required files to your `/www` directory
 2. Create database (execute `3wifi.sql` to create tables)
-3. (optional) Turn on memory tables (in the `db.php` define `TRY_USE_MEMORY_TABLES` as `true`)
-4. (optional) Use `import.free.php` once to import old format database
-5. Start all background daemons:
+3. Copy config.php-distr to config.php
+4. Edit config.php (DB_SERV, DB_NAME, DB_USER, DB_PASS etc)
+5. (optional) Turn on memory tables (in the `config.php` define `TRY_USE_MEMORY_TABLES` as `true`)
+6. (optional) Use `import.free.php` once to import old format database
+7. Start all background daemons:
 ```sh
 # Upload routine loads data into database
 php -f 3wifid.php uploads
