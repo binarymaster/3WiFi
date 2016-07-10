@@ -24,7 +24,6 @@ define('BASE_MEM_TABLE', 'mem_base');
 define('GEO_MEM_TABLE', 'mem_geo');
 define('STATS_TABLE', 'stats');
 
-
 // Stats
 define('TOP_PORT', 30);
 define('TOP_AUTH', 100);
@@ -45,7 +44,6 @@ define('DEFAULT_LAT', 55.76);
 define('DEFAULT_LON', 37.64);
 define('DEFAULT_RAD', 2);
 
-
 // Users
 define('LOGIN_MIN', 5);
 define('LOGIN_MAX', 30);
@@ -56,3 +54,5 @@ define('PASS_MAX', 100);
 define('FAV_MAX', 200);
 define('LOC_MAX', 100);
 define('INVITE_LEN', 12);
+
+?>
