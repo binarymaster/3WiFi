@@ -53,6 +53,7 @@ function GetFromAlterGeo($bssid)
 	$result = '';
 	if (!$data) return $result;
 	$json = json_decode($data);
+	if (!$json) return $result;
 	if ($json->status == 'OK')
 	{
 		if ($json->accuracy < 50000)
@@ -101,6 +102,7 @@ function GetFromMicrosoft($bssid)
 	$result = '';
 	if (!$data) return $result;
 	$xml = simplexml_load_string($data);
+	if (!$xml) return $result;
 	if ($xml->GetLocationUsingFingerprintResult->ResponseStatus == 'Success' &&
 		$xml->GetLocationUsingFingerprintResult->LocationResult->ResolverStatus->attributes()->Status == 'Success' &&
 		$xml->GetLocationUsingFingerprintResult->LocationResult->ResolverStatus->attributes()->Source == 'Internal' &&
@@ -130,6 +132,7 @@ function GetFromMylnikov($bssid)
 	$result = '';
 	if (!$data) return $result;
 	$json = json_decode($data);
+	if (!$json) return $result;
 	if ($json->result == 200)
 	{
 		$latitude = $json->data->lat;
