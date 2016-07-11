@@ -1,7 +1,7 @@
 <?php
 require_once 'utils.php';
 
-function gzdecode($data)
+function my_gzdecode($data)
 {
 	$g = tempnam('', 'gztmp');
 	@file_put_contents($g, $data);
@@ -92,7 +92,7 @@ function GetFromMicrosoft($bssid)
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_VERBOSE, 0);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-		$data = gzdecode(curl_exec($ch));
+		$data = ( function_exists('gzdecode') ? gzdecode(curl_exec($ch)) : my_gzdecode(curl_exec($ch)) );
 		curl_close($ch);
 
 		$tries--;
