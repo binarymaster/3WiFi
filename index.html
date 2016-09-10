@@ -114,7 +114,7 @@ function doLogin()
 		if (json.result)
 		{
 			$('#loginstat').html('<img src="img/ok.png" style="position: relative; top: 3px"> Вход выполнен успешно!');
-			setTimeout('window.location.href = \'user\';', 1000);
+			setTimeout($('#stayhere').prop('checked') ? 'window.location.reload();' : 'window.location.href = \'user\';', 1000);
 		}
 		else
 		{
@@ -303,6 +303,7 @@ function initmenu()
 				<form id=frm_login method=post><table>
 				<tr><td>Логин:</td><td><input type=text name=login></td></tr>
 				<tr><td>Пароль:</td><td><input type=password name=password></td></tr>
+				<tr><td colspan=2 align=center style="font-size: 13px"><input type=checkbox id=stayhere style="vertical-align: middle; margin: 0 5 3 0"><label for=stayhere>Остаться на текущей странице</label></td></tr>
 				<tr><td colspan=2 align=center id=loginstat style="font-size: 13px; padding-top: 0px"></td></tr>
 				<tr><td><input type=button value="Войти" onclick="doLogin()"></td><td align=right><a href="javascript://" onclick="showFrm('#win_reg')">Регистрация</a></td></tr>
 				</table></form>
