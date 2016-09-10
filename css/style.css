@@ -247,6 +247,17 @@ TABLE.st2 TD#stat_es {
 	font-family: sans-serif;
 	font-weight: bold;
 }
+TABLE.st2 TD#stat_em {
+	cursor: pointer;
+	padding-left: 24px;
+	border-right: solid 1px #939393;
+	border-top: solid 1px #939393;
+	min-width: 128px;
+	width: 128px;
+	height: 36px;
+	font-family: sans-serif;
+	font-weight: bold;
+}
 TABLE.st2 TD.stat_sel {
 	background-color: black;
     color: white;	
@@ -425,4 +436,12 @@ TABLE.st2 TD#stat_cn {
 	color:#00709f;
 	font-weight:bold;
 	text-decoration:none;
+}
+.fQuestion {
+	background: lightgrey;
+	padding: 12 8 12 8;
+	width: 100%;
+	border-left: 2px dotted #808080;
+}
+.fAnswer {
 }
