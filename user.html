@@ -107,7 +107,12 @@ function myDownload()
 		a.href = 'user.php?a=download';
 		a.download = 'myuploads.txt';
 		a.target = '_blank';
-		a.click();
+		var clickEvent = new MouseEvent("click", {
+			"view": window,
+			"bubbles": true,
+			"cancelable": false
+		});
+		a.dispatchEvent(clickEvent);
 		a.remove();
 	}).fail(function(jqXHR, textStatus, errorThrown) {
 		alert('Ошибка загрузки данных');
