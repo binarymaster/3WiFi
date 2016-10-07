@@ -1,7 +1,6 @@
 <?php
 require_once 'utils.php';
 
-
 // Stats table ids
 define('STATS_DATABASE_STATUS', 1);
 define('STATS_LAST_MEMORY_BASE_TABLE_SYNS', 10);
@@ -207,6 +206,7 @@ function QuerySql($sql, &$affected_rows = NULL)
 
 	set_time_limit(0);
 	$res = $db->query($sql);
+	if(DEBUG_SQLQUERY && !$res && $db->errno) Debug($db->errno.': '.$db->error);
 	if($affected_rows != NULL)
 	{
 		$affected_rows = $db->affected_rows;
@@ -360,6 +360,7 @@ function db_add_ap($row, $cmtid, $uid)
 	global $checkexist;
 	global $db;
 	global $aps;
+
 	// Отбираем только валидные точки доступа
 	$addr = $row[0];
 	$port = $row[1];
