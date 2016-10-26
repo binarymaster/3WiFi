@@ -161,7 +161,7 @@ switch ($action)
 		$str = str_replace($wc[1], '%', $str);
 		return $str;
 	}
-	function GenerateFindQuery($cmtid, $BSSID, $ESSID, $Name, $Key, $Page, $Limit)
+	function GenerateFindQuery($cmtid, $BSSID, $ESSID, $Auth, $Name, $Key, $WPS, $Page, $Limit)
 	{
 		if(!isset($_SESSION['Search'])) $_SESSION['Search'] = array();
 		if(!isset($_SESSION['Search']['ArgsHash'])) $_SESSION['Search']['ArgsHash'] = '';
@@ -224,6 +224,11 @@ switch ($action)
 			if (HasWildcards($ESSID, $Wildcards)) $sql .= ' AND `ESSID` LIKE \''.UniStrWildcard($ESSID, $Wildcards).'\'';
 			else $sql .= ' AND `ESSID` = \''.$ESSID.'\'';
 		}
+		if ($Auth != '')
+		{
+			if (HasWildcards($Auth, $Wildcards)) $sql .= ' AND `Authorization` LIKE \''.UniStrWildcard($Auth, $Wildcards).'\'';
+			else $sql .= ' AND `Authorization` = \''.$Auth.'\'';
+		}
 		if ($Name != '')
 		{
 			if (HasWildcards($Name, $Wildcards)) $sql .= ' AND `name` LIKE \''.UniStrWildcard($Name, $Wildcards).'\'';
@@ -234,8 +239,13 @@ switch ($action)
 			if (HasWildcards($Key, $Wildcards)) $sql .= ' AND `WiFiKey` LIKE \''.UniStrWildcard($Key, $Wildcards).'\'';
 			else $sql .= ' AND `WiFiKey` = \''.$Key.'\'';
 		}
+		if ($WPS != '')
+		{
+			if (HasWildcards($WPS, $Wildcards)) $sql .= ' AND `WPSPIN` LIKE \''.UniStrWildcard($WPS, $Wildcards).'\'';
+			else $sql .= ' AND `WPSPIN` = \''.$WPS.'\'';
+		}
 
-		if($_SESSION['Search']['ArgsHash'] == md5($cmtid.$BSSID.$ESSID.$Name.$Key))
+		if($_SESSION['Search']['ArgsHash'] == md5($cmtid.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS))
 		{
 			$sql = str_replace('SQL_CALC_FOUND_ROWS', '', $sql);
 		}
@@ -277,7 +287,7 @@ switch ($action)
 
 		$sql .= ' AND `id` '.$Sign.' '.$NextPageStartId.' LIMIT '.($DiffPage*100).', '.$Limit;
 
-		$_SESSION['Search']['ArgsHash'] = md5($BSSID.$ESSID.$Name);
+		$_SESSION['Search']['ArgsHash'] = md5($cmtid.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS);
 		$_SESSION['Search']['LastPage'] = $Page;
 
 		return $sql;
@@ -346,7 +356,7 @@ switch ($action)
 	if (isset($_POST['page'])) $cur_page = (int)$_POST['page'];
 	if ($cur_page < 1) $cur_page = 1;
 
-	$sql = GenerateFindQuery($cmtid, $bssid, $essid, $name, $key, $cur_page, $per_page);
+	$sql = GenerateFindQuery($cmtid, $bssid, $essid, $auth, $name, $key, $wps, $cur_page, $per_page);
 	if ($res = QuerySql($sql))
 	{
 		if($_SESSION['Search']['LastRowsNum'] == -1)
