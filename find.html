@@ -257,6 +257,8 @@ function initpage()
 <tbody>
 <tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td style="font-weight: bold">(&nbsp;* - заменяющий символ&nbsp;)</td></tr>
 <tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('□')">□</button> - любой символ, <button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - любой набор символов&nbsp;)</td></tr>
+<tr><td>Ключ сети:</td><td><input name="key" type="text" value="◯" /></td></tr>
+<tr><td>Пин код WPS:</td><td><input name="wps" type="text" value="◯" /></td></tr>
 <input name="page" type="hidden" value="1" />
 <tr><td><input type=submit value="Найти" /></td><td id=found1></td></tr>
 </tbody>
@@ -269,7 +271,7 @@ function initpage()
 <tr><td>Комментарий:</td><td><input name="comment" type="text" value="*" /></td><td>Устройство:</td><td><input name="name" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;* - заменяющий символ для комментария и BSSID&nbsp;)</td></tr>
 <tr><td>IP-адрес:</td><td><input name="ipaddr" type="text" value="" /></td><td>Авторизация:</td><td><input name="auth" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('□')">□</button> - любой символ&nbsp;)</td></tr>
 <tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td>ESSID / Имя:</td><td><input name="essid" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - любой набор символов&nbsp;)</td></tr>
-<tr><td>Ключ сети:</td><td><input name="key" type="text" value="◯" /></td><td>Пин код WPS:</td><td><input name="wps" type="text" value="" /></td></tr>
+<tr><td>Ключ сети:</td><td><input name="key" type="text" value="◯" /></td><td>Пин код WPS:</td><td><input name="wps" type="text" value="◯" /></td></tr>
 <input name="page" type="hidden" value="1" />
 <tr><td><input type=submit value="Найти" /></td><td id=found2></td></tr>
 </tbody>

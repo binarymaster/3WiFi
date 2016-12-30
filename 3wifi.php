@@ -310,9 +310,9 @@ switch ($action)
 		if (isset($_POST['ipaddr'])) $ipaddr = $_POST['ipaddr'];
 		if (isset($_POST['auth'])) $auth = $_POST['auth'];
 		if (isset($_POST['name'])) $name = $_POST['name'];
-		if (isset($_POST['key'])) $key = $_POST['key'];
-		if (isset($_POST['wps'])) $wps = $_POST['wps'];
 	}
+	if (isset($_POST['key'])) $key = $_POST['key'];
+	if (isset($_POST['wps'])) $wps = $_POST['wps'];
 	if (!db_connect())
 	{
 		$json['result'] = false;
