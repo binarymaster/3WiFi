@@ -75,11 +75,13 @@ function listRanges()
 }
 function initpage()
 {
+	$('.content').css('padding-top', '0px');
 }
 </script>
 </head>
 
 <body>
+<p>Данный инструмент позволяет находить диапазоны IP-адресов по физическому местоположению. Сопоставление производится на основе собранных данных от провайдеров геолокации.</p>
 <form id=frangesform enctype="multipart/form-data" method="POST" onsubmit="find(); return false">
 <table>
 	<tbody>

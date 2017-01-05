@@ -63,11 +63,13 @@ function detect()
 }
 function initpage()
 {
+	$('.content').css('padding-top', '0px');
 }
 </script>
 </head>
 
 <body>
+<p>Данный инструмент позволяет приблизительно определить изготовителя и модель устройства по его BSSID / MAC-адресу. Сопоставление производится на основе данных, собранных Router Scan.</p>
 <form id=fdeviceform enctype="multipart/form-data" method="POST" onsubmit="detect(); return false">
 <table>
 	<tbody>

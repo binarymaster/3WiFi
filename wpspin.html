@@ -434,8 +434,9 @@ function initpage()
 		<table>
 			<tbody>
 				<tr>
-					<td>BSSID / MAC:</td>
-					<td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" /></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td>
+					<td><nobr>BSSID / MAC:</nobr></td>
+					<td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" /></td>
+					<td><nobr> (в формате <tt>00:11:22:33:44:55</tt>)</nobr></td>
 				</tr>
 			</tbody>
 			<tbody>
@@ -443,6 +444,7 @@ function initpage()
 			</tbody>
 		</table>
 		</form>
+		<br>
 		<table class=st1>
 			<tbody id=fhead></tbody>
 			<tbody id=fdata></tbody>
