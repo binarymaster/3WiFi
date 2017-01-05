@@ -168,40 +168,68 @@ function markFav(e,id)
 	if ($('.userTabActive')[0].id == 'tab3b')
 	{
 		$(e).find('img').attr('src', 'img/loadsm.gif');
-		$.get('user.php?a=fav&id='+id, function(json)
+		var onFail = function(jqXHR, textStatus, errorThrown)
+		{
+			$(e).find('img').attr('src', 'img/no.png');
+			alert('Ошибка загрузки данных');
+		};
+		$.get('user.php?a=token', function(json)
 		{
 			if (!json.result)
 			{
-				$(e).find('img').attr('src', 'img/no.png');
 				alert(errorStr(json.error));
 				return;
+			} else {
+				var data = '';
+				data += '&token=' + encodeURIComponent(json.token);
+				data += '&id=' + id;
+				$.get('user.php?a=fav' + data, function(json)
+				{
+					if (!json.result)
+					{
+						$(e).find('img').attr('src', 'img/no.png');
+						alert(errorStr(json.error));
+						return;
+					}
+					if (json.fav)
+					{
+						$(e).find('img').attr('src', 'img/no.png');
+						return;
+					}
+					$(e).parent().parent().remove();
+					$('#favap_cnt').text(parseInt($('#favap_cnt').text()) - 1);
+					if (parseInt($('#favap_cnt').text()) == 0)
+						$('#favorited_aps').html('<tr><td colspan=9>Избранных точек пока нет</td></tr>');
+				}).fail(onFail);
 			}
-			if (json.fav)
-			{
-				$(e).find('img').attr('src', 'img/no.png');
-				return;
-			}
-			$(e).parent().parent().remove();
-			$('#favap_cnt').text(parseInt($('#favap_cnt').text()) - 1);
-			if (parseInt($('#favap_cnt').text()) == 0)
-				$('#favorited_aps').html('<tr><td colspan=9>Избранных точек пока нет</td></tr>');
-		}).fail(function(jqXHR, textStatus, errorThrown) {
-			$(e).find('img').attr('src', 'img/no.png');
-			alert('Ошибка загрузки данных');
-		});
+		}).fail(onFail);
 		return;
 	}
-	$.get('user.php?a=fav&id='+id, function(json)
+	var onFail = function(jqXHR, textStatus, errorThrown)
+	{
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
 			return;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&id=' + id;
+			$.get('user.php?a=fav' + data, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return;
+				}
+				$(e).find('img').attr('src', 'img/icon-fav-'+(json.fav ? 'on' : 'off')+'.png');
+			}).fail(onFail);
 		}
-		$(e).find('img').attr('src', 'img/icon-fav-'+(json.fav ? 'on' : 'off')+'.png');
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('Ошибка загрузки данных');
-	});
+	}).fail(onFail);
 }
 
 function getMyLocations()
@@ -246,66 +274,97 @@ function createLocation()
 	var lon = $('#floclon').val();
 	var cmt = $('#floccmt').val();
 	$('#tab3').find('input,button').prop('disabled', true);
-	$.get('user.php?a=addloc&lat='+lat+'&lon='+lon+'&cmt='+cmt, function(json)
+	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
 		$('#tab3').find('input,button').prop('disabled', false);
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
+	{
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
 			return;
-		}
-		if ($($('#favorited_loc').find('td')[0]).attr('colspan') == 4)
-			$('#favorited_loc').empty();
-		if (json.new)
-		{
-			var tr = $('<tr onclick="modifyLocation(this)">');
-			tr.append($('<td>').text(json.lat));
-			tr.append($('<td>').text(json.lon));
-			tr.append($('<td>').text(json.cmt));
-			var urls = '';
-			urls += '<a href="map?lat='+json.lat+'&lon='+json.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
-			urls += '<a href="ranges?lat='+json.lat+'&lon='+json.lon+'"><img src="img/icon-ip.png"></a>&nbsp;';
-			urls += '<a href="javascript://" onclick="deleteLocation(this,'+json.lat+','+json.lon+')"><img src="img/no.png"></a>';
-			tr.append($('<td>').html(urls));
-			$('#favorited_loc').append(tr);
-			$('#favloc_cnt').text(parseInt($('#favloc_cnt').text()) + 1);
-			return;
-		}
-		var trs = $('#favorited_loc').find('tr');
-		for (var i = 0; i < trs.length; i++)
-		{
-			var tds = $(trs[i]).find('td');
-			if ((tds[0].textContent == json.lat.toString()) && (tds[1].textContent == json.lon.toString()))
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&lat=' + lat;
+			data += '&lon=' + lon;
+			data += '&cmt=' + cmt;
+			$.get('user.php?a=addloc' + data, function(json)
 			{
-				tds[2].textContent = json.cmt;
-				break;
-			}
+				$('#tab3').find('input,button').prop('disabled', false);
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return;
+				}
+				if ($($('#favorited_loc').find('td')[0]).attr('colspan') == 4)
+					$('#favorited_loc').empty();
+				if (json.new)
+				{
+					var tr = $('<tr onclick="modifyLocation(this)">');
+					tr.append($('<td>').text(json.lat));
+					tr.append($('<td>').text(json.lon));
+					tr.append($('<td>').text(json.cmt));
+					var urls = '';
+					urls += '<a href="map?lat='+json.lat+'&lon='+json.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
+					urls += '<a href="ranges?lat='+json.lat+'&lon='+json.lon+'"><img src="img/icon-ip.png"></a>&nbsp;';
+					urls += '<a href="javascript://" onclick="deleteLocation(this,'+json.lat+','+json.lon+')"><img src="img/no.png"></a>';
+					tr.append($('<td>').html(urls));
+					$('#favorited_loc').append(tr);
+					$('#favloc_cnt').text(parseInt($('#favloc_cnt').text()) + 1);
+					return;
+				}
+				var trs = $('#favorited_loc').find('tr');
+				for (var i = 0; i < trs.length; i++)
+				{
+					var tds = $(trs[i]).find('td');
+					if ((tds[0].textContent == json.lat.toString()) && (tds[1].textContent == json.lon.toString()))
+					{
+						tds[2].textContent = json.cmt;
+						break;
+					}
+				}
+			}).fail(onFail);
 		}
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#tab3').find('input,button').prop('disabled', false);
-		alert('Ошибка загрузки данных');
-	});
+	}).fail(onFail);
 }
 
 function deleteLocation(e, lat, lon)
 {
 	$(e).find('img').attr('src', 'img/loadsm.gif');
-	$.get('user.php?a=delloc&lat='+lat+'&lon='+lon, function(json)
+	var onFail = function(jqXHR, textStatus, errorThrown)
+	{
+		$(e).find('img').attr('src', 'img/no.png');
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
 		{
-			$(e).find('img').attr('src', 'img/no.png');
 			alert(errorStr(json.error));
 			return;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&lat=' + lat;
+			data += '&lon=' + lon;
+			$.get('user.php?a=delloc' + data, function(json)
+			{
+				if (!json.result)
+				{
+					$(e).find('img').attr('src', 'img/no.png');
+					alert(errorStr(json.error));
+					return;
+				}
+				$(e).parent().parent().remove();
+				$('#favloc_cnt').text(parseInt($('#favloc_cnt').text()) - 1);
+				if (parseInt($('#favloc_cnt').text()) == 0)
+					$('#favorited_loc').html('<tr><td colspan=4>Избранных локаций пока нет</td></tr>');
+			}).fail(onFail);
 		}
-		$(e).parent().parent().remove();
-		$('#favloc_cnt').text(parseInt($('#favloc_cnt').text()) - 1);
-		if (parseInt($('#favloc_cnt').text()) == 0)
-			$('#favorited_loc').html('<tr><td colspan=4>Избранных локаций пока нет</td></tr>');
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$(e).find('img').attr('src', 'img/no.png');
-		alert('Ошибка загрузки данных');
-	});
+	}).fail(onFail);
 }
 
 function modifyLocation(e)
@@ -318,61 +377,102 @@ function modifyLocation(e)
 
 function createInvite()
 {
-	$.get('user.php?a=createinv&level='+$('#invlevel').val(), function(json)
+	var onFail = function(jqXHR, textStatus, errorThrown)
+	{
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
 			return;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&level=' + $('#invlevel').val();
+			$.get('user.php?a=createinv' + data, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return;
+				}
+				ProfileInfo.invites--;
+				getInvitesInfo();
+			}).fail(onFail);
 		}
-		ProfileInfo.invites--;
-		getInvitesInfo();
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('Ошибка загрузки данных');
-	});
+	}).fail(onFail);
 }
 
 function updateInvite()
 {
-	var checked = $('.invchk:checked').parent().parent().children(':nth-child(4)');
-	for (var i = 0; i < checked.length; i++)
+	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		var inv = $(checked[i]).text();
-		$.post('user.php?a=updateinv', 'invite='+inv+'&level='+$('#invlevel').val(), function(json)
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
 		{
-			if (!json.result)
+			alert(errorStr(json.error));
+			return;
+		} else {
+			var checked = $('.invchk:checked').parent().parent().children(':nth-child(4)');
+			for (var i = 0; i < checked.length; i++)
 			{
-				alert(errorStr(json.error));
-				return;
+				var postdata = '';
+				postdata += 'token=' + encodeURIComponent(json.token);
+				postdata += '&invite=' + $(checked[i]).text();
+				postdata += '&level=' + $('#invlevel').val();
+				$.post('user.php?a=updateinv', postdata, function(json)
+				{
+					if (!json.result)
+					{
+						alert(errorStr(json.error));
+						return;
+					}
+					getInvitesInfo();
+				}).fail(onFail);
 			}
-			getInvitesInfo();
-		}).fail(function(jqXHR, textStatus, errorThrown) {
-			alert('Ошибка загрузки данных');
-		});
-	}
-	$('#invchkall').prop('checked', false);
+			$('#invchkall').prop('checked', false);
+		}
+	}).fail(onFail);
 }
 
 function deleteInvite()
 {
-	var checked = $('.invchk:checked').parent().parent().children(':nth-child(4)');
-	for (var i = 0; i < checked.length; i++)
+	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		var inv = $(checked[i]).text();
-		$.post('user.php?a=deleteinv', 'invite='+inv, function(json)
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
 		{
-			if (!json.result)
+			alert(errorStr(json.error));
+			return;
+		} else {
+			var checked = $('.invchk:checked').parent().parent().children(':nth-child(4)');
+			for (var i = 0; i < checked.length; i++)
 			{
-				alert(errorStr(json.error));
-				return;
+				var postdata = '';
+				postdata += 'token=' + encodeURIComponent(json.token);
+				postdata += '&invite=' + $(checked[i]).text();
+				$.post('user.php?a=deleteinv', postdata, function(json)
+				{
+					if (!json.result)
+					{
+						alert(errorStr(json.error));
+						return;
+					}
+					ProfileInfo.invites++;
+					getInvitesInfo();
+				}).fail(onFail);
 			}
-			ProfileInfo.invites++;
-			getInvitesInfo();
-		}).fail(function(jqXHR, textStatus, errorThrown) {
-			alert('Ошибка загрузки данных');
-		});
-	}
-	$('#invchkall').prop('checked', false);
+			$('#invchkall').prop('checked', false);
+		}
+	}).fail(onFail);
 }
 
 function getInvitesInfo()
@@ -437,20 +537,37 @@ function changeNick()
 {
 	var newnick = $('#nickedit').val();
 	$('#nickeditor').children().prop('disabled', true);
-	$.post('user.php?a=changenick', 'nick='+encodeURIComponent(newnick), function(json)
+	var onRelease = function()
+	{
+		$('#nickeditor').children().prop('disabled', false);
+	};
+	var onFail = function(jqXHR, textStatus, errorThrown)
+	{
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
-			$('#nickeditor').children().prop('disabled', false);
-			return;
+			return onRelease();
 		} else {
-			alert("Никнейм успешно изменён");
-			location.reload(true);
+			var postdata = '';
+			postdata += 'token=' + encodeURIComponent(json.token);
+			postdata += '&nick=' + encodeURIComponent(newnick);
+			$.post('user.php?a=changenick', postdata, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return onRelease();
+				} else {
+					alert("Никнейм успешно изменён");
+					location.reload(true);
+				}
+			}).fail(onFail);
 		}
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('Ошибка загрузки данных');
-	});
+	}).fail(onFail);
 }
 
 function changePassword()
@@ -460,36 +577,64 @@ function changePassword()
 		alert("Пароли не совпадают");
 		return;
 	}
-	$.post('user.php?a=changepass', 'password='+encodeURIComponent(pass), function(json)
+	var onFail = function(jqXHR, textStatus, errorThrown)
+	{
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
 			return;
 		} else {
-			alert("Пароль успешно изменён");
-			hideModal();
+			var postdata = '';
+			postdata += 'token=' + encodeURIComponent(json.token);
+			postdata += '&password=' + encodeURIComponent(pass);
+			$.post('user.php?a=changepass', postdata, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return;
+				} else {
+					alert("Пароль успешно изменён");
+					hideModal();
+				}
+			}).fail(onFail);
 		}
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('Ошибка загрузки данных');
-	});
+	}).fail(onFail);
 	return;
 }
 
 function createApiKey(type)
 {
-	$.post('user.php?a=createapikey', 'type='+type, function(json)
+	var onFail = function(jqXHR, textStatus, errorThrown)
+	{
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
 			return;
+		} else {
+			var postdata = '';
+			postdata += 'token=' + encodeURIComponent(json.token);
+			postdata += '&type=' + type;
+			$.post('user.php?a=createapikey', postdata, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return;
+				}
+				if(json.data.r) $('#rapikey').text(json.data.r);
+				if(json.data.w) $('#wapikey').text(json.data.w);
+			}).fail(onFail);
 		}
-		if(json.data.r) $('#rapikey').text(json.data.r);
-		if(json.data.w) $('#wapikey').text(json.data.w);
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('Ошибка загрузки данных');
-	});
+	}).fail(onFail);
 }
 
 function switchTab(num)

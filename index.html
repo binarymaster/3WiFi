@@ -55,6 +55,8 @@ function errorStr(error)
 		return 'Ваш уровень доступа не предусматривает использование данной функции';
 		case 'limit':
 		return 'Достигнут лимит использования данной функции';
+		case 'token':
+		return 'Некорректный токен доступа, очистите кеш и попробуйте ещё раз';
 		default:
 		return 'Неизвестная ошибка';
 	}
@@ -126,10 +128,25 @@ function doLogin()
 }
 function doLogout()
 {
-	$.get('user.php?a=logout', function(json)
+	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		window.location.href = 'home';
-	});
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			$.get('user.php?a=logout' + data, function(json)
+			{
+				window.location.href = 'home';
+			});
+		}
+	}).fail(onFail);
 }
 function doReg()
 {

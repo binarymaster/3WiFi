@@ -187,17 +187,31 @@ function find(page)
 }
 function markFav(e,id)
 {
-	$.get('user.php?a=fav&id='+id, function(json)
+	var onFail = function(jqXHR, textStatus, errorThrown)
+	{
+		alert('Ошибка загрузки данных');
+	};
+	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
 			return;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&id=' + id;
+			$.get('user.php?a=fav' + data, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return;
+				}
+				$(e).find('img').attr('src', 'img/icon-fav-'+(json.fav ? 'on' : 'off')+'.png');
+			}).fail(onFail);
 		}
-		$(e).find('img').attr('src', 'img/icon-fav-'+(json.fav ? 'on' : 'off')+'.png');
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('Ошибка загрузки данных');
-	});
+	}).fail(onFail);
 }
 function insertAtCaret(text)
 {

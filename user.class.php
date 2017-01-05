@@ -697,6 +697,17 @@ class User {
 		return !is_null($this->uID);
 	}
 
+	public function genToken()
+	{
+		$_SESSION['token'] = randomStr(8, false);
+		return $_SESSION['token'];
+	}
+
+	public function checkToken($token)
+	{
+		return (is_string($token) && $token != '' && $token == $_SESSION['token']);
+	}
+
 	public function AuthByApiKey($ApiKey, $loadData=false)
 	{
 		$ApiKey = self::quote($ApiKey);

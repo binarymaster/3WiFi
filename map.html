@@ -119,23 +119,39 @@ function initmap()
 				var cmt = prompt("Текущая локация будет сохранена в избранное.\n\nКомментарий к локации:", 'Город A, район B');
 				if (cmt == null || cmt == '') return;
 				var coords = myMap.getCenter();
-				$.get('user.php?a=addloc&lat='+coords[0]+'&lon='+coords[1]+'&cmt='+cmt, function(json)
+				var onFail = function(jqXHR, textStatus, errorThrown)
+				{
+					alert('Ошибка загрузки данных');
+				};
+				$.get('user.php?a=token', function(json)
 				{
 					if (!json.result)
 					{
 						alert(errorStr(json.error));
 						return;
+					} else {
+						var data = '';
+						data += '&token=' + encodeURIComponent(json.token);
+						data += '&lat=' + coords[0];
+						data += '&lon=' + coords[1];
+						data += '&cmt=' + cmt;
+						$.get('user.php?a=addloc' + data, function(json)
+						{
+							if (!json.result)
+							{
+								alert(errorStr(json.error));
+								return;
+							}
+							userLocations.reloadData();
+							if (json.new)
+							{
+								alert('Локация успешно добавлена');
+								return;
+							}
+							alert('Локация успешно обновлена');
+						}).fail(onFail);
 					}
-					userLocations.reloadData();
-					if (json.new)
-					{
-						alert('Локация успешно добавлена');
-						return;
-					}
-					alert('Локация успешно обновлена');
-				}).fail(function(jqXHR, textStatus, errorThrown) {
-					alert('Ошибка загрузки данных');
-				});
+				}).fail(onFail);
 			}
 		);
 	myMap.controls.add(faveButton);

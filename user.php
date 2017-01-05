@@ -60,8 +60,14 @@ switch($action)
 
 	// Выход из учётной записи
 	case 'logout':
+	$json['result'] = false;
 	if ($UserManager->isLogged())
 	{
+		if (!$UserManager->checkToken($_GET['token']))
+		{
+			$json['error'] = 'token';
+			break;
+		}
 		$UserManager->out();
 		$json['result'] = true;
 	}
@@ -123,6 +129,18 @@ switch($action)
 		$json['error'] = 'form';
 	break;
 
+	// Получение токена для защиты от CSRF
+	case 'token':
+	$json['result'] = false;
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	$json['token'] = $UserManager->genToken();
+	$json['result'] = $json['token'] != '';
+	break;
+
 	// Регистрация нового пользователя
 	case 'reg':
 	if ($UserManager->isLogged())
@@ -175,6 +193,11 @@ switch($action)
 		$json['error'] = 'lowlevel';
 		break;
 	}
+	if (!$UserManager->checkToken($_POST['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
 	$newNick = isset($_POST['nick']) ? $_POST['nick'] : null;
 	if (is_null($newNick))
 	{
@@ -211,6 +234,11 @@ switch($action)
 	if ($UserManager->Level < 1)
 	{
 		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!$UserManager->checkToken($_POST['token']))
+	{
+		$json['error'] = 'token';
 		break;
 	}
 	$newPass = isset($_POST['password']) ? $_POST['password'] : null;
@@ -459,6 +487,11 @@ switch($action)
 		$json['error'] = 'lowlevel';
 		break;
 	}
+	if (!$UserManager->checkToken($_GET['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
 	$uid = $UserManager->uID;
 	$id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
@@ -588,6 +621,11 @@ switch($action)
 		$json['error'] = 'lowlevel';
 		break;
 	}
+	if (!$UserManager->checkToken($_GET['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
 	$uid = $UserManager->uID;
 	$lat = isset($_GET['lat']) ? (float)$_GET['lat'] : null;
 	$lon = isset($_GET['lon']) ? (float)$_GET['lon'] : null;
@@ -648,6 +686,11 @@ switch($action)
 		$json['error'] = 'lowlevel';
 		break;
 	}
+	if (!$UserManager->checkToken($_GET['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
 	$uid = $UserManager->uID;
 	$lat = isset($_GET['lat']) ? (float)$_GET['lat'] : null;
 	$lon = isset($_GET['lon']) ? (float)$_GET['lon'] : null;
@@ -691,12 +734,22 @@ switch($action)
 		$json['error'] = 'lowlevel';
 		break;
 	}
+	if (!$UserManager->checkToken($_GET['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
 	$level = isset($_GET['level']) ? (int)$_GET['level'] : 1;
 	$json['result'] = $UserManager->createInvite($level);
 	break;
 
 	// Изменение приглашения
 	case 'updateinv':
+	if (!$UserManager->checkToken($_POST['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
 	$invite = isset($_POST['invite']) ? $_POST['invite'] : null;
 	$level = isset($_POST['level']) ? (int)$_POST['level'] : null;
 
@@ -715,6 +768,11 @@ switch($action)
 
 	// Удаление приглашения
 	case 'deleteinv':
+	if (!$UserManager->checkToken($_POST['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
 	$invite = isset($_POST['invite']) ? $_POST['invite'] : null;
 
 	if (is_null($invite))
@@ -732,6 +790,21 @@ switch($action)
 
 	// Создание API ключа
 	case 'createapikey':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 1)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!$UserManager->checkToken($_POST['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
 	$type = isset($_POST['type']) ? (int)$_POST['type'] : null;
 	$ApiKey = $UserManager->createApiKey($type);
 	if($ApiKey === false)
@@ -760,6 +833,11 @@ switch($action)
 	if ($UserManager->Level != 3)
 	{
 		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!$UserManager->checkToken($_GET['token']))
+	{
+		$json['error'] = 'token';
 		break;
 	}
 	if (!$UserManager->isUserLogin($_GET['login']))
