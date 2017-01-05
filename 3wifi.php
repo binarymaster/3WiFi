@@ -180,7 +180,10 @@ switch ($action)
 
 		$Wildcards = array('□','◯');
 
-		if(($SplitCount < $UnkCount || $TestBSSID == '*' || $BSSID == '') && (FilterWildcards($ESSID, $Wildcards) == ''))
+		global $UserManager;
+		$uid = $UserManager->uID;
+
+		if(($UserManager->Level < 2) && ($SplitCount < $UnkCount || $TestBSSID == '*' || $BSSID == '') && (FilterWildcards($ESSID, $Wildcards) == ''))
 		{
 			$isLimitedRequest = true;
 		}
@@ -190,8 +193,6 @@ switch ($action)
 			$_SESSION['Search']['FirstId'] = -1;
 			$_SESSION['Search']['LastId'] = -1;
 		}
-		global $UserManager;
-		$uid = $UserManager->uID;
 
 		$sql = 'SELECT SQL_CALC_FOUND_ROWS 
 				`id`,`time`,
