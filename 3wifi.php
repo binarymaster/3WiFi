@@ -929,6 +929,37 @@ switch ($action)
 	$json['upload']['error'] = $error;
 	break;
 
+	// Удаление точек из базы
+	case 'delete':
+	$json['result'] = false;
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level != 3)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!$UserManager->checkToken($_GET['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
+	$id = isset($_GET['id']) ? $_GET['id'] : null;
+	if(is_null($id) || !is_numeric($id))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	$id = (int)$id;
+	QuerySql('DELETE FROM BASE_TABLE WHERE id = ' . $id);
+	if (defined('TRY_USE_MEMORY_TABLES'))
+		QuerySql('DELETE FROM BASE_TABLE_CONST WHERE id = ' . $id);
+	$json['result'] = true;
+	break;
+
 	// Проверка состояния загрузки
 	case 'upstat':
 	$json['result'] = true;
