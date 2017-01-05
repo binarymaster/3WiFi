@@ -462,7 +462,7 @@ switch($action)
 	$uid = $UserManager->uID;
 	$id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
-	if ($id == null)
+	if (is_null($id))
 	{
 		$json['error'] = 'form';
 		break;
@@ -594,7 +594,7 @@ switch($action)
 	$cmt = isset($_GET['cmt']) ? trim(preg_replace('/\s+/', ' ', $_GET['cmt'])) : null;
 	if ($cmt == '') $cmt = null;
 
-	if ($lat == null || $lon == null || $cmt == null)
+	if (is_null($lat) || is_null($lon) || is_null($cmt))
 	{
 		$json['error'] = 'form';
 		break;
@@ -652,7 +652,7 @@ switch($action)
 	$lat = isset($_GET['lat']) ? (float)$_GET['lat'] : null;
 	$lon = isset($_GET['lon']) ? (float)$_GET['lon'] : null;
 
-	if ($lat == null || $lon == null)
+	if (is_null($lat) || is_null($lon))
 	{
 		$json['error'] = 'form';
 		break;
@@ -700,7 +700,7 @@ switch($action)
 	$invite = isset($_POST['invite']) ? $_POST['invite'] : null;
 	$level = isset($_POST['level']) ? (int)$_POST['level'] : null;
 
-	if ($invite == null || $level == null)
+	if (is_null($invite) || is_null($level))
 	{
 		$json['error'] = 'form';
 		break;
@@ -717,7 +717,7 @@ switch($action)
 	case 'deleteinv':
 	$invite = isset($_POST['invite']) ? $_POST['invite'] : null;
 
-	if ($invite == null)
+	if (is_null($invite))
 	{
 		$json['error'] = 'form';
 		break;
