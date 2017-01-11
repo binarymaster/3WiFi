@@ -572,17 +572,30 @@ class User {
 		if ($uid == NULL) return false;
 
 		// Если не осталось инвайтов (и не админ)
-		if ($this->invites <= 0 && $this->Level < 3) return false;
+		if ($this->invites <= 0 && $this->Level < 3)
+		{
+			$this->LastError = 'limit';
+			return false;
+		}
 		// Только админ может пригласить пользователя с нестандартным уровнем
-		if ($this->Level <= 2 && $level != 1) return false;
+		if ($this->Level <= 2 && $level != 1)
+		{
+			$this->LastError = 'lowlevel';
+			return false;
+		}
 		// Нельзя создавать инвайты с отрицательным уровнем
-		if ($level < 0) return false;
+		if ($level < 0)
+		{
+			$this->LastError = 'form';
+			return false;
+		}
 
 		$invite = $this->GenerateRandomString(12, false);
 
 		$res = self::$mysqli->query("INSERT INTO invites SET invite='$invite', puid=$uid, level=$level");
 		if (self::$mysqli->errno != 0)
 		{
+			$this->LastError = 'database';
 			return false;
 		}
 		if ($this->Level < 3) $res = self::$mysqli->query("UPDATE users SET invites=invites-1 WHERE uid=$uid");
@@ -595,23 +608,37 @@ class User {
 		$uid = $this->uID;
 		if ($uid == null) return false;
 
-		if ($this->Level <= 2 && $level != 1) return false;
-		if ($level < 0) return false;
+		if ($this->Level <= 2 && $level != 1)
+		{
+			$this->LastError = 'lowlevel';
+			return false;
+		}
+		if ($level < 0)
+		{
+			$this->LastError = 'form';
+			return false;
+		}
 
 		$res = self::$mysqli->query("SELECT invite, uid FROM invites WHERE puid=$uid AND invite='".self::quote($invite)."'");
 		if (self::$mysqli->errno != 0)
 		{
+			$this->LastError = 'database';
 			return false;
 		}
 		$row = $res->fetch_row();
 		$invite = $row[0];
 		$uid = $row[1];
 		$res->close();
-		if ($invite == null) return false;
+		if ($invite == null)
+		{
+			$this->LastError = 'form';
+			return false;
+		}
 
 		self::$mysqli->query("UPDATE invites SET level=$level WHERE invite='".self::quote($invite)."'");
 		if (self::$mysqli->errno != 0)
 		{
+			$this->LastError = 'database';
 			return false;
 		}
 		if ($uid != null)
@@ -619,6 +646,7 @@ class User {
 			self::$mysqli->query("UPDATE users SET level=$level WHERE uid=$uid");
 			if (self::$mysqli->errno != 0)
 			{
+				$this->LastError = 'database';
 				return false;
 			}
 		}
@@ -650,12 +678,21 @@ class User {
 	{
 		$uid = $this->uID;
 		if ($uid == NULL || $type == NULL || ($type != 1 &&  $type != 2)) return false;
-		if ($this->Level < 1) return false;
-		if ($this->Level < 1) return false;
+		if ($this->Level < 0)
+		{
+			$this->LastError = 'lowlevel';
+			return false;
+		}
 
 		$res = self::$mysqli->query('SELECT rapikey, wapikey FROM users WHERE uid='.(int)$uid);
 		if (self::$mysqli->errno != 0)
 		{
+			$this->LastError = 'database';
+			return false;
+		}
+		if ($res->num_rows == 0)
+		{
+			$this->LastError = 'database';
 			return false;
 		}
 		$data = $res->fetch_assoc();
@@ -666,8 +703,17 @@ class User {
 	public function createApiKey($type)
 	{
 		$uid = $this->uID;
-		if ($uid == NULL || $type == NULL) return false;
-		if ($this->Level < 1) return false;
+		if ($uid == NULL) return false;
+		if ($type == NULL)
+		{
+			$this->LastError = 'form';
+			return false;
+		}
+		if ($this->Level < 1)
+		{
+			$this->LastError = 'lowlevel';
+			return false;
+		}
 
 		$ApiKey = $this->GenerateRandomString(32, false);
 		switch($type)
@@ -683,6 +729,7 @@ class User {
 		$res = self::$mysqli->query($sql);
 		if (self::$mysqli->errno != 0)
 		{
+			$this->LastError = 'database';
 			return false;
 		}
 		$this->eventLog((8+$type-1), 1, $ApiKey);
@@ -723,6 +770,7 @@ class User {
 
 		if($res->num_rows != 1)
 		{
+			$this->LastError = 'unauthorized';
 			return false;
 		}
 		if(!$loadData) return true;

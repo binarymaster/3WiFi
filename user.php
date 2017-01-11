@@ -741,6 +741,8 @@ switch($action)
 	}
 	$level = isset($_GET['level']) ? (int)$_GET['level'] : 1;
 	$json['result'] = $UserManager->createInvite($level);
+	if (!$json['result'])
+		$json['error'] = $UserManager->LastError;
 	break;
 
 	// Изменение приглашения
@@ -764,6 +766,8 @@ switch($action)
 		break;
 	}
 	$json['result'] = $UserManager->updateInvite($invite, $level);
+	if (!$json['result'])
+		$json['error'] = $UserManager->LastError;
 	break;
 
 	// Удаление приглашения
@@ -812,6 +816,8 @@ switch($action)
 	if($ApiKey === false)
 	{
 		$json['result'] = false;
+		if (!$json['result'])
+			$json['error'] = $UserManager->LastError;
 		break;
 	}
 	$json['result'] = true;
