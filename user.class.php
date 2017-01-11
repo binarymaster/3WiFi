@@ -47,6 +47,7 @@ class User {
 	public $WriteApiKey = 'N/A';
 
 	public $LastUpdate = 0;
+	public $LastError = '';
 
 	private static $mysqli;
 
@@ -632,6 +633,12 @@ class User {
 		$res = self::$mysqli->query("DELETE FROM invites WHERE puid=$uid AND uid IS NULL AND invite='".self::quote($invite)."'");
 		if (self::$mysqli->errno != 0)
 		{
+			$this->LastError = 'database';
+			return false;
+		}
+		if (self::$mysqli->affected_rows == 0)
+		{
+			$this->LastError = 'login';
 			return false;
 		}
 		if ($this->Level < 3) $res = self::$mysqli->query("UPDATE users SET invites=invites+1 WHERE uid=$uid");

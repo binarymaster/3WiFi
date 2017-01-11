@@ -786,6 +786,8 @@ switch($action)
 		break;
 	}
 	$json['result'] = $UserManager->deleteInvite($invite);
+	if (!$json['result'])
+		$json['error'] = $UserManager->LastError;
 	break;
 
 	// Создание API ключа
