@@ -165,7 +165,11 @@ switch ($argv[1])
 			if (($handle = fopen($filename, 'r')) !== false)
 			{
 				while (($str = fgets($handle)) !== false)
+				{
+					$str = str_replace("\n", '', $str);
+					if (!strlen($str)) continue;
 					$aps[$str] = 0;
+				}
 
 				fclose($handle);
 			}
