@@ -447,4 +447,15 @@ TABLE.st2 TD#stat_cn {
 	border-left: 2px dotted #808080;
 }
 .fAnswer {
+}p.failure {
+	background: url(../img/warning.png) no-repeat left;
+	background-size: 32px 32px;
+	padding-left: 40px;
+	margin: 16 14 6 14;
+}
+p.failure b {
+	width: 100%;
+	display: block;
+	border-bottom: 1px solid black;
+	margin-bottom: 4px;
 }

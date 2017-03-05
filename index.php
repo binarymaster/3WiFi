@@ -100,6 +100,17 @@ $content = str_replace('%chk_wps%', ($page == 'wpspin' ? $sms : $sm), $content);
 $content = str_replace('%chk_stat%', ($page == 'stat' ? $sms : $sm), $content);
 $content = str_replace('%chk_grph%', ($page == 'graph' ? $sms : $sm), $content);
 
+$broadcast = '';
+if(TRY_USE_MEMORY_TABLES)
+{
+	$DataBaseStatus = GetStatsValue(STATS_DATABASE_STATUS);
+	if($DataBaseStatus == DATABASE_PREPARE)
+	{
+		$broadcast .= '<p class=failure><b>Внимание!</b> База данных временно недоступна: Запущен процесс индексирования таблиц в памяти, это займёт некоторое время.</p>';
+	}
+}
+$content = str_replace('%broadcast%', $broadcast, $content);
+
 $profile = 'isUser: %isUser%, Nickname: "%nick%", Level: %user_access_level%, invites: %user_invites%';
 
 $content = str_replace('%login_str%', ($UserManager->isLogged() ? 'Выход' : 'Вход'), $content);
