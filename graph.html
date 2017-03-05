@@ -9,6 +9,11 @@ function showLoads()
 	$.get('3wifi.php?a=loads', function(d)
 	{
 		var lo = 0, hi = 0, dt = 0;
+		if (!d.result)
+		{
+			$('#stat').text(errorStr(d.error));
+			return;
+		}
 		for (var i = 0; i < d.data.length; i++)
 		{
 			d.data[i][2] = d.data[i][0];
@@ -42,6 +47,11 @@ function showTasks()
 {
 	$.get('3wifi.php?a=stat&mode=2', function(d)
 	{
+		if (!d.result)
+		{
+			$('#task').text(errorStr(d.error));
+			return;
+		}
 		$('#task').text(d.stat.tasks.comment == null ? 'Нет активных заданий' : 'Сейчас обрабатывается: ' + d.stat.tasks.comment);
 		gtv_load.splice(0,1);
 		gtv_load.push(d.stat.tasks.uploading);
