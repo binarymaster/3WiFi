@@ -166,7 +166,7 @@ switch ($argv[1])
 			{
 				while (($str = fgets($handle)) !== false)
 				{
-					$str = str_replace("\n", '', $str);
+					$str = trim(str_replace("\n", '', $str));
 					if (!strlen($str)) continue;
 					$aps[$str] = 0;
 				}
