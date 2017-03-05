@@ -109,7 +109,7 @@ function uploadStat()
 				$('input[type=checkbox]').prop('disabled', false);
 			}
 		}
-		var ajaxstr = '&nbsp;<img src="img/loadsm.gif">..';
+		var ajaxstr = '&nbsp;<img src="%theme_ajax%">..';
 		if ($('#st2').length > 0)
 			if (data.upstat.state == 1)
 			{
@@ -348,7 +348,7 @@ function startProcess()
 	from = 0;
 	szChunk = szStep;
 
-	$('#output').append('Выполняется загрузка файла...<span id=st1>&nbsp;<img src="img/loadsm.gif"></span><br>');
+	$('#output').append('Выполняется загрузка файла...<span id=st1>&nbsp;<img src="%theme_ajax%"></span><br>');
 	reader = new FileReader();
 	reader.onload = processLines;
 	blob = filePart(file, from, szChunk);

@@ -78,6 +78,38 @@ $content = str_replace('%content%', $content, file_get_contents('index.html'));
 $content = str_replace('%title%', $title, $content);
 $content = str_replace('%head%', $head, $content);
 
+$theme_base = 'themes';
+$themes = scandir("$theme_base/");
+$filter = array();
+foreach ($themes as $theme_name)
+{
+	$theme_name = preg_replace("/[^a-zA-Z0-9\-_]+/", "", $theme_name);
+	if ( file_exists("$theme_base/$theme_name/theme.php") )
+		$filter[] = $theme_name;
+}
+$themes = $filter;
+
+$theme = $_COOKIE['theme'];
+$theme_data = array();
+if ( isset($theme) && in_array($theme, $themes, true) )
+{
+	require_once "$theme_base/$theme/theme.php";
+}
+else
+{
+	// use default theme
+	$theme_data['css'] = 'css/style.css?2017-03-05-r4';
+	$theme_data['head'] = '';
+	$theme_data['ajax'] = 'img/loadsm.gif';
+}
+$content = str_replace('%theme_css%', $theme_data['css'], $content);
+$content = str_replace('%theme_head%', $theme_data['head'], $content);
+$content = str_replace('%theme_ajax%', $theme_data['ajax'], $content);
+
+$themes_str = '['.(count($themes) > 0 ? "'".implode("','", $themes)."'" : '').']';
+$content = str_replace('%theme%', $theme, $content);
+$content = str_replace('%themes%', $themes_str, $content);
+
 $mb = 'menubtn';
 $mbs = $mb.' mbsel';
 $content = str_replace('%chk_docs%', ($page == 'home' || $page == 'faq' || $page == 'apidoc' || $page == 'rules' ? $mbs : $mb), $content);

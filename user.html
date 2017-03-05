@@ -18,6 +18,22 @@ function levelToText(level)
 function initpage()
 {
 	if (ProfileInfo.isUser == 0) window.location.href = 'home';
+	ThemesList = %themes%;
+	var sel = $('select[name=themes]');
+	var theme = '%theme%';
+	for (var i = 0; i < ThemesList.length; i++)
+	{
+		var opt = $('<option>');
+		opt.attr('value', ThemesList[i]);
+		opt.text(ThemesList[i]);
+		sel.append(opt);
+	}
+	sel.val(theme);
+	sel.change(function()
+	{
+		document.cookie = 'theme=' + this.value;
+		location.reload(true);
+	});
 
 	$('.content').css('padding-top', '0px');
 	stLoading = false;
@@ -167,7 +183,7 @@ function markFav(e,id)
 {
 	if ($('.userTabActive')[0].id == 'tab3b')
 	{
-		$(e).find('img').attr('src', 'img/loadsm.gif');
+		$(e).find('img').attr('src', '%theme_ajax%');
 		var onFail = function(jqXHR, textStatus, errorThrown)
 		{
 			$(e).find('img').attr('src', 'img/no.png');
@@ -333,7 +349,7 @@ function createLocation()
 
 function deleteLocation(e, lat, lon)
 {
-	$(e).find('img').attr('src', 'img/loadsm.gif');
+	$(e).find('img').attr('src', '%theme_ajax%');
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
 		$(e).find('img').attr('src', 'img/no.png');
@@ -810,6 +826,8 @@ function loadstat(e, st)
 			<tr><td>API ключ/чтение:</td><td><span id="rapikey">%rapikey%</span> <a href="javascript://" onclick="createApiKey(1)">(получить новый)</a></td></tr>
 			<tr><td>API ключ/запись:</td><td><span id="wapikey">%wapikey%</span> <a href="javascript://" onclick="createApiKey(2)">(получить новый)</a></td></tr>
 			<tr><td>Пригласивший:</td><td>%refuser%</td></tr>
+			<tr><td colspan=2></td></tr>
+			<tr><td>Тема оформления:</td><td><select name="themes"><option value="">3WiFi Classic</option></select> <small>(настройка хранится в cookies)</small></td></tr>
 			</table>
 		</div>
 		<div id=tab2 class=userCode dir=ltr style="display: none;">
