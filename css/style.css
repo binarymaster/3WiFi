@@ -89,6 +89,10 @@
 	-o-animation: 1.2s ease-in-out 0s normal none running trambling-animation;
 	animation: 1.2s ease-in-out 0s normal none running trambling-animation;
 }
+.logoplace {
+	width: 92px;
+	pointer-events: none;
+}
 @keyframes trambling-animation {
 	0%, 50%, 100% {
 		transform: rotate(0deg);
@@ -207,6 +211,7 @@ form {
 }
 .todo {
 	list-style-type: decimal;
+	line-height: 120%;
 }
 .todo li tt {
 	font-weight: bold;
@@ -236,6 +241,23 @@ TABLE.st1 TH {
 TABLE.st1 TR:nth-child(2n) {
 	background: #fff8dc; /* Цвет фона четных строк */
 }
+TABLE.swp_st {
+	background: #fffff0; /* Цвет фона нечетных строк */
+	border: 1px solid #a52a2a; /* Рамка вокруг таблицы */
+	border-collapse: collapse; /* Убираем двойные линии между ячейками */
+}
+TABLE.swp_st TD,
+TABLE.swp_st TH {
+	padding: 3px; /* Поля вокруг содержимого ячейки */
+}
+TABLE.swp_st TD {
+	text-align: center; /* Выравнивание по центру */
+	border: 1px solid #a52a2a; /* Бордюр вокруг ячейки */
+}
+TABLE.swp_st TH {
+	background: #a52a2a; /* Цвет фона */
+	color: white; /* Цвет текста */
+}
 TABLE.st2 {
 }
 TABLE.st2 TD#stat_es {
@@ -249,6 +271,13 @@ TABLE.st2 TD#stat_es {
 	height: 36px;
 	font-family: sans-serif;
 	font-weight: bold;
+}
+TABLE.st2 TD#stat_es.first {
+	border-top-left-radius: 8px;
+}
+TABLE.st2 TD#stat_es.last {
+	border-bottom: solid 1px #939393;
+	border-bottom-left-radius: 8px;
 }
 TABLE.st2 TD#stat_em {
 	cursor: pointer;
@@ -447,7 +476,25 @@ TABLE.st2 TD#stat_cn {
 	border-left: 2px dotted #808080;
 }
 .fAnswer {
-}p.failure {
+}
+.perc {
+	height: 16px;
+	border-width: 1px;
+	border-style: inset;
+	background-color: #C0C0C0;
+	display: inline-flex;
+	position: relative;
+	padding: 1px;
+	top: 1px;
+}
+.perc-data {
+	width: 100%;
+	height: 100%;
+	background-color: #5566CC;
+	display: inherit;
+	position: relative;
+}
+p.failure {
 	background: url(../img/warning.png) no-repeat left;
 	background-size: 32px 32px;
 	padding-left: 40px;

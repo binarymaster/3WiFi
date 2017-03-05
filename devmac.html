@@ -31,25 +31,12 @@ function detect()
 			$('#fdata').empty();
 			for (var i = 0; i < d.scores.length; i++)
 			{
-				$('#fdata').append('<tr><td>'+d.scores[i].name+'</td><td><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
+				$('#fdata').append('<tr><td>'+d.scores[i].name+'</td><td style="text-align: left"><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
 				var perc = $('.perc:last');
 				var wid = 180;
 				perc.css('width', wid + 'px');
-				perc.css('height', '16px');
-				perc.css('border-width', '1');
-				perc.css('border-style', 'inset');
-				perc.css('background-color', '#C0C0C0');
-				perc.css('display', 'inline-flex');
-				perc.css('position', 'relative');
-				perc.css('top', '1px');
-				var chld = $('<span>');
-				chld.css('width', (d.scores[i].score * wid - 2) + 'px');
-				chld.css('height', '14px');
-				chld.css('background-color', '#5566CC');
-				chld.css('display', 'inherit');
-				chld.css('position', 'relative');
-				chld.css('left', '1px');
-				chld.css('top', '1px');
+				var chld = $('<span class=perc-data>');
+				chld.css('width', Math.round(d.scores[i].score * 100) + '%');
 				perc.html(chld);
 			}
 		} else {

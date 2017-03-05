@@ -389,21 +389,8 @@ function setProgress(val)
 	var perc = $('.perc:last');
 	var wid = 180;
 	perc.css('width', wid + 'px');
-	perc.css('height', '16px');
-	perc.css('border-width', '1');
-	perc.css('border-style', 'inset');
-	perc.css('background-color', '#C0C0C0');
-	perc.css('display', 'inline-flex');
-	perc.css('position', 'relative');
-	perc.css('top', '1px');
-	var chld = $('<span>');
-	chld.css('width', Math.round(val * wid - 2) + 'px');
-	chld.css('height', '14px');
-	chld.css('background-color', '#5566CC');
-	chld.css('display', 'inherit');
-	chld.css('position', 'relative');
-	chld.css('left', '1px');
-	chld.css('top', '1px');
+	var chld = $('<span class=perc-data>');
+	chld.css('width', Math.round(val * 100) + '%');
 	perc.html(chld);
 	$('#percnum').html('&nbsp; '+Math.round(val * 100)+'%');
 }
@@ -421,7 +408,7 @@ function initpage()
 </head>
 
 <body>
-<div id=formtable>
+<div class=uploadbkg id=formtable>
 	<table>
 	<tr><td>Отчёт Router Scan:</td><td><input name="userfile" type="file" accept=".csv,.txt" onchange="checkFile(this)" /> &nbsp;(в формате <b>CSV</b> или <b>TXT</b>)</td></tr>
 	<tr><td>Ваш комментарий:</td><td><span class=wrapper>

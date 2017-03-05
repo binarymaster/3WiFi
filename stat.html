@@ -47,7 +47,7 @@ function loadstat(e, st)
 
 	stLoading = true;
 	$('td#stat_es').removeClass('stat_sel');
-	e.className = 'stat_sel';
+	$(e).addClass('stat_sel');
 	$('.st1').show();
 	$('#stval').text('Загрузка...');
 	$('#sttot').empty();
@@ -144,7 +144,7 @@ function initpage()
 <noscript>Включите JavaScript для отображения данных.</noscript>
 
 <table class=st2 cellspacing=0>
-<tr><td id=stat_es onclick="loadstat(this,'stat')" style="border-top-left-radius: 8px;">Сводная</td>
+<tr><td id=stat_es onclick="loadstat(this,'stat')" class=first>Сводная</td>
 	<td rowspan=13 id=stat_cn>
 		<table class=st1 style="display: none;">
 		<tbody>
@@ -163,7 +163,7 @@ function initpage()
 <tr><td id=stat_es onclick="loadstat(this,'stkey')">Ключи</td></tr>
 <tr><td id=stat_es onclick="loadstat(this,'stwps')">WPS</td></tr>
 <tr><td id=stat_es onclick="loadstat(this,'stdns')">DNS</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stsid')" style="border-bottom: solid 1px #939393; border-bottom-left-radius: 8px;">Участники</td></tr>
+<tr><td id=stat_es class=last onclick="loadstat(this,'stsid')">Участники</td></tr>
 <tr><td id=stat_ft>&nbsp;</td></tr>
 </table>
 </body>
