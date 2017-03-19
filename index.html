@@ -34,31 +34,31 @@ function errorStr(error)
 	switch (error)
 	{
 		case 'database':
-		return 'Ошибка направления запроса базе данных';
+		return '%l10n_err_database%';
 		case 'loggedin':
-		return 'Вход уже выполнен';
+		return '%l10n_err_loggedin%';
 		case 'unauthorized':
-		return 'Не авторизован';
+		return '%l10n_err_unauthorized%';
 		case 'loginfail':
-		return 'Неверный логин или пароль';
+		return '%l10n_err_loginfail%';
 		case 'form':
-		return 'Поля формы заполнены неверно';
+		return '%l10n_err_form%';
 		case 'invite':
-		return 'Неверный код приглашения';
+		return '%l10n_err_invite%';
 		case 'login':
-		return 'Такой логин уже существует';
+		return '%l10n_err_login%';
 		case 'nick':
-		return 'Такой ник уже существует';
+		return '%l10n_err_nick%';
 		case 'password':
-		return 'Пароль не соответствует требованиям';
+		return '%l10n_err_password%';
 		case 'lowlevel':
-		return 'Ваш уровень доступа не предусматривает использование данной функции';
+		return '%l10n_err_lowlevel%';
 		case 'limit':
-		return 'Достигнут лимит использования данной функции';
+		return '%l10n_err_limit%';
 		case 'token':
-		return 'Некорректный токен доступа, очистите кеш и попробуйте ещё раз';
+		return '%l10n_err_token%';
 		default:
-		return 'Неизвестная ошибка';
+		return '%l10n_err_unknown%';
 	}
 }
 function showModal(frm)
@@ -115,7 +115,7 @@ function doLogin()
 	{
 		if (json.result)
 		{
-			$('#loginstat').html('<img src="img/ok.png" style="position: relative; top: 3px"> Вход выполнен успешно!');
+			$('#loginstat').html('<img src="img/ok.png" style="position: relative; top: 3px"> %l10n_login_ok%');
 			setTimeout($('#stayhere').prop('checked') ? 'window.location.reload();' : 'window.location.href = \'user\';', 1000);
 		}
 		else
@@ -130,7 +130,7 @@ function doLogout()
 {
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -158,7 +158,7 @@ function doReg()
 		if (json.result)
 		{
 			$('#checkinv').empty();
-			$('#regstat').html('<img src="img/ok.png" style="position: relative; top: 3px"> Регистрация успешна!');
+			$('#regstat').html('<img src="img/ok.png" style="position: relative; top: 3px"> %l10n_reg_ok%');
 			setTimeout('window.location.href = \'user\';', 2000);
 		}
 		else
@@ -277,30 +277,30 @@ function initmenu()
 		<a href="home"><img class=menulogo src="img/logo.png"></a>
 		<div class="menubtn logoplace"><p></p></div>
 		<span class=multi>
-			<a href="home"><div class="%chk_docs%"><p>О проекте</p></div></a>
+			<a href="home"><div class="%chk_docs%"><p>%l10n_menu_about%</p></div></a>
 			<span class=submenu>
-				<a href="home"><div class="%chk_home%"><p>Главная</p></div></a>
-				<a href="faq"><div class="%chk_faq%"><p>F.A.Q</p></div></a>
-				<a href="apidoc"><div class="%chk_apidoc%"><p>Описание API</p></div></a>
-				<a href="rules"><div class="%chk_rul%"><p>Соглашение</p></div></a>
+				<a href="home"><div class="%chk_home%"><p>%l10n_menu_home%</p></div></a>
+				<a href="faq"><div class="%chk_faq%"><p>%l10n_menu_faq%</p></div></a>
+				<a href="apidoc"><div class="%chk_apidoc%"><p>%l10n_menu_api%</p></div></a>
+				<a href="rules"><div class="%chk_rul%"><p>%l10n_menu_rules%</p></div></a>
 			</span>
 		</span>
-		<a href="map"><div class="%chk_map%"><p>Карта</p></div></a>
-		<a href="find"><div class="%chk_find%"><p>Поиск</p></div></a>
+		<a href="map"><div class="%chk_map%"><p>%l10n_menu_map%</p></div></a>
+		<a href="find"><div class="%chk_find%"><p>%l10n_menu_find%</p></div></a>
 		<span class=multi>
-			<a href="ranges"><div class="%chk_tool%"><p>Инструменты</p></div></a>
+			<a href="ranges"><div class="%chk_tool%"><p>%l10n_menu_tools%</p></div></a>
 			<span class=submenu>
-				<a href="ranges"><div class="%chk_rang%"><p>Поиск диапазонов</p></div></a>
-				<a href="devmac"><div class="%chk_dev%"><p>Устройство по MAC</p></div></a>
-				<a href="wpspin"><div class="%chk_wps%"><p>Генератор WPS PIN</p></div></a>
+				<a href="ranges"><div class="%chk_rang%"><p>%l10n_menu_ranges%</p></div></a>
+				<a href="devmac"><div class="%chk_dev%"><p>%l10n_menu_devmac%</p></div></a>
+				<a href="wpspin"><div class="%chk_wps%"><p>%l10n_menu_wpspin%</p></div></a>
 			</span>
 		</span>
-		<a href="upload"><div class="%chk_load%"><p>Добавить</p></div></a>
+		<a href="upload"><div class="%chk_load%"><p>%l10n_menu_upload%</p></div></a>
 		<span class=multi>
-			<a href="stat"><div class="%chk_st%"><p>Состояние</p></div></a>
+			<a href="stat"><div class="%chk_st%"><p>%l10n_menu_state%</p></div></a>
 			<span class=submenu>
-				<a href="stat"><div class="%chk_stat%"><p>Статистика</p></div></a>
-				<a href="graph"><div class="%chk_grph%"><p>Динамика</p></div></a>
+				<a href="stat"><div class="%chk_stat%"><p>%l10n_menu_stats%</p></div></a>
+				<a href="graph"><div class="%chk_grph%"><p>%l10n_menu_dynamic%</p></div></a>
 			</span>
 		</span>
 		<a href="javascript://" onclick="loginBtn()" style="float: right"><div class=menubtn><p>%login_str%</p></div></a>
@@ -318,13 +318,13 @@ function initmenu()
 	<div class=modal_cnt align=center id=win_login>
 		<div class=modal_main>
 			<div class=modal_div>
-				<h2>Вход в систему</h2>
+				<h2>%l10n_msg_login%</h2>
 				<form id=frm_login method=post><table>
-				<tr><td>Логин:</td><td><input type=text name=login></td></tr>
-				<tr><td>Пароль:</td><td><input type=password name=password></td></tr>
-				<tr><td colspan=2 align=center style="font-size: 13px"><input type=checkbox id=stayhere style="vertical-align: middle; margin: 0 5 3 0"><label for=stayhere>Остаться на текущей странице</label></td></tr>
+				<tr><td>%l10n_str_login%</td><td><input type=text name=login></td></tr>
+				<tr><td>%l10n_str_pass%</td><td><input type=password name=password></td></tr>
+				<tr><td colspan=2 align=center style="font-size: 13px"><input type=checkbox id=stayhere style="vertical-align: middle; margin: 0 5 3 0"><label for=stayhere>%l10n_str_stay_here%</label></td></tr>
 				<tr><td colspan=2 align=center id=loginstat style="font-size: 13px; padding-top: 0px"></td></tr>
-				<tr><td><input type=button value="Войти" onclick="doLogin()"></td><td align=right><a href="javascript://" onclick="showFrm('#win_reg')">Регистрация</a></td></tr>
+				<tr><td><input type=button value="%l10n_btn_login%" onclick="doLogin()"></td><td align=right><a href="javascript://" onclick="showFrm('#win_reg')">%l10n_str_reg%</a></td></tr>
 				</table></form>
 			</div>
 		</div>
@@ -332,15 +332,15 @@ function initmenu()
 	<div class=modal_cnt align=center id=win_reg>
 		<div class=modal_main>
 			<div class=modal_div>
-				<h2>Регистрация</h2>
+				<h2>%l10n_msg_reg%</h2>
 				<form id=frm_reg method=post><table>
-				<tr><td>Код приглашения:</td><td><input type=text name=invite></td><td id=checkinv></td></tr>
-				<tr><td>Логин:</td><td><input type=text name=login></td><td id=checklogin></td></tr>
-				<tr><td>Ник:</td><td><input type=text name=nick></td><td id=checknick></td></tr>
-				<tr><td>Пароль:</td><td><input type=password name=password></td><td id=checkpass></td></tr>
-				<tr><td align=right><input type=checkbox onclick="$('#frm_reg').find('input[type=button]').prop('disabled', !this.checked)"></td><td style="font-size: 12px">Я согласен с <a href="rules" target=_blank>условиями сайта</a>.</td></tr>
+				<tr><td>%l10n_str_invite%</td><td><input type=text name=invite></td><td id=checkinv></td></tr>
+				<tr><td>%l10n_str_login%</td><td><input type=text name=login></td><td id=checklogin></td></tr>
+				<tr><td>%l10n_str_nick%</td><td><input type=text name=nick></td><td id=checknick></td></tr>
+				<tr><td>%l10n_str_pass%</td><td><input type=password name=password></td><td id=checkpass></td></tr>
+				<tr><td align=right><input type=checkbox onclick="$('#frm_reg').find('input[type=button]').prop('disabled', !this.checked)"></td><td style="font-size: 12px">%l10n_str_accept_rules%</td></tr>
 				<tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr>
-				<tr><td><input type=button value="Зарегистрироваться" onclick="doReg()" disabled></td><td align=right><a href="javascript://" onclick="showFrm('#win_login')">Уже есть аккаунт</a></td></tr>
+				<tr><td><input type=button value="%l10n_btn_reg%" onclick="doReg()" disabled></td><td align=right><a href="javascript://" onclick="showFrm('#win_login')">%l10n_str_has_login%</a></td></tr>
 				</table></form>
 			</div>
 		</div>
@@ -348,12 +348,12 @@ function initmenu()
 	<div class=modal_cnt align=center id=win_newpass>
 		<div class=modal_main>
 			<div class=modal_div>
-				<h2>Смена пароля</h2>
+				<h2>%l10n_msg_chpass%</h2>
 				<form id=frm_newpass method=post><table>
-				<tr><td>Пароль:</td><td><input type=password name=password></td></tr>
-				<tr><td>Подтвердите пароль:</td><td><input type=password name=password2></td></tr>
+				<tr><td>%l10n_str_pass%</td><td><input type=password name=password></td></tr>
+				<tr><td>%l10n_str_pass_rep%</td><td><input type=password name=password2></td></tr>
 				<tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr>
-				<tr><td><input type=button value="Сменить пароль" onclick="changePassword()"></td></tr>
+				<tr><td><input type=button value="%l10n_btn_chpass%" onclick="changePassword()"></td></tr>
 				</table></form>
 			</div>
 		</div>

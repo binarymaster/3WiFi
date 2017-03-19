@@ -1,4 +1,4 @@
-﻿<title>3WiFi: Учетная запись</title>
+﻿<title>%l10n_title_user%</title>
 
 <head>
 <script type="text/javascript">
@@ -6,13 +6,13 @@ function levelToText(level)
 {
 	switch (level)
 	{
-		case -2: return 'Заблокирован';
-		case -1: return 'Не авторизован';
-		case 0: return 'Гостевой аккаунт';
-		case 1: return 'Пользователь';
-		case 2: return 'Разработчик';
-		case 3: return 'Администратор';
-		default: return 'Н/Д';
+		case -2: return '%l10n_user_banned%';
+		case -1: return '%l10n_user_unauthorized%';
+		case 0: return '%l10n_user_guest%';
+		case 1: return '%l10n_user_user%';
+		case 2: return '%l10n_user_developer%';
+		case 3: return '%l10n_user_admin%';
+		default: return '%l10n_no_access%';
 	}
 }
 function initpage()
@@ -55,7 +55,7 @@ function initpage()
 	var login = $('#tab1').find('td')[1].textContent;
 	if (ProfileInfo.Level > 0 && (ProfileInfo.Nickname.toLowerCase() == login.toLowerCase()))
 	{
-		alert("Внимание! Ваш логин совпадает с никнеймом.\n\nПоскольку никнейм является публичным и может отображаться в рейтинге, рекомендуется сменить его, чтобы никто не узнал ваш настоящий логин.");
+		alert("%l10n_user_login_eq_nick%");
 		editNick();
 	}
 }
@@ -73,7 +73,7 @@ function getMyUploads()
 		}
 		if (json.data.length == 0)
 		{
-			$('#uploaded').html('<tr><td colspan=11>Загруженных вами точек пока нет</td></tr>');
+			$('#uploaded').html('<tr><td colspan=11>%l10n_user_no_uploads%</td></tr>');
 			return;
 		}
 		for (var i = 0; i < json.data.length; i++)
@@ -101,7 +101,7 @@ function getMyUploads()
 			$('#uploaded').append(tr);
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#uploaded').html('<tr><td colspan=11>Ошибка загрузки данных</td></tr>');
+		$('#uploaded').html('<tr><td colspan=11>%l10n_err_data%</td></tr>');
 	});
 }
 
@@ -116,7 +116,7 @@ function myDownload()
 		}
 		if (json.count == 0)
 		{
-			alert('У вас нет загруженных точек.');
+			alert('%l10n_user_download_no%');
 			return;
 		}
 		var a = document.createElement('a');
@@ -131,7 +131,7 @@ function myDownload()
 		a.dispatchEvent(clickEvent);
 		a.remove();
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	});
 }
 
@@ -149,7 +149,7 @@ function getMyFavorites()
 		$('#favap_cnt').text(json.data.length);
 		if (json.data.length == 0)
 		{
-			$('#favorited_aps').html('<tr><td colspan=9>Избранных точек пока нет</td></tr>');
+			$('#favorited_aps').html('<tr><td colspan=9>%l10n_user_no_fav%</td></tr>');
 			return;
 		}
 		for (var i = 0; i < json.data.length; i++)
@@ -175,7 +175,7 @@ function getMyFavorites()
 			$('#favorited_aps').append(tr);
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#favorited_aps').html('<tr><td colspan=9>Ошибка загрузки данных</td></tr>');
+		$('#favorited_aps').html('<tr><td colspan=9>%l10n_err_data%</td></tr>');
 	});
 }
 
@@ -187,7 +187,7 @@ function markFav(e,id)
 		var onFail = function(jqXHR, textStatus, errorThrown)
 		{
 			$(e).find('img').attr('src', 'img/no.png');
-			alert('Ошибка загрузки данных');
+			alert('%l10n_err_data%');
 		};
 		$.get('user.php?a=token', function(json)
 		{
@@ -215,7 +215,7 @@ function markFav(e,id)
 					$(e).parent().parent().remove();
 					$('#favap_cnt').text(parseInt($('#favap_cnt').text()) - 1);
 					if (parseInt($('#favap_cnt').text()) == 0)
-						$('#favorited_aps').html('<tr><td colspan=9>Избранных точек пока нет</td></tr>');
+						$('#favorited_aps').html('<tr><td colspan=9>%l10n_user_no_fav%</td></tr>');
 				}).fail(onFail);
 			}
 		}).fail(onFail);
@@ -223,7 +223,7 @@ function markFav(e,id)
 	}
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -262,7 +262,7 @@ function getMyLocations()
 		$('#favloc_cnt').text(json.data.length);
 		if (json.data.length == 0)
 		{
-			$('#favorited_loc').html('<tr><td colspan=4>Избранных локаций пока нет</td></tr>');
+			$('#favorited_loc').html('<tr><td colspan=4>%l10n_user_no_loc%</td></tr>');
 			return;
 		}
 		for (var i = 0; i < json.data.length; i++)
@@ -280,7 +280,7 @@ function getMyLocations()
 			$('#favorited_loc').append(tr);
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#favorited_loc').html('<tr><td colspan=4>Ошибка загрузки данных</td></tr>');
+		$('#favorited_loc').html('<tr><td colspan=4>%l10n_err_data%</td></tr>');
 	});
 }
 
@@ -293,7 +293,7 @@ function createLocation()
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
 		$('#tab3').find('input,button').prop('disabled', false);
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -353,7 +353,7 @@ function deleteLocation(e, lat, lon)
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
 		$(e).find('img').attr('src', 'img/no.png');
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -377,7 +377,7 @@ function deleteLocation(e, lat, lon)
 				$(e).parent().parent().remove();
 				$('#favloc_cnt').text(parseInt($('#favloc_cnt').text()) - 1);
 				if (parseInt($('#favloc_cnt').text()) == 0)
-					$('#favorited_loc').html('<tr><td colspan=4>Избранных локаций пока нет</td></tr>');
+					$('#favorited_loc').html('<tr><td colspan=4>%l10n_user_no_loc%</td></tr>');
 			}).fail(onFail);
 		}
 	}).fail(onFail);
@@ -395,7 +395,7 @@ function createInvite()
 {
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -425,7 +425,7 @@ function updateInvite()
 {
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -460,7 +460,7 @@ function deleteInvite()
 {
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -498,7 +498,7 @@ function getInvitesInfo()
 		var table = $('#invtable');
 		table.empty();
 
-		$('#invcount').text(ProfileInfo.Level < 3 ? ProfileInfo.invites : 'безлимит');
+		$('#invcount').text(ProfileInfo.Level < 3 ? ProfileInfo.invites : '%l10n_str_unlimited%');
 
 		if (!json.result)
 		{
@@ -527,10 +527,10 @@ function getInvitesInfo()
 		}
 		else
 		{
-			table.html('<tr><td colspan=6>Нет созданных приглашений</td></tr>');
+			table.html('<tr><td colspan=6>%l10n_user_no_inv%</td></tr>');
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	});
 }
 
@@ -559,7 +559,7 @@ function changeNick()
 	};
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -578,7 +578,7 @@ function changeNick()
 					alert(errorStr(json.error));
 					return onRelease();
 				} else {
-					alert("Никнейм успешно изменён");
+					alert("%l10n_user_nick_changed%");
 					location.reload(true);
 				}
 			}).fail(onFail);
@@ -590,12 +590,12 @@ function changePassword()
 {
 	var pass = $('#win_newpass [name=password]').val();
 	if (! (pass == $('#win_newpass [name=password2]').val())) {
-		alert("Пароли не совпадают");
+		alert("%l10n_user_password_diff%");
 		return;
 	}
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -614,7 +614,7 @@ function changePassword()
 					alert(errorStr(json.error));
 					return;
 				} else {
-					alert("Пароль успешно изменён");
+					alert("%l10n_user_password_changed%");
 					hideModal();
 				}
 			}).fail(onFail);
@@ -627,7 +627,7 @@ function createApiKey(type)
 {
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -697,7 +697,7 @@ function parsestat(st, d)
 	if (typeof d.stat.top == 'number')
 	{
 		$('#sttot').text('('+d.stat.total+')');
-		$('#stcnt').text('(топ'+d.stat.top+')');
+		$('#stcnt').text('(%l10n_str_top%'+d.stat.top+')');
 	} else {
 		var total = 0;
 		for (var i = 0; i < d.stat.data.length; i++)
@@ -723,7 +723,7 @@ function loadstat(e, st)
 	$('td#stat_em').removeClass('stat_sel');
 	e.className = 'stat_sel';
 	$('.st1').show();
-	$('#stval').text('Загрузка...');
+	$('#stval').text('%l10n_stat_loading%');
 	$('#sttot').empty();
 	$('#stcnt').empty();
 	$('#stat').html('<tr><td></td><td><img src="img/loading.gif"></td></tr>');
@@ -736,64 +736,64 @@ function loadstat(e, st)
 			switch (st)
 			{
 				case 'stat':
-				$('#stval').text('Сводная таблица');
-				appendRow('stat', 0, d.stat.total, 'Загружено точек вами');
-				appendRow('stat', 1, d.stat.bssids, 'С корректным BSSID');
-				appendRow('stat', 2, d.stat.uniqbss, 'С уникальным BSSID');
-				appendRow('stat', 3, d.stat.onmap, 'Найдено на карте');
+				$('#stval').text('%l10n_tbl_summary%');
+				appendRow('stat', 0, d.stat.total, '%l10n_tbl_your_total%');
+				appendRow('stat', 1, d.stat.bssids, '%l10n_tbl_with_bssid%');
+				appendRow('stat', 2, d.stat.uniqbss, '%l10n_tbl_uniq_bssid%');
+				appendRow('stat', 3, d.stat.onmap, '%l10n_tbl_on_map%');
 				break;
 				case 'stcmt':
-				$('#stval').text('Комментарии');
+				$('#stval').text('%l10n_stat_comments%');
 				parsestat(st, d);
 				break;
 				case 'stdev':
-				$('#stval').text('Названия устройств / прошивок');
+				$('#stval').text('%l10n_stat_devices_cap%');
 				parsestat(st, d);
 				break;
 				case 'stport':
-				$('#stval').text('Порты');
+				$('#stval').text('%l10n_stat_ports%');
 				parsestat(st, d);
 				break;
 				case 'stauth':
-				$('#stval').text('Данные авторизации');
+				$('#stval').text('%l10n_stat_auth_cap%');
 				parsestat(st, d);
 				break;
 				case 'stbss':
-				$('#stval').text('BSSID / MAC-адрес');
+				$('#stval').text('%l10n_stat_bssids_cap%');
 				parsestat(st, d);
 				break;
 				case 'stess':
-				$('#stval').text('ESSID / Имя сети');
+				$('#stval').text('%l10n_stat_essids_cap%');
 				parsestat(st, d);
 				break;
 				case 'stsec':
-				$('#stval').text('Тип защиты');
+				$('#stval').text('%l10n_stat_security_cap%');
 				parsestat(st, d);
 				break;
 				case 'stkey':
-				$('#stval').text('Ключ сети');
+				$('#stval').text('%l10n_stat_wifikey_cap%');
 				parsestat(st, d);
 				break;
 				case 'stwps':
-				$('#stval').text('Пин код WPS');
+				$('#stval').text('%l10n_stat_wpspin_cap%');
 				parsestat(st, d);
 				break;
 				case 'stdns':
-				$('#stval').text('Серверы доменных имён');
+				$('#stval').text('%l10n_stat_dns_cap%');
 				parsestat(st, d);
 				break;
 				case 'stsid':
-				$('#stval').text('Активные участники');
+				$('#stval').text('%l10n_stat_users_cap%');
 				parsestat(st, d);
 				break;
 			}
 		} else {
-			$('#stval').text('Нет данных');
+			$('#stval').text('%l10n_no_data%');
 			$('#stat > tr > :nth-child(2)').text(errorStr(d.error));
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#stval').text('Нет данных');
-		$('#stat > tr > :nth-child(2)').text('Ошибка загрузки данных');
+		$('#stval').text('%l10n_no_data%');
+		$('#stat > tr > :nth-child(2)').text('%l10n_err_data%');
 		stLoading = false;
 	});
 }
@@ -802,40 +802,40 @@ function loadstat(e, st)
 </head>
 
 <body>
-<h2 align=center><span class=header_cap>Управление пользователем %nick%</span></h2>
+<h2 align=center><span class=header_cap>%l10n_msg_user% %nick%</span></h2>
 
 <div class=usetTabContainer>
 	<div class=userTabs>
-		<div id=tab1b class=userTabActive dir=ltr><a href="#info" onclick="switchTab(1)">Данные профиля</a></div>
-		<div id=tab2b class=userTab dir=ltr><a href="#uploads" onclick="switchTab(2)">Загруженные точки</a></div>
-		<div id=tab3b class=userTab dir=ltr><a href="#fave" onclick="switchTab(3)">Избранное</a></div>
-		<div id=tab4b class=userTab dir=ltr><a href="#inv" onclick="switchTab(4)">Приглашения</a></div>
-		<div id=tab5b class=userTab dir=ltr><a href="#stats" onclick="switchTab(5)">Моя статистика</a></div>
+		<div id=tab1b class=userTabActive dir=ltr><a href="#info" onclick="switchTab(1)">%l10n_tab_profile%</a></div>
+		<div id=tab2b class=userTab dir=ltr><a href="#uploads" onclick="switchTab(2)">%l10n_tab_uploads%</a></div>
+		<div id=tab3b class=userTab dir=ltr><a href="#fave" onclick="switchTab(3)">%l10n_tab_favorites%</a></div>
+		<div id=tab4b class=userTab dir=ltr><a href="#inv" onclick="switchTab(4)">%l10n_tab_invites%</a></div>
+		<div id=tab5b class=userTab dir=ltr><a href="#stats" onclick="switchTab(5)">%l10n_tab_mystats%</a></div>
 	</div>
 	<div class=userCodeContainer>
 		<div id=tab1 class=userCode dir=ltr style="display: block;">
 			<table>
-			<tr><td>Логин:</td><td>%login%</td></tr>
-			<tr><td>Никнейм:</td><td>
-				<span id=nicklabel>%nick% <a href="javascript://" onclick="editNick()">(изменить)</a></span>
-				<span id=nickeditor style="display:none"><input type=text id=nickedit />&nbsp;<button onclick="changeNick()">Сохранить</button>&nbsp;<button onclick="editNick()">Отменить</button></span>
+			<tr><td>%l10n_str_login%</td><td>%login%</td></tr>
+			<tr><td>%l10n_str_nick_full%</td><td>
+				<span id=nicklabel>%nick% <a href="javascript://" onclick="editNick()">(%l10n_str_change%)</a></span>
+				<span id=nickeditor style="display:none"><input type=text id=nickedit />&nbsp;<button onclick="changeNick()">%l10n_btn_save%</button>&nbsp;<button onclick="editNick()">%l10n_btn_cancel%</button></span>
 			</td></tr>
-			<tr><td>Дата регистрации:</td><td>%regdate%</td></tr>
-			<tr><td>Уровень:</td><td id=userlevel></td></tr>
-			<tr><td>Пароль:</td><td><a href="javascript://" onclick="showModal('#win_newpass')">Изменить</a></td></tr>
-			<tr><td>API ключ/чтение:</td><td><span id="rapikey">%rapikey%</span> <a href="javascript://" onclick="createApiKey(1)">(получить новый)</a></td></tr>
-			<tr><td>API ключ/запись:</td><td><span id="wapikey">%wapikey%</span> <a href="javascript://" onclick="createApiKey(2)">(получить новый)</a></td></tr>
-			<tr><td>Пригласивший:</td><td>%refuser%</td></tr>
+			<tr><td>%l10n_str_reg_date%</td><td>%regdate%</td></tr>
+			<tr><td>%l10n_str_level%</td><td id=userlevel></td></tr>
+			<tr><td>%l10n_str_pass%</td><td><a href="javascript://" onclick="showModal('#win_newpass')">%l10n_btn_change%</a></td></tr>
+			<tr><td>%l10n_str_apikey_r%</td><td><span id="rapikey">%rapikey%</span> <a href="javascript://" onclick="createApiKey(1)">(%l10n_str_get_new%)</a></td></tr>
+			<tr><td>%l10n_str_apikey_w%</td><td><span id="wapikey">%wapikey%</span> <a href="javascript://" onclick="createApiKey(2)">(%l10n_str_get_new%)</a></td></tr>
+			<tr><td>%l10n_str_inviter%</td><td>%refuser%</td></tr>
 			<tr><td colspan=2></td></tr>
-			<tr><td>Тема оформления:</td><td><select name="themes"><option value="">3WiFi Classic</option></select> <small>(настройка хранится в cookies)</small></td></tr>
+			<tr><td>%l10n_str_theme%</td><td><select name="themes"><option value="">3WiFi Classic</option></select> <small>(%l10n_str_cookies%)</small></td></tr>
 			</table>
 		</div>
 		<div id=tab2 class=userCode dir=ltr style="display: none;">
 			<div style="max-height: 100%; overflow: auto">
-				<p style="margin-top: 7px">Отображается 200 последних загруженных точек. <a href="javascript://" onclick="myDownload()">Скачать все (.txt)</a>.</p>
+				<p style="margin-top: 7px">%l10n_user_last_uploads% <a href="javascript://" onclick="myDownload()">%l10n_user_download_all%</a>.</p>
 				<table class=st1 align=center>
 				<thead style="white-space: nowrap">
-				<tr><th>Дата</th><th>Комментарий</th><th>IP / Порт</th><th>Авторизация</th><th>Имя устройства</th><th>BSSID</th><th>ESSID</th><th>Тип защиты</th><th>Ключ сети</th><th>WPS PIN</th><th>Ссылки</th></tr>
+				<tr><th>%l10n_tbl_date%</th><th>%l10n_tbl_comment%</th><th>%l10n_tbl_ipport%</th><th>%l10n_tbl_auth%</th><th>%l10n_tbl_dev%</th><th>%l10n_tbl_bssid%</th><th>%l10n_tbl_essid%</th><th>%l10n_tbl_security%</th><th>%l10n_tbl_wifikey%</th><th>%l10n_tbl_wpspin%</th><th>%l10n_tbl_links%</th></tr>
 				</thead>
 				<tbody id=uploaded style="font-size: 12px">
 				</tbody>
@@ -844,31 +844,31 @@ function loadstat(e, st)
 		</div>
 		<div id=tab3 class=userCode dir=ltr style="display: none;">
 			<table>
-			<tr><td style="padding: 4 8 4 8" colspan=2>Избранные точки доступа (<span id=favap_cnt>0</span> из 200).</td></tr>
+			<tr><td style="padding: 4 8 4 8" colspan=2>%l10n_user_favorited_aps% (<span id=favap_cnt>0</span> %l10n_str_of% 200).</td></tr>
 			<tr><td style="vertical-align: top" colspan=2>
 				<table class=st1>
 				<thead style="white-space: nowrap">
-				<tr><th>Дата</th><th>Комментарий</th><th>Диапазон IP</th><th>BSSID</th><th>ESSID</th><th>Тип защиты</th><th>Ключ сети</th><th>WPS PIN</th><th>Ссылки</th></tr>
+				<tr><th>%l10n_tbl_date%</th><th>%l10n_tbl_comment%</th><th>%l10n_tbl_iprange%</th><th>%l10n_tbl_bssid%</th><th>%l10n_tbl_essid%</th><th>%l10n_tbl_security%</th><th>%l10n_tbl_wifikey%</th><th>%l10n_tbl_wpspin%</th><th>%l10n_tbl_links%</th></tr>
 				</thead>
 				<tbody id=favorited_aps style="font-size: 12px">
 				</tbody>
 				</table>
 			</td></tr>
-			<tr><td style="padding: 4 8 4 8" colspan=2>Избранные локации (<span id=favloc_cnt>0</span> из 100).</td></tr>
+			<tr><td style="padding: 4 8 4 8" colspan=2>%l10n_user_favorited_loc% (<span id=favloc_cnt>0</span> %l10n_str_of% 100).</td></tr>
 			<tr><td style="vertical-align: top">
 				<table class=st1>
 				<thead style="white-space: nowrap">
-				<tr><th>Широта</th><th>Долгота</th><th>Комментарий</th><th>Ссылки</th></tr>
+				<tr><th>%l10n_tbl_lat%</th><th>%l10n_tbl_lon%</th><th>%l10n_tbl_comment%</th><th>%l10n_tbl_links%</th></tr>
 				</thead>
 				<tbody id=favorited_loc style="font-size: 12px">
 				</tbody>
 				</table>
 			</td><td style="vertical-align: top">
 				<table class=graphbkg style="margin-left: 16px; padding: 8">
-				<tr><td align=right>Широта:</td><td><input id=floclat type="number" min="-90" max="90" step="0.00000001" /></td></tr>
-				<tr><td align=right>Долгота:</td><td><input id=floclon type="number" min="-180" max="180" step="0.00000001" /></td></tr>
-				<tr><td align=right>Комментарий:</td><td><input id=floccmt type=text /></td></tr>
-				<tr><td align=right></td><td><button onclick="createLocation()">Добавить / Сохранить</button></td></tr>
+				<tr><td align=right>%l10n_str_lat%</td><td><input id=floclat type="number" min="-90" max="90" step="0.00000001" /></td></tr>
+				<tr><td align=right>%l10n_str_lon%</td><td><input id=floclon type="number" min="-180" max="180" step="0.00000001" /></td></tr>
+				<tr><td align=right>%l10n_str_comment%</td><td><input id=floccmt type=text /></td></tr>
+				<tr><td align=right></td><td><button onclick="createLocation()">%l10n_btn_add_save%</button></td></tr>
 				</table>
 			</td></tr>
 			</table>
@@ -878,7 +878,7 @@ function loadstat(e, st)
 				<div style="max-height: 100%; overflow: auto">
 					<table class=st1>
 					<thead>
-					<tr><th><input type=checkbox id=invchkall onclick="$('.invchk').prop('checked', this.checked)"></th><th>Дата приглашения</th><th>Дата регистрации</th><th>Код приглашения</th><th>Уровень доступа</th><th>Никнейм</th></tr>
+					<tr><th><input type=checkbox id=invchkall onclick="$('.invchk').prop('checked', this.checked)"></th><th>%l10n_tbl_inv_date%</th><th>%l10n_tbl_reg_date%</th><th>%l10n_tbl_inv_code%</th><th>%l10n_tbl_level%</th><th>%l10n_tbl_nick%</th></tr>
 					</thead>
 					<tbody id=invtable>
 					</tbody>
@@ -886,36 +886,36 @@ function loadstat(e, st)
 				</div>
 				<div class=graphbkg style="margin-left: 16px; padding: 8">
 					<table>
-					<tr><td colspan=2>Осталось приглашений: <span id=invcount></span></td></tr>
-					<tr><td align=right><select id=invlevel></select></td><td><button onclick="createInvite()">Добавить</button></td></tr>
-					<tr><td align=right><button onclick="updateInvite()">Сохранить</button></td><td><button onclick="deleteInvite()">Удалить</button></td></tr>
+					<tr><td colspan=2>%l10n_str_inv_left% <span id=invcount></span></td></tr>
+					<tr><td align=right><select id=invlevel></select></td><td><button onclick="createInvite()">%l10n_btn_add%</button></td></tr>
+					<tr><td align=right><button onclick="updateInvite()">%l10n_btn_save%</button></td><td><button onclick="deleteInvite()">%l10n_btn_delete%</button></td></tr>
 					</table>
 				</div>
 			</div>
 		</div>
 		<div id=tab5 class=userCode dir=ltr style="display: none; padding: 0">
 			<table class=st2 cellspacing=0>
-			<tr><td id=stat_em onclick="loadstat(this,'stat')" style="border-top: none">Сводная</td>
+			<tr><td id=stat_em onclick="loadstat(this,'stat')" style="border-top: none">%l10n_stat_summary%</td>
 				<td rowspan=11 style="width: 100%; vertical-align: top; padding: 0">
 				<div style="max-height: 396px; overflow-y: auto">
 					<table class=st1 style="display: none;">
 					<tbody>
-					<tr><th>Кол-во <span id=sttot></span></th><th><span id=stval>Значение</span> <span id=stcnt></span></th></tr>
+					<tr><th>%l10n_tbl_count% <span id=sttot></span></th><th><span id=stval>%l10n_tbl_value%</span> <span id=stcnt></span></th></tr>
 					</tbody>
 					<tbody id=stat></tbody>
 					</table>
 				</div>
 				</td></tr>
-			<tr><td id=stat_em onclick="loadstat(this,'stcmt')">Комментарии</td></tr>
-			<tr><td id=stat_em onclick="loadstat(this,'stdev')">Устройства</td></tr>
-			<tr><td id=stat_em onclick="loadstat(this,'stport')">Порты</td></tr>
-			<tr><td id=stat_em onclick="loadstat(this,'stauth')">Авторизация</td></tr>
-			<tr><td id=stat_em onclick="loadstat(this,'stbss')">BSSID</td></tr>
-			<tr><td id=stat_em onclick="loadstat(this,'stess')">ESSID</td></tr>
-			<tr><td id=stat_em onclick="loadstat(this,'stsec')">Защита</td></tr>
-			<tr><td id=stat_em onclick="loadstat(this,'stkey')">Ключи</td></tr>
-			<tr><td id=stat_em onclick="loadstat(this,'stwps')">WPS</td></tr>
-			<tr><td id=stat_em onclick="loadstat(this,'stdns')">DNS</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stcmt')">%l10n_stat_comments%</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stdev')">%l10n_stat_devices%</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stport')">%l10n_stat_ports%</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stauth')">%l10n_stat_auth%</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stbss')">%l10n_stat_bssids%</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stess')">%l10n_stat_essids%</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stsec')">%l10n_stat_security%</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stkey')">%l10n_stat_wifikey%</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stwps')">%l10n_stat_wpspin%</td></tr>
+			<tr><td id=stat_em onclick="loadstat(this,'stdns')">%l10n_stat_dns%</td></tr>
 			</table>
 		</div>
 	</div>

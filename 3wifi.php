@@ -461,24 +461,24 @@ switch ($action)
 	if (isset($_POST['longitude'])) $lon = $_POST['longitude'];
 	if ($lat == '')
 	{
-		$json['error'] = 'Введите значение широты';
+		$json['error'] = 'form';
 		break;
 	}
 	if ($lon == '')
 	{
-		$json['error'] = 'Введите значение долготы';
+		$json['error'] = 'form';
 		break;
 	}
 	$lat = (float)$lat;
 	$lon = (float)$lon;
 	if ($lat < -90 || $lat > 90)
 	{
-		$json['error'] = 'Значение широты должно лежать в диапазоне [-90;90]';
+		$json['error'] = 'form';
 		break;
 	}
 	if ($lon < -180 || $lon > 180)
 	{
-		$json['error'] = 'Значение долготы должно лежать в диапазоне [-180;180]';
+		$json['error'] = 'form';
 		break;
 	}
 
@@ -486,13 +486,13 @@ switch ($action)
 	if (isset($_POST['radius'])) $radius = $_POST['radius'];
 	if ($radius == '')
 	{
-		$json['error'] = 'Введите значение радиуса поиска';
+		$json['error'] = 'form';
 		break;
 	}
 	$radius = (float)$radius;
 	if ($radius < 0 || $radius > 25)
 	{
-		$json['error'] = 'Значение радиуса поиска должно лежать в диапазоне (0;25]';
+		$json['error'] = 'form';
 		break;
 	}
 

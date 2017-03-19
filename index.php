@@ -22,6 +22,27 @@ function validPage($page)
 	}
 	return $result;
 }
+function detectBestLang($langs)
+{
+	$langs = explode(',', $langs);
+	$parsed = array();
+	foreach ($langs as $lang)
+	{
+		$v = explode(';q=', $lang);
+		if (!isset($v[1])) $v[1] = 1;
+		$parsed[$v[0]] = (float)$v[1];
+	}
+	$available = scandir('l10n/');
+	arsort($parsed);
+	foreach ($parsed as $lang => $q)
+	{
+		if ( in_array("$lang.php", $available, true) )
+		{
+			return $lang;
+		}
+	}
+	return 'en';
+}
 if (isset($_GET['redir']) && $_GET['redir'] != '')
 {
 	$page = validPage($_GET['redir']);
@@ -66,11 +87,17 @@ if (isset($_GET['rad']))
 	$rad = (float)$_GET['rad'];
 }
 
+$langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+if (empty($langs)) $langs = 'en';
+
+$lang = detectBestLang($langs);
+include_once "l10n/$lang.php";
+
 if (!file_exists($page.'.html')) $page = '404';
 $hfile = file_get_contents($page.'.html');
 
 $title = getStringBetween($hfile, '<title>', '</title>');
-if ($title == '') $title = '3WiFi: Свободная база точек доступа';
+if ($title == '') $title = $l10n['title'];
 $head = getStringBetween($hfile, '<head>', '</head>');
 $content = getStringBetween($hfile, '<body>', '</body>');
 
@@ -138,14 +165,14 @@ if(TRY_USE_MEMORY_TABLES)
 	$DataBaseStatus = GetStatsValue(STATS_DATABASE_STATUS);
 	if($DataBaseStatus == DATABASE_PREPARE)
 	{
-		$broadcast .= '<p class=failure><b>Внимание!</b> База данных временно недоступна: Запущен процесс индексирования таблиц в памяти, это займёт некоторое время.</p>';
+		$broadcast .= '<p class=failure><b>'.$l10n['warning'].'</b> '.$l10n['db_prepare'].'</p>';
 	}
 }
 $content = str_replace('%broadcast%', $broadcast, $content);
 
 $profile = 'isUser: %isUser%, Nickname: "%nick%", Level: %user_access_level%, invites: %user_invites%';
 
-$content = str_replace('%login_str%', ($UserManager->isLogged() ? 'Выход' : 'Вход'), $content);
+$content = str_replace('%login_str%', ($UserManager->isLogged() ? $l10n['menu_logout'] : $l10n['menu_login']), $content);
 $content = str_replace('%profile%', $profile, $content);
 $content = str_replace('%isUser%', (int)$UserManager->isLogged(), $content);
 $content = str_replace('%login%', htmlspecialchars($UserManager->Login), $content);
@@ -159,6 +186,11 @@ $content = str_replace('%refuser%', $UserManager->InviterNickName, $content);
 $content = str_replace('%var_lat%', $lat, $content);
 $content = str_replace('%var_lon%', $lon, $content);
 $content = str_replace('%var_rad%', $rad, $content);
+
+foreach ($l10n as $key => $value)
+{
+	$content = str_replace("%l10n_$key%", $value, $content);
+}
 
 echo str_replace('</body>', $incscript.'</body>', $content);
 ?>

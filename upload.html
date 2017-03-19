@@ -1,4 +1,4 @@
-<title>3WiFi: Добавление точек в базу</title>
+<title>%l10n_title_upload%</title>
 
 <head>
 <script type="text/javascript">
@@ -50,7 +50,7 @@ function uploadStat()
 	{
 		if (data.upstat.state == -1)
 		{
-			$('#output').append('<b>Ошибка:</b> Задание не существует, либо обработка ещё не началась.<br>');
+			$('#output').append('<b>%l10n_str_error%</b> %l10n_upload_task_unset%.<br>');
 			return;
 		}
 		if (lastState < data.upstat.state)
@@ -58,15 +58,15 @@ function uploadStat()
 			if (data.upstat.state >= 1)
 			{
 				if (lastState < 1)
-					$('#output').append('Производится запись отчёта в БД...<br>');
+					$('#output').append('%l10n_upload_proc_begin%<br>');
 				if ($('#cnttotal').length == 0)
-					$('#output').append('Загружено в базу: <b id=cntadded></b> из <b id=cnttotal></b><span id=st2></span>.<br>');
+					$('#output').append('%l10n_str_uploaded% <b id=cntadded></b> %l10n_str_of% <b id=cnttotal></b><span id=st2></span>.<br>');
 			}
 			if (data.upstat.state >= 2)
 			{
 				if (data.upstat.warns.length > 0 && $('#ulwrn').length == 0)
 				{
-					$('#output').append('Следующие записи <b>не были</b> внесены в базу: <button onclick="$(\'#ulwrn\').css(\'display\',\'block\')">Показать</button><br><ul id=ulwrn style="display:none"></ul>');
+					$('#output').append('%l10n_upload_not_added% <button onclick="$(\'#ulwrn\').css(\'display\',\'block\')">%l10n_btn_show%</button><br><ul id=ulwrn style="display:none"></ul>');
 					var warns = data.upstat.warns.split(',');
 					var line = 0;
 					var warnid = 0;
@@ -75,33 +75,33 @@ function uploadStat()
 					{
 						line = parseInt(warns[i].split('|')[0]);
 						warnid = parseInt(warns[i].split('|')[1]);
-						wrnstr = 'Неизвестная ошибка';
+						wrnstr = '%l10n_err_unknown%';
 						switch (warnid)
 						{
 							case 1:
-							wrnstr = 'Нет валидных данных точки доступа';
+							wrnstr = '%l10n_upload_err_invalid%';
 							break;
 							case 2:
-							wrnstr = 'Устройство не имеет беспроводного адаптера';
+							wrnstr = '%l10n_upload_err_wired%';
 							break;
 							case 3:
-							wrnstr = 'Не достаточно полезных данных для внесения в базу';
+							wrnstr = '%l10n_upload_err_nowlan%';
 							break;
 							case 4:
-							wrnstr = 'Данная точка доступа уже есть в базе';
+							wrnstr = '%l10n_upload_err_exist%';
 							break;
 						}
-						$('#ulwrn').append('<li>Строка ' + line + ': ' + wrnstr + '.</li>');
+						$('#ulwrn').append('<li>%l10n_str_line% ' + line + ': ' + wrnstr + '.</li>');
 					}
 				}
 				if (lastState < 2)
-					$('#output').append('<br>Определение координат точек...<br>');
+					$('#output').append('<br>%l10n_upload_detect_loc%<br>');
 				if ($('#cntfound').length == 0)
-					$('#output').append('Найдено на карте: <b id=cntfound></b><span id=st3></span>.<br>');
+					$('#output').append('%l10n_upload_found% <b id=cntfound></b><span id=st3></span>.<br>');
 			}
 			if (data.upstat.state == 3)
 			{
-				$('#output').append('Задание выполнено!<br>');
+				$('#output').append('%l10n_upload_task_done%<br>');
 				setProgress(0);
 				$('input[type=file]').replaceWith($('input[type=file]').val('').clone(true));
 				$('input[type=file]').prop('disabled', false);
@@ -257,32 +257,32 @@ function processLines()
 			{
 				for (var i = 0; i < data.upload.error.length; i++)
 				{
-					var err = 'Неизвестная ошибка';
+					var err = '%l10n_err_unknown%';
 					switch (data.upload.error[i])
 					{
 						case 1:
-						err = 'Некорректные заголовки, либо недопустимый размер данных';
+						err = '%l10n_upload_task_bad%';
 						break;
 						case 2:
-						err = 'Указанное задание не существует';
+						err = '%l10n_upload_task_none%';
 						break;
 						case 3:
-						err = 'Задание в процессе обработки, невозможно внести изменения';
+						err = '%l10n_upload_task_proc%';
 						break;
 						case 4:
-						err = 'Несовпадение с форматом файла задания';
+						err = '%l10n_upload_task_format%';
 						break;
 						case 5:
-						err = 'Превышен максимально допустимый объём задания';
+						err = '%l10n_upload_task_size%';
 						break;
 						case 6:
-						err = 'Неподдерживаемый формат отчёта CSV, заголовки не верны или отсутствуют';
+						err = '%l10n_upload_task_csv%';
 						break;
 						case 7:
-						err = 'Неподдерживаемый формат отчёта TXT, нестандартное количество столбцов';
+						err = '%l10n_upload_task_txt%';
 						break;
 					}
-					$('#output').append('<b>Ошибка:</b> ' + err + '.<br>');
+					$('#output').append('<b>%l10n_str_error%</b> ' + err + '.<br>');
 				}
 				if (data.upload.state)
 				{
@@ -303,19 +303,19 @@ function processLines()
 							$('input[type=text]').prop('disabled', false);
 							$('input[type=checkbox]').prop('disabled', false);
 							$('#st1').empty();
-							$('#output').append('Загрузка успешно завершена!<br>');
-							$('#output').append('<br>Не удалось запустить обработку данных.<br>');
+							$('#output').append('%l10n_upload_done%<br>');
+							$('#output').append('<br>%l10n_upload_proc_fail%.<br>');
 						}
 					} else {
 						$('#st1').empty();
 						if (from < file.size)
 						{
-							$('#output').append('Загрузка завершена, но не полностью.<br>');
+							$('#output').append('%l10n_upload_undone%<br>');
 						} else {
-							$('#output').append('Загрузка успешно завершена!<br>');
+							$('#output').append('%l10n_upload_done%<br>');
 						}
-						$('#output').append('<br>Выполняется обработка данных...<br>');
-						$('#output').append('<b>Примечание:</b> Вы можете закрыть окно, либо обновить страницу для загрузки другого файла - обработка продолжится в фоновом режиме. Оставайтесь на странице, чтобы получить отчёт о вашей загрузке.<br><br>');
+						$('#output').append('<br>%l10n_msg_processing%<br>');
+						$('#output').append('<b>%l10n_str_notice%</b> %l10n_msg_upload_background%<br><br>');
 						lastState = 0;
 						setTimeout('uploadStat()', 1000);
 					}
@@ -326,7 +326,7 @@ function processLines()
 					$('input[type=file]').prop('disabled', false);
 					$('input[type=text]').prop('disabled', false);
 					$('input[type=checkbox]').prop('disabled', false);
-					$('#output').append('Загрузка остановлена из-за ошибки.<br>');
+					$('#output').append('%l10n_msg_upload_stopped%<br>');
 				}
 			}
 		});
@@ -348,7 +348,7 @@ function startProcess()
 	from = 0;
 	szChunk = szStep;
 
-	$('#output').append('Выполняется загрузка файла...<span id=st1>&nbsp;<img src="%theme_ajax%"></span><br>');
+	$('#output').append('%l10n_msg_upload_file%<span id=st1>&nbsp;<img src="%theme_ajax%"></span><br>');
 	reader = new FileReader();
 	reader.onload = processLines;
 	blob = filePart(file, from, szChunk);
@@ -366,13 +366,13 @@ function checkFile(f)
 	if (file.size > 500000000) // 500 MB
 	{
 		$(f).replaceWith($(f).val('').clone(true));
-		$('#output').text('Размер файла должен быть не более 500 МБ!');
+		$('#output').text('%l10n_msg_upload_size%');
 		return;
 	}
 	if (file.size == 0)
 	{
 		$(f).replaceWith($(f).val('').clone(true));
-		$('#output').text('Выбранный файл не содержит данных!');
+		$('#output').text('%l10n_msg_upload_nodata%');
 		return;
 	}
 	$('input[type=submit]').prop('disabled', false);
@@ -380,8 +380,8 @@ function checkFile(f)
 	$('#output').empty();
 	var ext = file.name.substr(file.name.lastIndexOf('.')).toLowerCase();
 	if (ext != '.txt' && ext != '.csv')
-		$('#output').append('<b>Предупреждение:</b> Неизвестное расширение/формат файла, подразумевается CSV.<br>');
-	$('#output').append('Файл <b>' + jqEscape(file.name) + '</b> готов к загрузке.<br>');
+		$('#output').append('<b>%l10n_str_warning%</b> %l10n_msg_upload_extension%<br>');
+	$('#output').append('%l10n_str_file% <b>' + jqEscape(file.name) + '</b> %l10n_str_upload_ready%.<br>');
 }
 
 function setProgress(val)
@@ -401,7 +401,7 @@ function initpage()
 		// Good
 		setProgress(0);
 	} else {
-		$('#formtable').html("Необходимые File API не поддерживаются вашим браузером.<br><br>Попробуйте открыть эту страницу другим браузером.");
+		$('#formtable').html("%l10n_msg_upload_fileapi%");
 	}
 }
 </script>
@@ -410,14 +410,14 @@ function initpage()
 <body>
 <div class=uploadbkg id=formtable>
 	<table>
-	<tr><td>Отчёт Router Scan:</td><td><input name="userfile" type="file" accept=".csv,.txt" onchange="checkFile(this)" /> &nbsp;(в формате <b>CSV</b> или <b>TXT</b>)</td></tr>
-	<tr><td>Ваш комментарий:</td><td><span class=wrapper>
-		<input name="comment" type="text" placeholder="Город, провайдер, и т.п." autocomplete="off" onkeyup="showHint()" />
+	<tr><td>%l10n_str_upload%</td><td><input name="userfile" type="file" accept=".csv,.txt" onchange="checkFile(this)" /> &nbsp;(%l10n_upload_format%)</td></tr>
+	<tr><td>%l10n_str_your_comment%</td><td><span class=wrapper>
+		<input name="comment" type="text" placeholder="%l10n_str_comment_place%" autocomplete="off" onkeyup="showHint()" />
 		<span class=hint style="display: none; width: 320px; max-height: 300px; overflow-y: auto"></span>
 	</span></td></tr>
-	<tr><td style="vertical-align: top">Дополнительно:</td><td><input type="checkbox" name="checkexist" value="1">Не обновлять существующие в базе точки<br>(поставьте галку, если загружаете устаревшие данные, либо точки из других баз)</td></tr>
-	<tr><td>Ход загрузки:</td><td><span class=perc></span><b id=percnum></b></td></tr>
-	<tr><td><input type="submit" value="Отправить файл" onclick="startProcess()" disabled></td><td></td></tr>
+	<tr><td style="vertical-align: top">%l10n_str_misc%</td><td><input type="checkbox" name="checkexist" value="1">%l10n_upload_checkexist%</td></tr>
+	<tr><td>%l10n_str_upload_progress%</td><td><span class=perc></span><b id=percnum></b></td></tr>
+	<tr><td><input type="submit" value="%l10n_btn_upload%" onclick="startProcess()" disabled></td><td></td></tr>
 	</table>
 </div>
 <hr>

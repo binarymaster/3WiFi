@@ -1,4 +1,4 @@
-<title>3WiFi: Имя устройства по MAC</title>
+<title>%l10n_title_devmac%</title>
 
 <head>
 <script type="text/javascript">
@@ -9,7 +9,7 @@ function detect()
 	$('button').prop('disabled', true);
 	$('#fdata').empty();
 	$('#fhead').empty();
-	$('#fhead').append('<tr><th>Device Name</th><th>Probability</th></tr>');
+	$('#fhead').append('<tr><th>%l10n_tbl_dev_short%</th><th>%l10n_tbl_probability%</th></tr>');
 	$('#fdata').append('<tr><td colspan=2><img src="img/loading.gif"></td></tr>');
 
 	$.post('3wifi.php?a=devicemac', formdata, function(d)
@@ -18,12 +18,12 @@ function detect()
 		$('button').prop('disabled', false);
 		if (!d.result)
 		{
-			$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
+			$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
 			return;
 		}
 		if (!d.auth)
 		{
-			$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
+			$('#fdata > tr:first-child > :first-child').text('%l10n_err_unauthorized%.');
 			return;
 		}
 		if (d.scores.length > 0)
@@ -40,10 +40,10 @@ function detect()
 				perc.html(chld);
 			}
 		} else {
-			$('#fdata > tr:first-child > :first-child').text('Таких устройств в базе нет.');
+			$('#fdata > tr:first-child > :first-child').text('%l10n_dev_not_found%.');
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
+		$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
 		$('input').prop('disabled', false);
 		$('button').prop('disabled', false);
 	});
@@ -56,14 +56,14 @@ function initpage()
 </head>
 
 <body>
-<p>Данный инструмент позволяет приблизительно определить изготовителя и модель устройства по его BSSID / MAC-адресу. Сопоставление производится на основе данных, собранных Router Scan.</p>
+<p>%l10n_msg_devmac%</p>
 <form id=fdeviceform enctype="multipart/form-data" method="POST" onsubmit="detect(); return false">
 <table>
 	<tbody>
-		<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" autofocus /></td><td> (в формате <tt>00:11:22:33:44:55</tt>)</td></tr>
+		<tr><td>%l10n_str_bssid%</td><td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" autofocus /></td><td> (%l10n_bssid_format%)</td></tr>
 	</tbody>
 	<tbody>
-		<tr><td><input type=submit value="Определить" /></td><td></td></tr>
+		<tr><td><input type=submit value="%l10n_btn_detect%" /></td><td></td></tr>
 	</tbody>
 </table>
 </form>

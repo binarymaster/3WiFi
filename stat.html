@@ -1,4 +1,4 @@
-<title>3WiFi: Статистика</title>
+<title>%l10n_title_stat%</title>
 
 <head>
 <script type="text/javascript">
@@ -24,7 +24,7 @@ function parsestat(st, d)
 	if (typeof d.stat.top == 'number')
 	{
 		$('#sttot').text('('+d.stat.total+')');
-		$('#stcnt').text('(топ'+d.stat.top+')');
+		$('#stcnt').text('(%l10n_str_top%'+d.stat.top+')');
 	} else {
 		var total = 0;
 		for (var i = 0; i < d.stat.data.length; i++)
@@ -49,7 +49,7 @@ function loadstat(e, st)
 	$('td#stat_es').removeClass('stat_sel');
 	$(e).addClass('stat_sel');
 	$('.st1').show();
-	$('#stval').text('Загрузка...');
+	$('#stval').text('%l10n_stat_loading%');
 	$('#sttot').empty();
 	$('#stcnt').empty();
 	$('#stat').html('<tr><td></td><td><img src="img/loading.gif"></td></tr>');
@@ -62,71 +62,71 @@ function loadstat(e, st)
 			switch (st)
 			{
 				case 'stat':
-				$('#stat_cap').text('Статистика от '+d.stat.date+' UTC.');
-				$('#stval').text('Сводная таблица');
-				appendRow('stat', 0, d.stat.total, 'Всего записей в базе');
-				appendRow('stat', 1, d.stat.bssids, 'С корректным BSSID');
-				appendRow('stat', 2, d.stat.uniqbss, 'С уникальным BSSID');
-				appendRow('stat', 3, d.stat.onmap, 'Найдено на карте');
-				appendRow('stat', 4, 'Кол-во', 'Состояние заданий', false, false, true);
-				appendRow('stat', 5, d.stat.tasks.uploading, 'Заданий на загрузке', true);
-				appendRow('stat', 6, d.stat.tasks.processing, 'Заданий в обработке', true);
+				$('#stat_cap').text('%l10n_stat_caption% '+d.stat.date+' UTC.');
+				$('#stval').text('%l10n_tbl_summary%');
+				appendRow('stat', 0, d.stat.total, '%l10n_tbl_total%');
+				appendRow('stat', 1, d.stat.bssids, '%l10n_tbl_with_bssid%');
+				appendRow('stat', 2, d.stat.uniqbss, '%l10n_tbl_uniq_bssid%');
+				appendRow('stat', 3, d.stat.onmap, '%l10n_tbl_on_map%');
+				appendRow('stat', 4, '%l10n_tbl_count%', '%l10n_tbl_task_state%', false, false, true);
+				appendRow('stat', 5, d.stat.tasks.uploading, '%l10n_tbl_task_load%', true);
+				appendRow('stat', 6, d.stat.tasks.processing, '%l10n_tbl_task_proc%', true);
 				if (d.stat.tasks.comment != null)
-					appendRow('stat', 7, '✓', 'Сейчас обрабатывается: ' + d.stat.tasks.comment + '', true);
-				appendRow('stat', 8, d.stat.geoloc, 'Определение координат', true);
+					appendRow('stat', 7, '✓', '%l10n_tbl_task_now% ' + d.stat.tasks.comment + '', true);
+				appendRow('stat', 8, d.stat.geoloc, '%l10n_tbl_task_geo%', true);
 				break;
 				case 'stcmt':
-				$('#stval').text('Комментарии');
+				$('#stval').text('%l10n_stat_comments%');
 				parsestat(st, d);
 				break;
 				case 'stdev':
-				$('#stval').text('Названия устройств / прошивок');
+				$('#stval').text('%l10n_stat_devices_cap%');
 				parsestat(st, d);
 				break;
 				case 'stport':
-				$('#stval').text('Порты');
+				$('#stval').text('%l10n_stat_ports%');
 				parsestat(st, d);
 				break;
 				case 'stauth':
-				$('#stval').text('Данные авторизации');
+				$('#stval').text('%l10n_stat_auth_cap%');
 				parsestat(st, d);
 				break;
 				case 'stbss':
-				$('#stval').text('BSSID / MAC-адрес');
+				$('#stval').text('%l10n_stat_bssids_cap%');
 				parsestat(st, d);
 				break;
 				case 'stess':
-				$('#stval').text('ESSID / Имя сети');
+				$('#stval').text('%l10n_stat_essids_cap%');
 				parsestat(st, d);
 				break;
 				case 'stsec':
-				$('#stval').text('Тип защиты');
+				$('#stval').text('%l10n_stat_security_cap%');
 				parsestat(st, d);
 				break;
 				case 'stkey':
-				$('#stval').text('Ключ сети');
+				$('#stval').text('%l10n_stat_wifikey_cap%');
 				parsestat(st, d);
 				break;
 				case 'stwps':
-				$('#stval').text('Пин код WPS');
+				$('#stval').text('%l10n_stat_wpspin_cap%');
 				parsestat(st, d);
 				break;
 				case 'stdns':
-				$('#stval').text('Серверы доменных имён');
+				$('#stval').text('%l10n_stat_dns_cap%');
 				parsestat(st, d);
 				break;
 				case 'stsid':
-				$('#stval').text('Активные участники');
+				$('#stval').text('%l10n_stat_users_cap%');
 				parsestat(st, d);
 				break;
 			}
 		} else {
-			$('#stval').text('Нет данных');
-			$('#stat > tr > :nth-child(2)').text('Ошибка загрузки данных.');
+			$('#stval').text('%l10n_no_data%');
+			$('#stat > tr > :nth-child(2)').text('%l10n_err_data%.');
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#stval').text('Нет данных');
-		$('#stat > tr > :nth-child(2)').text('Ошибка загрузки данных.');
+		$('#stval').text('%l10n_no_data%');
+		$('#stat > tr > :nth-child(2)').text('%l10n_err_data%.');
 		stLoading = false;
 	});
 }
@@ -140,30 +140,30 @@ function initpage()
 </head>
 
 <body>
-<h2 align=center><span class=header_cap id=stat_cap>Статистика загружается...</span></h2>
-<noscript>Включите JavaScript для отображения данных.</noscript>
+<h2 align=center><span class=header_cap id=stat_cap>%l10n_msg_stat%</span></h2>
+<noscript>%l10n_msg_nojs%</noscript>
 
 <table class=st2 cellspacing=0>
-<tr><td id=stat_es onclick="loadstat(this,'stat')" class=first>Сводная</td>
+<tr><td id=stat_es onclick="loadstat(this,'stat')" class=first>%l10n_stat_summary%</td>
 	<td rowspan=13 id=stat_cn>
 		<table class=st1 style="display: none;">
 		<tbody>
-		<tr><th>Кол-во <span id=sttot></span></th><th><span id=stval>Значение</span> <span id=stcnt></span></th></tr>
+		<tr><th>%l10n_tbl_count% <span id=sttot></span></th><th><span id=stval>%l10n_tbl_value%</span> <span id=stcnt></span></th></tr>
 		</tbody>
 		<tbody id=stat></tbody>
 		</table>
 	</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stcmt')">Комментарии</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stdev')">Устройства</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stport')">Порты</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stauth')">Авторизация</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stbss')">BSSID</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stess')">ESSID</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stsec')">Защита</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stkey')">Ключи</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stwps')">WPS</td></tr>
-<tr><td id=stat_es onclick="loadstat(this,'stdns')">DNS</td></tr>
-<tr><td id=stat_es class=last onclick="loadstat(this,'stsid')">Участники</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stcmt')">%l10n_stat_comments%</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stdev')">%l10n_stat_devices%</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stport')">%l10n_stat_ports%</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stauth')">%l10n_stat_auth%</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stbss')">%l10n_stat_bssids%</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stess')">%l10n_stat_essids%</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stsec')">%l10n_stat_security%</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stkey')">%l10n_stat_wifikey%</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stwps')">%l10n_stat_wpspin%</td></tr>
+<tr><td id=stat_es onclick="loadstat(this,'stdns')">%l10n_stat_dns%</td></tr>
+<tr><td id=stat_es class=last onclick="loadstat(this,'stsid')">%l10n_stat_users%</td></tr>
 <tr><td id=stat_ft>&nbsp;</td></tr>
 </table>
 </body>

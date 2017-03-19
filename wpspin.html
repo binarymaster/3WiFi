@@ -1,4 +1,4 @@
-<title>3WiFi: Генератор WPS PIN</title>
+<title>%l10n_title_wpspin%</title>
 
 <head>
 <script type="text/javascript">
@@ -48,7 +48,7 @@ function pinSuggest()
 		mt = insert(mt, ':', 6);
 		mt = insert(mt, ':', 4);
 		mt = insert(mt, ':', 2);
-		$('#suggpin').text("Suggested PIN codes for "+mt+"\n\n");
+		$('#suggpin').text("%l10n_wpspin_suggested% "+mt+"\n\n");
 		var sugg = false;
 		for (var i = 0; i < algos.length; i++)
 		{
@@ -66,7 +66,7 @@ function pinSuggest()
 						pin = zeroFill(pin.toString(10), 8);
 						if (algos[i].stat)
 						{
-							$('#suggpin').append(pin + ' | Static PIN - ' + algos[i].name + "\n");
+							$('#suggpin').append(pin + ' | %l10n_wpspin_static% - ' + algos[i].name + "\n");
 						} else {
 							$('#suggpin').append(pin + ' | ' + algos[i].name + "\n");
 						}
@@ -82,20 +82,20 @@ function getAll()
 {
 	var m = $('#bssids').val().replace(/^\s+|\s+$/g, '').split("\n");
 	if (m.length > 1)
-		return alert('This function only for one BSSID.');
+		return alert('%l10n_wpspin_one_bssid%.');
 	var bss = m[0].replace(/ /g, '').toUpperCase();
 	m = m[0].replace(/:/g, '').replace(/-/g, '').replace(/\./g, '').replace(/ /g, '');
 	m = parseInt(m, 16);
 	if (isNaN(m) || m > 0xFFFFFFFFFFFF)
-		return alert('Incorrect BSSID.');
-	$('#result').text("PIN codes for "+bss+"\n\n");
+		return alert('%l10n_wpspin_bssid_wrong%.');
+	$('#result').text("%l10n_wpspin_all_pins% "+bss+"\n\n");
 	for (var i = 0; i < algos.length; i++)
 	{
 		var pin = pinChecksum(algos[i].func(m));
 		pin = zeroFill(pin.toString(10), 8);
 		if (algos[i].stat)
 		{
-			$('#result').append(pin + ' | Static PIN - ' + algos[i].name + "\n");
+			$('#result').append(pin + ' | %l10n_wpspin_static% - ' + algos[i].name + "\n");
 		} else {
 			$('#result').append(pin + ' | ' + algos[i].name + "\n");
 		}
@@ -112,11 +112,11 @@ function showAlgo()
 		{
 			if (algos[i].stat)
 			{
-				$('#result').append(algos[i].name + " static PIN,\n");
+				$('#result').append(algos[i].name + " %l10n_wpspin_stat%,\n");
 			} else {
-				$('#result').append(algos[i].name + " algorithm,\n");
+				$('#result').append(algos[i].name + " %l10n_wpspin_algo%,\n");
 			}
-			$('#result').append("used by these devices:\n\n");
+			$('#result').append("%l10n_wpspin_used_by%\n\n");
 			$('#result').append($('#' + algos[i].id).val());
 			break;
 		}
@@ -129,7 +129,7 @@ function detect()
 	$('button').prop('disabled', true);
 	$('#fdata').empty();
 	$('#fhead').empty();
-	$('#fhead').append('<tr><th>Algorithm</th><th>WPS PIN</th><th>Probability</th></tr>');
+	$('#fhead').append('<tr><th>%l10n_tbl_algorithm%</th><th>%l10n_tbl_wpspin%</th><th>%l10n_tbl_probability%</th></tr>');
 	$('#fdata').append('<tr><td colspan=3><img src="img/loading.gif"></td></tr>');
 
 	$.post('3wifi.php?a=wpspin', formdata, function(d)
@@ -140,21 +140,21 @@ function detect()
 		{
 			if (d.error == 'database')
 			{
-				$('#fdata > tr:first-child > :first-child').text('Ошибка при обращении к базе.');
+				$('#fdata > tr:first-child > :first-child').text('%l10n_err_database%.');
 			}
 			else if (d.error == 'bssid')
 			{
-				$('#fdata > tr:first-child > :first-child').text('Недопустимое значение BSSID.');
+				$('#fdata > tr:first-child > :first-child').text('%l10n_wpspin_bssid_wrong%.');
 			}
 			else
 			{
-				$('#fdata > tr:first-child > :first-child').text('Неизвестная ошибка.');
+				$('#fdata > tr:first-child > :first-child').text('%l10n_err_unknown%.');
 			}
 			return;
 		}
 		if (!d.auth)
 		{
-			$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
+			$('#fdata > tr:first-child > :first-child').text('%l10n_err_unauthorized%.');
 			return;
 		}
 		if (d.scores.length > 0)
@@ -171,10 +171,10 @@ function detect()
 				perc.html(chld);
 			}
 		} else {
-			$('#fdata > tr:first-child > :first-child').text('Устройства и/или подходящие алгоритмы не найдены.');
+			$('#fdata > tr:first-child > :first-child').text('%l10n_wpspin_not_found%.');
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
+		$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
 		$('input').prop('disabled', false);
 		$('button').prop('disabled', false);
 	});
@@ -397,13 +397,13 @@ function initpage()
 <body>
 <table width=100%>
 	<tr><td width=50% style="vertical-align: top">
-		<p>Оффлайн генератор WPS PIN Companion из Router Scan.</p>
-		<p>Использует известные алгоритмы, не подключается к базе.</p>
+		<p>%l10n_msg_wpspin%</p>
+		<p>%l10n_msg_wpspin_info%</p>
 		<table>
 			<tr><td>
 				<textarea id=bssids rows=3 cols=22 autofocus>12:34:56:78:9A:BC</textarea>
 			</td><td>
-				<button onclick="pinSuggest()">Suggest</button> <button onclick="getAll()">Get All</button>
+				<button onclick="pinSuggest()">%l10n_btn_suggest%</button> <button onclick="getAll()">%l10n_btn_getall%</button>
 			</td></tr>
 
 			<tr><td colspan=2>
@@ -411,23 +411,23 @@ function initpage()
 			</td></tr>
 		</table>
 
-		<div>Implemented algorithms (choose for info):</div>
+		<div>%l10n_wpspin_algos%</div>
 
-		<select id=algosel onchange="showAlgo()"><option value=algonone>Not selected</option></select>
+		<select id=algosel onchange="showAlgo()"><option value=algonone>%l10n_wpspin_not_selected%</option></select>
 	</td><td width=50% style="vertical-align: top">
-		<p>Онлайн генератор 3WiFi WPS PIN.</p>
-		<p>Подключается к базе, определяет линейные последовательности, статические пин-коды, и другие алгоритмы.</p>
+		<p>%l10n_msg_wpspin_db%</p>
+		<p>%l10n_msg_wpspin_db_info%</p>
 		<form id=fdeviceform enctype="multipart/form-data" method="POST" onsubmit="detect(); return false">
 		<table>
 			<tbody>
 				<tr>
-					<td><nobr>BSSID / MAC:</nobr></td>
+					<td><nobr>%l10n_str_bssid%</nobr></td>
 					<td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" /></td>
-					<td><nobr> (в формате <tt>00:11:22:33:44:55</tt>)</nobr></td>
+					<td><nobr> (%l10n_bssid_format%)</nobr></td>
 				</tr>
 			</tbody>
 			<tbody>
-				<tr><td><input type=submit value="Определить" /></td><td></td></tr>
+				<tr><td><input type=submit value="%l10n_btn_detect%" /></td><td></td></tr>
 			</tbody>
 		</table>
 		</form>
@@ -459,23 +459,23 @@ function initpage()
   F2:B2:DC:xx:xx:xx
   FC:F5:28:xx:xx:xx
   FE:F5:28:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     ZyXEL Internet Center
     Keenetic Giga II
     Keenetic Ultra
     RalinkAPS
-TRENDnet (some firmwares)
+TRENDnet (%l10n_wpspin_some_fw%)
 TRENDnet TEW-651BR
   00:14:D1:xx:xx:xx
 D-Link DIR-300NRU B5
   84:C9:B2:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     RalinkAPS
 D-Link DIR-620
   14:D6:4D:xx:xx:xx
   90:94:E4:xx:xx:xx
   BC:F6:85:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     RalinkAPS
 D-Link DSL-2600U
   C4:A8:1D:xx:xx:xx
@@ -493,7 +493,7 @@ Huawei HG532e
   EC:23:3D:xx:xx:xx
   EC:CB:30:xx:xx:xx
   F4:9F:F3:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     RalinkAPS
 ASUS RT-G32
 ASUS RT-N13U
@@ -504,10 +504,10 @@ ASUS RT-N13U Rev.B1
 Upvel UR-309BN
 Upvel UR-309NB
   D4:BF:7F:4x:xx:xx
-Upvel (some firmwares)
+Upvel (%l10n_wpspin_some_fw%)
   F8:C0:91:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[7..12]</textarea>
 
 <textarea id=pin28>Huawei HG8245H
@@ -516,19 +516,19 @@ Pin = MAC[7..12]</textarea>
   D4:6A:A8:xx:xx:xx
   F8:4A:BF:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[6..12]</textarea>
 
-<textarea id=pin32>D-Link DIR-300 (some firmwares)
+<textarea id=pin32>D-Link DIR-300 (%l10n_wpspin_some_fw%)
   00:07:26:xx:xx:xx
   D8:FE:E3:xx:xx:xx
-D-Link DIR-825AC (some firmwares)
+D-Link DIR-825AC (%l10n_wpspin_some_fw%)
   1C:5F:2B:xx:xx:xx
   48:EE:0C:xx:xx:xx
   90:8D:78:xx:xx:xx
 Beeline DIR-300
   2C:AB:25:xx:xx:xx
-ASUS (some firmwares)
+ASUS (%l10n_wpspin_some_fw%)
 ASUS RT-N13U Rev.B1
   10:BF:48:xx:xx:xx
   14:DA:E9:xx:xx:xx
@@ -543,72 +543,72 @@ EDIMAX BR6428GN
 EDIMAX BR6228GNS
   80:1F:02:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[5..12]</textarea>
 
-<textarea id=pin36>Unknown, for testing
+<textarea id=pin36>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[4..12]</textarea>
 
-<textarea id=pin40>Unknown, for testing
+<textarea id=pin40>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[3..12]</textarea>
 
-<textarea id=pin44>Unknown, for testing
+<textarea id=pin44>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[2..12]</textarea>
 
-<textarea id=pin48>Unknown, for testing
+<textarea id=pin48>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[1..12]</textarea>
 
-<textarea id=pin24rh>Unknown, for testing
+<textarea id=pin24rh>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[12..7]</textarea>
 
-<textarea id=pin32rh>Unknown, for testing
+<textarea id=pin32rh>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[12..5]</textarea>
 
-<textarea id=pin48rh>Unknown, for testing
+<textarea id=pin48rh>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[12..1]</textarea>
 
-<textarea id=pin24rn>Unknown, for testing
+<textarea id=pin24rn>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[12..7]</textarea>
 
-<textarea id=pin32rn>Unknown, for testing
+<textarea id=pin32rn>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[12..5]</textarea>
 
-<textarea id=pin48rn>Unknown, for testing
+<textarea id=pin48rn>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[12..1]</textarea>
 
-<textarea id=pin24rb>Unknown, for testing
+<textarea id=pin24rb>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[12..7]</textarea>
 
-<textarea id=pin32rb>Unknown, for testing
+<textarea id=pin32rb>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[12..5]</textarea>
 
-<textarea id=pin48rb>Unknown, for testing
+<textarea id=pin48rb>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[12..1]</textarea>
 
 <textarea id=pinDLink>D-Link DAP-1155 Rev. A1
@@ -628,10 +628,10 @@ TRENDnet TEW-652BRP
 TRENDnet TEW-731BR
   00:14:D1:xx:xx:xx
   D8:EB:97:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     TEW-651BR
 
-Technical details:
+%l10n_wpspin_tech%
 http://www.devttys0.com/2014/10/reversing-d-links-wps-pin-algorithm/</textarea>
 
 <textarea id=pinDLink1>D-Link DIR-400
@@ -661,21 +661,21 @@ D-Link DIR-857
   C8:BE:19:xx:xx:xx
   C8:D3:A3:xx:xx:xx
   CC:B2:55:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     D-Link Systems DIR-615
     Wireless N Router
 TRENDnet TEW-652BRP
 TRENDnet TEW-673GRU
   00:14:D1:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 http://www.devttys0.com/2014/10/reversing-d-links-wps-pin-algorithm/</textarea>
 
 <textarea id=pinEasyBox>Vodafone EasyBox 802
 Vodafone EasyBox 803
   38:22:9D:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 https://www.sec-consult.com/fxdata/seccons/prod/temedia/advisories_txt/20130805-0_Vodafone_EasyBox_Default_WPS_PIN_Vulnerability_v10.txt</textarea>
 
 <textarea id=pinASUS>ASUS DSL-N10 Rev.C1
@@ -731,7 +731,7 @@ ASUS RX3041 Rev.B
   E0:3F:49:xx:xx:xx
   F0:79:59:78:xx:xx
   F8:32:E4:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     ASUS WPS Router
     RT-N10PV2
     RT-N10U
@@ -791,7 +791,7 @@ D-Link DIR-615
   EC:22:80:xx:xx:xx
   F8:E9:03:F4:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 https://forum.antichat.ru/posts/3978417/</textarea>
 
 <textarea id=pinAirocon>Airocon Realtek RTL867x
@@ -814,37 +814,37 @@ https://forum.antichat.ru/posts/3978417/</textarea>
   F4:3E:61:xx:xx:xx
   FC:8B:97:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 https://forum.antichat.ru/posts/3975451/</textarea>
 
-<textarea id=pinInvNIC>Unknown, for testing
+<textarea id=pinInvNIC>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = Inv(MAC[7..12])</textarea>
 
-<textarea id=pinNIC2>Unknown, for testing
+<textarea id=pinNIC2>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[7..12] * 2</textarea>
 
-<textarea id=pinNIC3>Unknown, for testing
+<textarea id=pinNIC3>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[7..12] * 3</textarea>
 
-<textarea id=pinOUIaddNIC>Unknown, for testing
+<textarea id=pinOUIaddNIC>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[1..6] + MAC[7..12]</textarea>
 
-<textarea id=pinOUIsubNIC>Unknown, for testing
+<textarea id=pinOUIsubNIC>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[1..6] - MAC[7..12]</textarea>
 
-<textarea id=pinOUIxorNIC>Unknown, for testing
+<textarea id=pinOUIxorNIC>%l10n_wpspin_algo_test%
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = MAC[1..6] ^ MAC[7..12]</textarea>
 
 <textarea id=pinCisco>Cisco DPC2420
@@ -857,7 +857,7 @@ Cisco EPC2325
   E0:69:95:xx:xx:xx
   E0:CB:4E:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 1234567</textarea>
 
 <textarea id=pinBrcm1>Broadcom firmwares
@@ -876,7 +876,7 @@ Starnet AR800
 Modem Supply MSW41p4 v2.5
   EC:62:64:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 2017252</textarea>
 
 <textarea id=pinBrcm2>D-Link DSL-2600U
@@ -890,10 +890,10 @@ D-Link DSL-2740U
   B8:A3:86:xx:xx:xx
   BC:F6:85:xx:xx:xx
   C8:BE:19:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     BroadcomAP
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 4626484</textarea>
 
 <textarea id=pinBrcm3>D-Link DSL-2600U
@@ -906,14 +906,14 @@ D-Link DSL-2740U
   B8:A3:86:xx:xx:xx
   BC:F6:85:xx:xx:xx
   C8:BE:19:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     BroadcomAP
 Sagemcom F@ST2304v2 MTS
   7C:03:4C:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     BroadcomAP
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 7622990</textarea>
 
 <textarea id=pinBrcm4>D-Link DSL-2640U
@@ -931,7 +931,7 @@ NETGEAR JDGN1000
 Sagemcom F@ST2704v2
   4C:17:EB:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 6232714</textarea>
 
 <textarea id=pinDSL2740R>D-Link DSL-2740R
@@ -942,7 +942,7 @@ Pin = 6232714</textarea>
   84:C9:B2:xx:xx:xx
   FC:75:16:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 6817554</textarea>
 
 <textarea id=pinRealtek>Realtek firmwares
@@ -954,38 +954,38 @@ Intellinet 503693 (Realtek)
   00:0C:42:xx:xx:xx
   00:0E:E8:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 9566146</textarea>
 
-<textarea id=pinUpvel>Upvel (some firmwares)
+<textarea id=pinUpvel>Upvel (%l10n_wpspin_some_fw%)
 Upvel UR-315BN
 Upvel UR-325BN
   F8:C0:91:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 2085483</textarea>
 
 <textarea id=pinUR814AC>Upvel UR-814AC
   D4:BF:7F:60:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 4397768</textarea>
 
 <textarea id=pinUR825AC>Upvel UR-825AC
   D4:BF:7F:50:xx:xx
 Upvel UR-825N4G
   D4:BF:7F:51:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     UR-825N4G
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 0529417</textarea>
 
 <textarea id=pinOnlime>Upvel Onlime UR-315BN
 Upvel Onlime UR-319BN
   D4:BF:7F:xx:xx:xx
   F8:C0:91:xx:xx:xx
-  WSC Device Names:
+  %l10n_wpspin_wsc%
     RTK_AP
     RTK_AP_2x
 TOTOLINK N150RT
@@ -996,7 +996,7 @@ TRENDnet TEW-637AP
 TRENDnet TEW-638APB
   00:14:D1:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 9995604</textarea>
 
 <textarea id=pinEdimax>EDIMAX BR6228GNS
@@ -1006,7 +1006,7 @@ EDIMAX BR6428NS
   80:1F:02:xx:xx:xx
   00:E0:4C:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 3561153</textarea>
 
 <textarea id=pinThomson>Thomson/Technicolor
@@ -1015,7 +1015,7 @@ Pin = 3561153</textarea>
   88:F7:C7:xx:xx:xx
   CC:03:FA:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 6795814</textarea>
 
 <textarea id=pinHG532x>Huawei EchoLife HG532e
@@ -1039,7 +1039,7 @@ Huawei EchoLife HG532s
   F8:01:13:xx:xx:xx
   F8:3D:FF:xx:xx:xx
 
-Technical details:
+%l10n_wpspin_tech%
 Pin = 3425928</textarea>
 </div>
 </body>

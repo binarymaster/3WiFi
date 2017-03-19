@@ -1,4 +1,4 @@
-<title>3WiFi: Поиск диапазонов IP</title>
+<title>%l10n_title_ranges%</title>
 
 <head>
 <script type="text/javascript">
@@ -10,7 +10,7 @@ function find()
 	$('#tranges').css('display', 'none');
 	$('#fdata').empty();
 	$('#fhead').empty();
-	$('#fhead').append('<tr><th>IP Range</th><th>Netname</th><th>Description</th><th>Country</th></tr>');
+	$('#fhead').append('<tr><th>%l10n_tbl_iprange%</th><th>%l10n_tbl_netname%</th><th>%l10n_tbl_netdesc%</th><th>%l10n_tbl_country%</th></tr>');
 	$('#fdata').append('<tr><td colspan=4><img src="img/loading.gif"></td></tr>');
 
 	$.post('3wifi.php?a=ranges', formdata, function(d)
@@ -19,34 +19,34 @@ function find()
 		$('button').prop('disabled', false);
 		if (!d.result)
 		{
-			$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
+			$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
 			return;
 		}
 		if (!d.auth)
 		{
-			$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
+			$('#fdata > tr:first-child > :first-child').text('%l10n_err_unauthorized%.');
 			return;
 		}
 		if(typeof d.error != "undefined")
 		{
-			$('#fdata > tr:first-child > :first-child').text(d.error);
+			$('#fdata > tr:first-child > :first-child').text(errorStr(d.error));
 			return;
 		}
 		if (d.data.length > 0)
 		{
 			$('#fdata').empty();
 			$('#fhead').empty();
-			$('#fhead').append('<tr><th>IP Range</th><th>Netname</th><th>Description</th><th>Country</th></tr>');
+			$('#fhead').append('<tr><th>%l10n_tbl_iprange%</th><th>%l10n_tbl_netname%</th><th>%l10n_tbl_netdesc%</th><th>%l10n_tbl_country%</th></tr>');
 			for (var i = 0; i < d.data.length; i++)
 			{
 				$('#fdata').append('<tr><td>'+d.data[i].range+'</td><td>'+d.data[i].netname+'</td><td>'+
 					d.data[i].descr+'</td><td>'+d.data[i].country+'</td></tr>');
 			}
 		} else {
-			$('#fdata > tr:first-child > :first-child').text('Ничего не найдено.');
+			$('#fdata > tr:first-child > :first-child').text('%l10n_find_not_found%.');
 		}
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
+		$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
 		$('input').prop('disabled', false);
 		$('button').prop('disabled', false);
 	});
@@ -81,16 +81,16 @@ function initpage()
 </head>
 
 <body>
-<p>Данный инструмент позволяет находить диапазоны IP-адресов по физическому местоположению. Сопоставление производится на основе собранных данных от провайдеров геолокации.</p>
+<p>%l10n_msg_ranges%</p>
 <form id=frangesform enctype="multipart/form-data" method="POST" onsubmit="find(); return false">
 <table>
 	<tbody>
-		<tr><td>Latitude / Широта:</td><td><input name="latitude" type="number" min="-90" max="90" step="0.00000001" value="%var_lat%" /></td><td>° [-90; 90]</td></tr>
-		<tr><td>Longitude / Долгота:</td><td><input name="longitude" type="number" min="-180" max="180" step="0.00000001" value="%var_lon%" /></td><td>° [-180; 180]</td></tr>
-		<tr><td>Search radius / Радиус поиска:</td><td><input name="radius" type="number" min="0" max="25" step="0.1" value="%var_rad%" /></td><td>км (max 25)</td></tr>
+		<tr><td>%l10n_str_lat%</td><td><input name="latitude" type="number" min="-90" max="90" step="0.00000001" value="%var_lat%" /></td><td>° [-90; 90]</td></tr>
+		<tr><td>%l10n_str_lon%</td><td><input name="longitude" type="number" min="-180" max="180" step="0.00000001" value="%var_lon%" /></td><td>° [-180; 180]</td></tr>
+		<tr><td>%l10n_str_radius%</td><td><input name="radius" type="number" min="0" max="25" step="0.1" value="%var_rad%" /></td><td>%l10n_ranges_radius_max%</td></tr>
 	</tbody>
 	<tbody>
-		<tr><td><input type=submit value="Найти" /> <button onclick="listRanges(); return false">Список</button></td><td></td></tr>
+		<tr><td><input type=submit value="%l10n_btn_find%" /> <button onclick="listRanges(); return false">%l10n_btn_getlist%</button></td><td></td></tr>
 	</tbody>
 </table>
 </form>

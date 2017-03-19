@@ -1,4 +1,4 @@
-<title>3WiFi: Поиск по базе</title>
+<title>%l10n_title_find%</title>
 
 <head>
 <script type="text/javascript">
@@ -39,7 +39,7 @@ function switchLevel(newlevel)
 		$('#fuserform').show();
 		$('#fadminform').hide();
 		appendTable('fhead', '<th>',
-		['Time','Comment','IP Range','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Links'],
+		['%l10n_tbl_date%','%l10n_tbl_comment%','%l10n_tbl_iprange%','%l10n_tbl_bssid%','%l10n_tbl_essid%','%l10n_tbl_security%','%l10n_tbl_wifikey%','%l10n_tbl_wpspin%','%l10n_tbl_lat%','%l10n_tbl_lon%','%l10n_tbl_links%'],
 		[null, null, null, null, null, null, null, nw]);
 		break;
 		case 2:
@@ -48,7 +48,7 @@ function switchLevel(newlevel)
 		$('#fuserform').hide();
 		$('#fadminform').show();
 		appendTable('fhead', '<th>',
-		['ID','Time','Comment','IP / Port','Authorization','Device / Firmware / Server Name','BSSID','ESSID','Security','Wi-Fi Key','WPS PIN','Latitude','Longitude','Links'],
+		['%l10n_tbl_id%','%l10n_tbl_date%','%l10n_tbl_comment%','%l10n_tbl_ipport%','%l10n_tbl_auth%','%l10n_tbl_dev%','%l10n_tbl_bssid%','%l10n_tbl_essid%','%l10n_tbl_security%','%l10n_tbl_wifikey%','%l10n_tbl_wpspin%','%l10n_tbl_lat%','%l10n_tbl_lon%','%l10n_tbl_links%'],
 		[null, null, null, null, null, nw, null, null, null, null, nw]);
 		break;
 	}
@@ -111,7 +111,7 @@ function find(page)
 		{
 			if (d.auth)
 			{
-				var res = 'Результатов: '+ d.found +' ('+ d.time.toFixed(2) +' сек.)';
+				var res = '%l10n_find_results% '+ d.found +' ('+ d.time.toFixed(2) +' %l10n_find_secs%)';
 				$('#found'+level).text(res);
 
 				cur_page = d.page.current;
@@ -169,18 +169,18 @@ function find(page)
 						}
 					}
 				} else {
-					$('#fdata > tr:first-child > :first-child').text('Ничего не найдено.');
+					$('#fdata > tr:first-child > :first-child').text('%l10n_find_not_found%.');
 				}
 			} else {
-				$('#fdata > tr:first-child > :first-child').text('Не авторизован.');
+				$('#fdata > tr:first-child > :first-child').text('%l10n_err_unauthorized%.');
 			}
 		} else {
-			$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
+			$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
 		}
 		$('input').prop('disabled', false);
 		$('button').prop('disabled', false);
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#fdata > tr:first-child > :first-child').text('Ошибка загрузки данных.');
+		$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
 		$('input').prop('disabled', false);
 		$('button').prop('disabled', false);
 	});
@@ -189,7 +189,7 @@ function markFav(e,id)
 {
 	var onFail = function(jqXHR, textStatus, errorThrown)
 	{
-		alert('Ошибка загрузки данных');
+		alert('%l10n_err_data%');
 	};
 	$.get('user.php?a=token', function(json)
 	{
@@ -271,12 +271,12 @@ function initpage()
 <form enctype="multipart/form-data" method="POST" onsubmit="find(1); return false">
 <table id=fuserform style="display:none">
 <tbody>
-<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td style="font-weight: bold">(&nbsp;* - заменяющий символ&nbsp;)</td></tr>
-<tr><td>ESSID / Имя:</td><td><input name="essid" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('□')">□</button> - любой символ, <button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - любой набор символов&nbsp;)</td></tr>
-<tr><td>Ключ сети:</td><td><input name="key" type="text" value="◯" /></td></tr>
-<tr><td>Пин код WPS:</td><td><input name="wps" type="text" value="◯" /></td></tr>
+<tr><td>%l10n_str_bssid%</td><td><input name="bssid" type="text" value="" /></td><td style="font-weight: bold">(&nbsp;* - %l10n_find_wildcard%&nbsp;)</td></tr>
+<tr><td>%l10n_str_essid%</td><td><input name="essid" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('□')">□</button> - %l10n_find_any_char%, <button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - %l10n_find_any_str%&nbsp;)</td></tr>
+<tr><td>%l10n_str_wifikey%</td><td><input name="key" type="text" value="◯" /></td></tr>
+<tr><td>%l10n_str_wpspin%</td><td><input name="wps" type="text" value="◯" /></td></tr>
 <input name="page" type="hidden" value="1" />
-<tr><td><input type=submit value="Найти" /></td><td id=found1 colspan=2></td></tr>
+<tr><td><input type=submit value="%l10n_btn_find%" /></td><td id=found1 colspan=2></td></tr>
 </tbody>
 </table>
 </form>
@@ -284,19 +284,19 @@ function initpage()
 <form enctype="multipart/form-data" method="POST" onsubmit="find(1); return false">
 <table id=fadminform style="display:none">
 <tbody>
-<tr><td>Комментарий:</td><td><input name="comment" type="text" value="*" /></td><td>Устройство:</td><td><input name="name" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;* - заменяющий символ для комментария и BSSID&nbsp;)</td></tr>
-<tr><td>IP-адрес:</td><td><input name="ipaddr" type="text" value="" /></td><td>Авторизация:</td><td><input name="auth" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('□')">□</button> - любой символ&nbsp;)</td></tr>
-<tr><td>BSSID / MAC:</td><td><input name="bssid" type="text" value="" /></td><td>ESSID / Имя:</td><td><input name="essid" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - любой набор символов&nbsp;)</td></tr>
-<tr><td>Ключ сети:</td><td><input name="key" type="text" value="◯" /></td><td>Пин код WPS:</td><td><input name="wps" type="text" value="◯" /></td></tr>
+<tr><td>%l10n_str_comment%</td><td><input name="comment" type="text" value="*" /></td><td>%l10n_str_dev%</td><td><input name="name" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;* - %l10n_find_wildcard_info%&nbsp;)</td></tr>
+<tr><td>%l10n_str_ipaddr%</td><td><input name="ipaddr" type="text" value="" /></td><td>%l10n_str_auth%</td><td><input name="auth" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('□')">□</button> - %l10n_find_any_char%&nbsp;)</td></tr>
+<tr><td>%l10n_str_bssid%</td><td><input name="bssid" type="text" value="" /></td><td>%l10n_str_essid%</td><td><input name="essid" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - %l10n_find_any_str%&nbsp;)</td></tr>
+<tr><td>%l10n_str_wifikey%</td><td><input name="key" type="text" value="◯" /></td><td>%l10n_str_wpspin%</td><td><input name="wps" type="text" value="◯" /></td></tr>
 <input name="page" type="hidden" value="1" />
-<tr><td><input type=submit value="Найти" /></td><td id=found2 colspan=2></td></tr>
+<tr><td><input type=submit value="%l10n_btn_find%" /></td><td id=found2 colspan=2></td></tr>
 </tbody>
 </table>
 </form>
 
 <span style="margin-top: 2px; margin-bottom: 4px; display: flex">
 <table class=swp_st id=pages_t>
-</table><span id=page_seeker style="display: none">&nbsp;<input type=number value=1 min=1 max=1 step=1>&nbsp;<button onclick="switchPage(parseInt($('input[type=number]').val()))">Перейти</button></span>
+</table><span id=page_seeker style="display: none">&nbsp;<input type=number value=1 min=1 max=1 step=1>&nbsp;<button onclick="switchPage(parseInt($('input[type=number]').val()))">%l10n_btn_jump%</button></span>
 </span>
 
 <span style="display: block; width: 100%; overflow-x: auto">

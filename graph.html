@@ -1,4 +1,4 @@
-<title>3WiFi: Динамика состояния</title>
+<title>%l10n_title_graph%</title>
 
 <head>
 <script language="javascript" type="text/javascript" src="jquery.flot.min.js"></script>
@@ -24,7 +24,7 @@ function showLoads()
 			d.data[i][0] = dt[2];
 		}
 		d.label = (lo == hi ? lo : lo + '-' + hi);
-		$('#stat').text('Сегодня загружено: ');
+		$('#stat').text('%l10n_str_today_loaded% ');
 		var dyn = (d.data[d.data.length - 1][1] > d.data[d.data.length - 2][1] ? 1 : -1);
 		$('#today').html(d.data[d.data.length - 1][1] + ' <font color="#'+(dyn > 0 ? '0f0">▲' : 'f00">▼')+'</font>');
 
@@ -33,7 +33,7 @@ function showLoads()
 		$.plot('#graphload', gl_data, gl_opts);
 		setTimeout(showLoads, 600000); // 10 min
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#stat').text('Ошибка загрузки данных');
+		$('#stat').text('%l10n_err_data%');
 		setTimeout(showLoads, 5000);
 	});
 }
@@ -52,7 +52,7 @@ function showTasks()
 			$('#task').text(errorStr(d.error));
 			return;
 		}
-		$('#task').text(d.stat.tasks.comment == null ? 'Нет активных заданий' : 'Сейчас обрабатывается: ' + d.stat.tasks.comment);
+		$('#task').text(d.stat.tasks.comment == null ? '%l10n_str_no_tasks%' : '%l10n_tbl_task_now% ' + d.stat.tasks.comment);
 		gtv_load.splice(0,1);
 		gtv_load.push(d.stat.tasks.uploading);
 		gt_load.data = zip(gtv_load);
@@ -65,7 +65,7 @@ function showTasks()
 		$.plot('#graphtask', [gt_geo,gt_load,gt_proc], gt_opts);
 		setTimeout(showTasks, 1000);
 	}).fail(function(jqXHR, textStatus, errorThrown) {
-		$('#task').text('Ошибка загрузки данных');
+		$('#task').text('%l10n_err_data%');
 		setTimeout(showTasks, 5000);
 	});
 }
@@ -105,33 +105,33 @@ function initpage()
 			var x = item.series.data[item.dataIndex][2],
 				y = item.datapoint[1];
 
-			$('#tooltip').html(y + ' загружено ' + x)
+			$('#tooltip').html(y + ' %l10n_str_loaded% ' + x)
 				.css({top: item.pageY - $('#tooltip').height() - 9, left: item.pageX - $('#tooltip').width()/2})
 				.fadeIn(200);
 		} else
 			$('#tooltip').hide();
 	});
 	$('#today').empty();
-	$('#stat').text('Обновление...');
+	$('#stat').text('%l10n_str_updating%');
 	showLoads();
 
 	gtv_load = [];
 	for (var i = 0; i < 60; i++) gtv_load.push(0);
 	gt_load = {};
 	gt_load.data = zip(gtv_load);
-	gt_load.label = 'Задания на загрузке';
+	gt_load.label = '%l10n_graph_task_load%';
 
 	gtv_proc = [];
 	for (var i = 0; i < 60; i++) gtv_proc.push(0);
 	gt_proc = {};
 	gt_proc.data = zip(gtv_proc);
-	gt_proc.label = 'Задания в обработке';
+	gt_proc.label = '%l10n_graph_task_proc%';
 
 	gtv_geo = [];
 	for (var i = 0; i < 60; i++) gtv_geo.push(0);
 	gt_geo = {};
 	gt_geo.data = zip(gtv_geo);
-	gt_geo.label = 'Определение координат';
+	gt_geo.label = '%l10n_graph_task_geo%';
 
 	gt_opts = {
 		series: { bars: { show: true, fill: true, lineWidth: 1 } },
@@ -150,7 +150,7 @@ function initpage()
 </head>
 
 <body>
-<h2 align=center class=header_cap>Динамика состояния 3WiFi</h2>
+<h2 align=center class=header_cap>%l10n_msg_graph%</h2>
 <div align=center>
 <div class=graphbkg>
 	<div id=graphload class=graph></div>
