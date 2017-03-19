@@ -294,6 +294,8 @@ $l10n['wpspin_tech'] =
 'Технические детали:';
 $l10n['wpspin_some_fw'] =
 'некоторые прошивки';
+$l10n['wpspin_rarely'] =
+'редко';
 $l10n['wpspin_wsc'] =
 'Имена устройств WSC:';
 $l10n['wpspin_algo_test'] =

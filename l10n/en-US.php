@@ -294,6 +294,8 @@ $l10n['wpspin_tech'] =
 'Technical details:';
 $l10n['wpspin_some_fw'] =
 'some firmwares';
+$l10n['wpspin_rarely'] =
+'rarely';
 $l10n['wpspin_wsc'] =
 'WSC Device Names:';
 $l10n['wpspin_algo_test'] =
