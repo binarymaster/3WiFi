@@ -30,6 +30,7 @@ class User {
 	const LOG_CREATE_RAPIKEY = 8;
 	const LOG_CREATE_WAPIKEY = 9;
 	const LOG_AUTHORIZATION_DATAONLY = 10;
+	const LOG_GET_APIKEYS = 11;
 
 	public $uID = NULL;
 	public $puID = NULL;
@@ -674,10 +675,10 @@ class User {
 		return true;
 	}
 
-	public function getApiKeys($type)
+	public function getApiKeys()
 	{
 		$uid = $this->uID;
-		if ($uid == NULL || $type == NULL || ($type != 1 &&  $type != 2)) return false;
+		if ($uid == NULL) return false;
 		if ($this->Level < 0)
 		{
 			$this->LastError = 'lowlevel';
@@ -696,7 +697,7 @@ class User {
 			return false;
 		}
 		$data = $res->fetch_assoc();
-		$this->eventLog((6+$type-1), 1, '');
+		$this->eventLog(self::LOG_GET_APIKEYS, 1, '');
 		return $data;
 	}
 

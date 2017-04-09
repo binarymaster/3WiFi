@@ -1489,6 +1489,182 @@ switch ($action)
 	}
 	$db->close();
 	break;
+
+	// Получение API ключей по логину и паролю
+	case 'apikeys':
+	$json['result'] = false;
+	$mode = explode(';', $_SERVER["CONTENT_TYPE"]);
+	$mode = trim($mode[0]);
+	if ($mode == 'application/x-www-form-urlencoded')
+	{
+		$data = $_POST;
+	}
+	elseif ($mode == 'application/json')
+	{
+		$data = json_decode(file_get_contents('php://input'), true);
+	}
+	$login = (isset($data) ? $data['login'] : null);
+	$password = (isset($data) ? $data['password'] : null);
+	if (!is_null($login) && !is_null($password))
+	{
+		filterLogin($login);
+		if (!$UserManager->Auth($login, $password, true))
+		{
+			$json['error'] = 'loginfail';
+			break;
+		}
+		$data = $UserManager->getApiKeys();
+		$json['data'] = array();
+		if ($data['rapikey'])
+			$json['data'][] = array('key' => $data['rapikey'], 'access' => 'read');
+		if ($data['wapikey'])
+			$json['data'][] = array('key' => $data['wapikey'], 'access' => 'write');
+		$json['result'] = true;
+	}
+	else
+	{
+		$json['error'] = 'form';
+	}
+	break;
+
+	// API поиск точек доступа
+	case 'apiquery':
+	$json['result'] = false;
+	$mode = explode(';', $_SERVER["CONTENT_TYPE"]);
+	$mode = trim($mode[0]);
+	if ($mode == 'application/x-www-form-urlencoded')
+	{
+		$data = $_POST;
+	}
+	elseif ($mode == 'application/json')
+	{
+		$data = json_decode(file_get_contents('php://input'), true);
+	}
+	else
+	{
+		$data = $_REQUEST;
+	}
+	$key = (isset($data) ? $data['key'] : null);
+	$bssid = (isset($data) ? $data['bssid'] : null);
+	$essid = (isset($data) ? $data['essid'] : null);
+	if (is_string($bssid) && strlen($bssid))
+		$bssid = array($bssid);
+	if (is_string($essid) && strlen($essid))
+		$essid = array($essid);
+	if (is_null($key) || empty($key) ||
+		!is_array($bssid) || !count($bssid))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	$find_essid = is_array($essid);
+	if ($find_essid && count($bssid) != count($essid))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if (!$UserManager->AuthByApiKey($key, true))
+	{
+		$json['error'] = 'loginfail';
+		break;
+	}
+	if (!db_connect())
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$json['data'] = array();
+	foreach ($bssid as $i => $mac)
+	{
+		if (ismac($mac))
+		{
+			$mac = mac2dec($mac);
+			$where = "BSSID = $mac";
+			$ess = '';
+			if ($find_essid && !empty($essid[$i]))
+			{
+				$ess = $db->real_escape_string($essid[$i]);
+				$where .= " AND ESSID = '$ess'";
+			}
+			$sql = "SELECT 
+						time, BSSID, ESSID, Security, WiFiKey, WPSPIN, latitude, longitude 
+					FROM 
+						BASE_TABLE 
+						INNER JOIN GEO_TABLE USING(BSSID) 
+					WHERE 
+						$where 
+					ORDER BY 
+						time DESC 
+					LIMIT 10";
+			$res = QuerySql($sql);
+			if (!$res) continue;
+			$data = array();
+			while ($row = $res->fetch_assoc())
+			{
+				$entry = array(
+					'time'  => $row['time'],
+					'bssid' => dec2mac($row['BSSID']),
+					'essid' => $row['ESSID'],
+					'sec'   => sec2str($row['Security']),
+					'key'   => $row['WiFiKey'],
+					'wps'   => ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT)),
+					'lat'   => (float)$row['latitude'],
+					'lon'   => (float)$row['longitude'],
+				);
+				if ($entry['lat'] == 0 && $entry['lon'] == 0)
+				{
+					unset($entry['lat']);
+					unset($entry['lon']);
+				}
+				$data[] = $entry;
+			}
+			if (count($data))
+				$json['data'][dec2mac($mac).($ess == '' ? '' : '|'.$essid[$i])] = $data;
+		}
+		else
+		{
+			if (!$find_essid || empty($essid[$i])) continue;
+			$ess = $db->real_escape_string($essid[$i]);
+			$where = "ESSID = '$ess'";
+			$sql = "SELECT 
+						time, NoBSSID, BSSID, ESSID, Security, WiFiKey, WPSPIN, latitude, longitude 
+					FROM 
+						BASE_TABLE 
+						INNER JOIN GEO_TABLE USING(BSSID) 
+					WHERE 
+						$where 
+					ORDER BY 
+						time DESC 
+					LIMIT 10";
+			$res = QuerySql($sql);
+			if (!$res) continue;
+			$data = array();
+			while ($row = $res->fetch_assoc())
+			{
+				$entry = array(
+					'time'  => $row['time'],
+					'bssid' => ($row['NoBSSID'] ? '' : dec2mac($row['BSSID'])),
+					'essid' => $row['ESSID'],
+					'sec'   => sec2str($row['Security']),
+					'key'   => $row['WiFiKey'],
+					'wps'   => ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT)),
+					'lat'   => (float)$row['latitude'],
+					'lon'   => (float)$row['longitude'],
+				);
+				if ($entry['lat'] == 0 && $entry['lon'] == 0)
+				{
+					unset($entry['lat']);
+					unset($entry['lon']);
+				}
+				$data[] = $entry;
+			}
+			if (count($data))
+				$json['data']['*|'.$essid[$i]] = $data;
+		}
+	}
+	$json['result'] = true;
+	$db->close();
+	break;
 }
 
 if ($action != 'hash') session_write_close();

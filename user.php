@@ -45,6 +45,7 @@ switch($action)
 {
 	// Вход пользователя
 	case 'login':
+	$json['result'] = false;
 	if ($UserManager->isLogged())
 	{
 		$json['error'] = 'loggedin';
@@ -53,8 +54,12 @@ switch($action)
 	if (isset($_POST['login']) && isset($_POST['password']))
 	{
 		filterLogin($_POST['login']);
-		$json['result'] = $UserManager->Auth($_POST['password'], $_POST['login']);
-		if (!$json['result']) $json['error'] = 'loginfail';
+		if (!$UserManager->Auth($_POST['password'], $_POST['login']))
+		{
+			$json['error'] = 'loginfail';
+			break;
+		}
+		$json['result'] = true;
 	}
 	break;
 
