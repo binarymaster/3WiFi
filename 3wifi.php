@@ -1563,6 +1563,11 @@ switch ($action)
 		$json['error'] = 'form';
 		break;
 	}
+	if (count($bssid) > 100)
+	{
+		$json['error'] = 'limit';
+		break;
+	}
 	if (!$UserManager->AuthByApiKey($key, true))
 	{
 		$json['error'] = 'loginfail';
