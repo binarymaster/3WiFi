@@ -1505,6 +1505,8 @@ switch ($action)
 	}
 	$login = (isset($data) ? $data['login'] : null);
 	$password = (isset($data) ? $data['password'] : null);
+	$genread = (isset($data) ? (bool)$data['genread'] : false);
+	$genwrite = (isset($data) ? (bool)$data['genwrite'] : false);
 	if (!is_null($login) && !is_null($password))
 	{
 		filterLogin($login);
@@ -1514,6 +1516,14 @@ switch ($action)
 			break;
 		}
 		$data = $UserManager->getApiKeys();
+		if (is_null($data['rapikey']) && $genread)
+		{
+			$data['rapikey'] = $UserManager->createApiKey(1);
+		}
+		if (is_null($data['wapikey']) && $genwrite)
+		{
+			$data['wapikey'] = $UserManager->createApiKey(2);
+		}
 		$json['data'] = array();
 		if ($data['rapikey'])
 			$json['data'][] = array('key' => $data['rapikey'], 'access' => 'read');
