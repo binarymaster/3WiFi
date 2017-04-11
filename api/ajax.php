@@ -16,7 +16,7 @@ switch ($_GET['Query'])
 	if (!is_null($login) && !is_null($password))
 	{
 		filterLogin($login);
-		if (!$UserManager->Auth($login, $password, true))
+		if (!$UserManager->Auth($password, $login, true))
 			break;
 		$data = $UserManager->getApiKeys();
 		if (is_null($data['rapikey']))

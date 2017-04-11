@@ -1510,7 +1510,7 @@ switch ($action)
 	if (!is_null($login) && !is_null($password))
 	{
 		filterLogin($login);
-		if (!$UserManager->Auth($login, $password, true))
+		if (!$UserManager->Auth($password, $login, true))
 		{
 			$json['error'] = 'loginfail';
 			break;
