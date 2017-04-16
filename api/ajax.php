@@ -50,6 +50,11 @@ switch ($_GET['Query'])
 		$json['Error'] = array('Code' => -100, 'Desc' => 'Wrong API key');
 		break;
 	}
+	if ($UserManager->ApiAccess != 'read')
+	{
+		$json['Error'] = array('Code' => 0, 'Desc' => 'API key have no "read" rights');
+		break;
+	}
 	if (!db_connect())
 	{
 		$json['Error'] = array('Code' => 0, 'Desc' => 'Database unavailable');

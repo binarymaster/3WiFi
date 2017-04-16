@@ -1583,6 +1583,11 @@ switch ($action)
 		$json['error'] = 'loginfail';
 		break;
 	}
+	if ($UserManager->ApiAccess != 'read')
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
 	if (!db_connect())
 	{
 		$json['error'] = 'database';

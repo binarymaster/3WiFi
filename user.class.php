@@ -46,6 +46,7 @@ class User {
 	public $invites = 0;
 	public $ReadApiKey = 'N/A';
 	public $WriteApiKey = 'N/A';
+	public $ApiAccess = '';
 
 	public $LastUpdate = 0;
 	public $LastError = '';
@@ -766,7 +767,7 @@ class User {
 	public function AuthByApiKey($ApiKey, $loadData=false)
 	{
 		$ApiKey = self::quote($ApiKey);
-		$sql = 'SELECT uid FROM users WHERE rapikey="'.$ApiKey.'" OR wapikey="'.$ApiKey.'"';
+		$sql = "SELECT uid, IF(rapikey = '$ApiKey', 'read', IF(wapikey = '$ApiKey', 'write', NULL)) AS access FROM users WHERE rapikey = '$ApiKey' OR wapikey = '$ApiKey'";
 		$res = self::$mysqli->query($sql);
 
 		if($res->num_rows != 1)
@@ -774,11 +775,12 @@ class User {
 			$this->LastError = 'unauthorized';
 			return false;
 		}
-		if(!$loadData) return true;
-
 		$row = $res->fetch_assoc();
-		$this->loadDB($row['uid']);
-
+		$this->ApiAccess = $row['access'];
+		if ($loadData)
+		{
+			$this->loadDB($row['uid']);
+		}
 		return true;
 	}
 }
