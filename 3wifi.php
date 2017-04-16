@@ -636,159 +636,37 @@ switch ($action)
 
 	// Определение WPS PIN по MAC
 	case 'wpspin':
-		require_once 'wpspin.php';
-		$json['result'] = true;
-		$json['auth'] = $UserManager->Level >= 0;
-		if (!$json['auth'])
-		{
-			break;
-		}
-
-		$bssid = '';
-		if (isset($_POST['bssid']))
-		{
-			$bssid = $_POST['bssid'];
-		}
-		$bssid = preg_replace('/[^0-9A-Fa-f]/', '', $bssid);
-
-		if (strlen($bssid) != 12)
-		{
-			$json['result'] = false;
-			$json['error'] = 'bssid';
-			break;
-		}
-		if (!db_connect())
-		{
-			$json['result'] = false;
-			$json['error'] = 'database';
-			break;
-		}
-		$algos = array(
-			array('generator' => new WpsGen24bit(), 'score' => 0.0),
-			array('generator' => new WpsGenAsus(), 'score' => 0.0),
-			array('generator' => new WpsGenDlink1(), 'score' => 0.0),
-			array('generator' => new WpsGen32bit(), 'score' => 0.0),
-			array('generator' => new WpsGen28bit(), 'score' => 0.0),
-			array('generator' => new WpsGenAirocon(), 'score' => 0.0),
-			array('generator' => new WpsGenDlink(), 'score' => 0.0),
-			array('generator' => new WpsGenEasybox(), 'score' => 0.0)
-		);
-		$total_score = 0.0;
-		$unkn = array();
-		if ($res = QuerySql("SELECT DISTINCT hex(`BSSID`),`WPSPIN` FROM `BASE_TABLE` WHERE `NoBSSID` = 0 AND `BSSID` BETWEEN (0x$bssid & 0xFFFFFF000000) AND (0x$bssid | 0xFFFFFF) ORDER BY ABS(`BSSID` - 0x$bssid) LIMIT 1000"))
-		{
-			while ($row = $res->fetch_row())
-			{
-				$pin = $row[1];
-				$bss = str_pad($row[0], 12, '0', STR_PAD_LEFT);
-				if ($pin == 1)
-				{
-					$total_score += 1.0 / sqrt(abs(hexdec(substr($bss, 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
-					continue;
-				}
-				
-				$found = FALSE;
-				foreach ($algos as &$algo)
-				{
-					if ($algo['generator']->getPin($bss) == $pin)
-					{
-						$plus_score = 1.0 / sqrt(abs(hexdec(substr($bss, 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
-						$total_score += $plus_score;
-						$algo['score'] += $plus_score;
-						$found = TRUE;
-					}
-				}
-				unset($algo);
-				if (!$found)
-				{
-					$unkn_len = count($unkn);
-					if (array_key_exists($pin, $unkn))
-					{
-						$plus_score = 1.0 / sqrt(abs(hexdec(substr($unkn[$pin], 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
-						$plus_score += 1.0 / sqrt(abs(hexdec(substr($bss, 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
-						$total_score += $plus_score;
-						$algos[] = array('generator' => new WpsGenStatic((int)($pin/10)), 'score' => $plus_score);
-						unset($unkn[$pin]);
-					}
-					else if ($unkn_len > 1 && $unkn_len < 11)
-					{
-						$pins = array_keys($unkn);
-						for ($i = 0; $i < $unkn_len - 1; $i++)
-						{
-							for ($j = $i + 1; $j < $unkn_len; $j++)
-							{
-								if ($pins[$i] == $pins[$j] || $pins[$i] == $pin)
-								{
-									continue;
-								}
-								$k = (hexdec(substr($unkn[$pins[$i]], 6, 6)) - hexdec(substr($unkn[$pins[$j]], 6, 6))) / ((int)($pins[$i]/10) - (int)($pins[$j]/10));
-								if ($k == 0)
-								{
-									continue;
-								}
-								if ($k == (hexdec(substr($bss, 6, 6)) - hexdec(substr($unkn[$pins[$i]], 6, 6))) / ((int)($pin/10) - (int)($pins[$i]/10)))
-								{
-									$found = TRUE;
-									$plus_score = 1.0 / sqrt(abs(hexdec(substr($bss, 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
-									$plus_score += 1.0 / sqrt(abs(hexdec(substr($unkn[$pins[$i]], 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
-									$plus_score += 1.0 / sqrt(abs(hexdec(substr($unkn[$pins[$j]], 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
-									$total_score += $plus_score;
-									$algos[] = array(
-										'generator' =>  new WpsGenLinear($k, bcsub(hex2dec($bss), bcmul((int)($pin/10), $k))),
-										'score' => $plus_score);
-									unset($unkn[$pins[$i]]);
-									unset($unkn[$pins[$j]]);
-									break 2;
-								}
-							}
-						}
-						if (!$found)
-						{
-							$unkn[$pin] = $bss;
-						}
-					}
-					else
-					{
-						$unkn[$pin] = $bss;
-					}
-				}
-			}
-			$res->close();
-		}
-		$db->close();
-		usort($algos, function($a, $b){return ($b['score'] > $a['score']) - ($b['score'] < $a['score']);});
-		$json['scores'] = array();
-		$bssid = WpspinGenerator::formatBssid($bssid);
-		$pins = array_keys($unkn, $bssid);
-		if (count($pins) > 0 && count($pins) < 4)
-		{
-			foreach ($pins as $pin)
-			{
-				$json['scores'][] = array(
-					'name' => 'From DB',
-					'value' => $pin,
-					'score' => 1
-				);
-				unset($unkn[$pin]);
-			}
-		}
-		foreach ($unkn as $bss)
-		{
-			$total_score += 1.0 / sqrt(abs(hexdec(substr($bss, 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
-		}
-		foreach ($algos as $algo)
-		{
-			if ($algo['score'] == 0)
-			{
-				continue;
-			}
-			$json['scores'][] = array(
-				'name' => $algo['generator']->getName(),
-				'value' => $algo['generator']->getPin($bssid),
-				'score' => $algo['score'] / $total_score
-			);
-		}
+	$json['result'] = true;
+	$json['auth'] = $UserManager->Level >= 0;
+	if (!$json['auth'])
+	{
 		break;
+	}
+	if (!db_connect())
+	{
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
+	}
+
+	$bssid = '';
+	if (isset($_POST['bssid']))
+	{
+		$bssid = $_POST['bssid'];
+	}
+	$bssid = preg_replace('/[^0-9A-Fa-f]/', '', $bssid);
+
+	if (strlen($bssid) != 12)
+	{
+		$json['result'] = false;
+		$json['error'] = 'bssid';
+		break;
+	}
+	require_once 'wpspin.php';
+	$result = API_pin_search($bssid);
+	$json = array_merge($json, $result);
+	$db->close();
+	break;
 
 	// Загрузка отчётов в базу
 	case 'upload':
@@ -1686,6 +1564,68 @@ switch ($action)
 			if (count($data))
 				$json['data']['*|'.$essid[$i]] = $data;
 		}
+	}
+	$json['result'] = true;
+	$db->close();
+	break;
+
+	// API определение WPS PIN по MAC
+	case 'apiwps':
+	$json['result'] = false;
+	$mode = explode(';', $_SERVER["CONTENT_TYPE"]);
+	$mode = trim($mode[0]);
+	if ($mode == 'application/x-www-form-urlencoded')
+	{
+		$data = $_POST;
+	}
+	elseif ($mode == 'application/json')
+	{
+		$data = json_decode(file_get_contents('php://input'), true);
+	}
+	else
+	{
+		$data = $_REQUEST;
+	}
+	$key = (isset($data) ? $data['key'] : null);
+	$bssid = (isset($data) ? $data['bssid'] : null);
+	if (is_string($bssid) && strlen($bssid))
+		$bssid = array($bssid);
+	if (is_null($key) || empty($key) ||
+		!is_array($bssid) || !count($bssid))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if (count($bssid) > 100)
+	{
+		$json['error'] = 'limit';
+		break;
+	}
+	if (!$UserManager->AuthByApiKey($key, true))
+	{
+		$json['error'] = 'loginfail';
+		break;
+	}
+	if ($UserManager->ApiAccess != 'read')
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!db_connect())
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	require_once 'wpspin.php';
+	$json['data'] = array();
+	foreach ($bssid as $i => $mac)
+	{
+		$mac = preg_replace('/[^0-9A-Fa-f]/', '', $mac);
+		if (strlen($mac) != 12)
+			continue;
+		$data = API_pin_search($mac);
+		if (count($data['scores']))
+			$json['data'][dec2mac(mac2dec($mac))] = $data;
 	}
 	$json['result'] = true;
 	$db->close();

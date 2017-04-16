@@ -81,7 +81,7 @@
 	<td style="text-align: left">
 		string <b>key</b> - API-ключ с правами на чтение</td>
 	<td rowspan="3" style="text-align: left">
-		array <b>data</b> - массив найденных данных, ключи массива содержат либо "BSSID", либо пару "BSSID|ESSID", в зависимости от того, что было запрошено; каждая запись в массиве содержит в себе ещё один массив соответствий со следующими параметрами <b>time</b> - дата и время загрузки записи в базу, <b>bssid</b> - BSSID, <b>essid</b> - ESSID, <b>sec</b> - тип защиты, <b>key</b> - ключ сети, <b>wps</b> - WPS пин код, <b>lat</b> - широта, <b>lon</b> - долгота</td>
+		array <b>data</b> - массив найденных данных, ключи массива содержат либо "BSSID", либо пару "BSSID|ESSID", в зависимости от того, что было запрошено; каждая запись в массиве содержит в себе ещё один массив соответствий со следующими параметрами: <b>time</b> - дата и время загрузки записи в базу, <b>bssid</b> - BSSID, <b>essid</b> - ESSID, <b>sec</b> - тип защиты, <b>key</b> - ключ сети, <b>wps</b> - WPS пин код, <b>lat</b> - широта, <b>lon</b> - долгота</td>
 </tr>
 <tr>
 	<td style="text-align: left">
@@ -95,19 +95,54 @@
 	<td colspan="2" style="text-align: left">
 		<p><b>Примеры (запрос одной точки):</b></p>
 		<tt>GET /3wifi.php?a=apiquery&amp;key=001122334455&amp;bssid=01:23:45:67:89:AB</tt><hr>
-		<tt>POST /3wifi.php?a=apikeys<br>
+		<tt>POST /3wifi.php?a=apiquery<br>
 		Content-Type: application/json<br>
 		<br>
 		{"key": "001122334455", "bssid": "01:23:45:67:89:AB"}</tt><hr>
 		<p><b>Ответ:</b></p>
 		<tt>{"result": true, "data": {"01:23:45:67:89:AB": [{"time": "2017-04-09 21:00:00", "bssid": "01:23:45:67:89:AB", "essid": "Wi-Fi AP", "sec": "WPA2", "key": "wifipass", "wps": "12345670", "lat": 55.76, "lon": 37.64}]}}</tt>
 		<p><b>Примеры (запрос нескольких точек):</b></p>
-		<tt>POST /3wifi.php?a=apikeys<br>
+		<tt>POST /3wifi.php?a=apiquery<br>
 		Content-Type: application/json<br>
 		<br>
 		{"key": "001122334455", "bssid": ["11:22:33:44:55:66", "77:88:99:AA:BB:CC"]}</tt><hr>
 		<p><b>Ответ:</b></p>
 		<tt>{"result": true, "data": {"11:22:33:44:55:66": [{"time": "2017-04-09 21:00:00", "bssid": "11:22:33:44:55:66", "essid": "Wi-Fi AP 1", "sec": "WPA2", "key": "wifipass", "wps": "12345670", "lat": 55.76, "lon": 37.64}], "77:88:99:AA:BB:CC": [{"time": "2017-04-09 21:00:00", "bssid": "77:88:99:AA:BB:CC", "essid": "Wi-Fi AP 2", "sec": "WPA2", "key": "wifipass", "wps": "12345670", "lat": 55.76, "lon": 37.64}]}}</tt></td>
+</tr>
+
+<tr>
+	<td rowspan="3"><b>apiwps</b></td>
+	<td rowspan="3">Генерирует WPS PIN коды на основе BSSID и данных из базы</td>
+	<td rowspan="3" style="text-align: left">
+		GET (запрос)<br>
+		POST (форма)<br>
+		POST (JSON-объект)</td>
+	<td style="text-align: left">
+		string <b>key</b> - API-ключ с правами на чтение</td>
+	<td rowspan="2" style="text-align: left">
+		array <b>data</b> - массив найденных данных, ключи массива содержат "BSSID"; каждая запись в массиве содержит в себе ещё один массив <b>scores</b> со следующими параметрами: <b>name</b> - название алгоритма генерации пин кода, <b>value</b> - значение пин кода, <b>score</b> - вероятность (значение от 0 до 1)</td>
+</tr>
+<tr>
+	<td style="text-align: left">
+		array <b>bssid</b> - массив BSSID точек доступа</td>
+</tr>
+<tr>
+	<td colspan="2" style="text-align: left">
+		<p><b>Примеры (единичный запрос):</b></p>
+		<tt>GET /3wifi.php?a=apiwps&amp;key=001122334455&amp;bssid=01:23:45:67:89:AB</tt><hr>
+		<tt>POST /3wifi.php?a=apiwps<br>
+		Content-Type: application/json<br>
+		<br>
+		{"key": "001122334455", "bssid": "01:23:45:67:89:AB"}</tt><hr>
+		<p><b>Ответ:</b></p>
+		<tt>{"result": true, "data": {"01:23:45:67:89:AB": {"scores": [{"name": "Static PIN", "value": "12345670", "score": 0.75}]}}}</tt>
+		<p><b>Примеры (мульти-запрос):</b></p>
+		<tt>POST /3wifi.php?a=apiwps<br>
+		Content-Type: application/json<br>
+		<br>
+		{"key": "001122334455", "bssid": ["11:22:33:44:55:66", "77:88:99:AA:BB:CC"]}</tt><hr>
+		<p><b>Ответ:</b></p>
+		<tt>{"result": true, "data": {"11:22:33:44:55:66": {"scores": [{"name": "Static PIN", "value": "12345670", "score": 0.75}]}, "77:88:99:AA:BB:CC": {"scores": [{"name": "Static PIN", "value": "12345670", "score": 0.75}]}}}</tt></td>
 </tr>
 </table>
 
