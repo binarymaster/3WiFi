@@ -824,6 +824,7 @@ switch ($action)
 		$nowait = isset($_GET['nowait']) && ($_GET['nowait'] == '1');
 		$nowait = ($nowait ? 1 : 0);
 		$done = isset($_GET['done']) && ($_GET['done'] == '1');
+		$key = (isset($_GET['key']) ? $_GET['key'] : null);
 		if ($contentType == 'text/csv') $ext = '.csv';
 		if ($contentType == 'text/plain') $ext = '.txt';
 		if ($tid == '')
@@ -874,8 +875,12 @@ switch ($action)
 			if ($valid)
 			{
 				$comment = $db->real_escape_string($comment);
+				$useapi = false;
+				if (!is_null($key))
+					$useapi = $UserManager->AuthByApiKey($key, true);
 				$uid = $UserManager->uID;
-				if (is_null($uid) || $UserManager->Level < 1) $uid = 'NULL';
+				if (is_null($uid) || $UserManager->Level < 1 || ($useapi && $UserManager->ApiAccess != 'write'))
+					$uid = 'NULL';
 				if ($db->query('INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`,`uid`) VALUES (\''.$tid.'\', now(), now(), \''.$ext.'\', \''.$comment.'\', '.$checkexist.', '.$nowait.', '.$uid.')'))
 				{
 					$json['upload']['state'] = true;
