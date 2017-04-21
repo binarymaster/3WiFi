@@ -35,7 +35,7 @@ switch ($_GET['Query'])
 	$ver = $_GET['Version'];
 	$key = $_GET['Key'];
 	$bssid = $_GET['BSSID'];
-	if ($ver != '0.5')
+	if (!in_array($ver, array('0.5', '0.51'), true))
 	{
 		$json['Error'] = array('Code' => 0, 'Desc' => 'Unsupported version');
 		break;
@@ -83,7 +83,7 @@ switch ($_GET['Query'])
 
 	case 'AppVersion':
 	$json['Successes'] = true;
-	$json['ActualyVersion'] = '0.5';
+	$json['ActualyVersion'] = '0.51';
 	$json['WhatNews'] = 'This API is depreciated and will be removed.';
 	break;
 
@@ -91,7 +91,7 @@ switch ($_GET['Query'])
 	$json['Successes'] = false;
 	$ver = $_GET['Version'];
 	$key = $_GET['Key'];
-	if ($ver != '0.5')
+	if (!in_array($ver, array('0.5', '0.51'), true))
 	{
 		$json['Error'] = array('Code' => 0, 'Desc' => 'Unsupported version');
 		break;
