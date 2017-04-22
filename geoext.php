@@ -14,9 +14,9 @@ function my_gzdecode($data)
 function GeoLocateAP($bssid)
 {
 	$coords = GetFromYandex($bssid);
+	if ($coords == '') $coords = GetFromMylnikov($bssid);
 	if ($coords == '') $coords = GetFromAlterGeo($bssid);
 	if ($coords == '') $coords = GetFromMicrosoft($bssid);
-	if ($coords == '') $coords = GetFromMylnikov($bssid);
 	return $coords;
 }
 function GetFromYandex($bssid)
@@ -141,19 +141,20 @@ function GetFromMylnikov($bssid)
 	}
 	return $result;
 }
-function cURL_Get($url, $proxy = '')
+function cURL_Get($url, $proxy = '', $proxytype = -1, $proxyauth = '')
 {
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch, CURLOPT_ENCODING, 'utf-8');
 	curl_setopt($ch, CURLOPT_TIMEOUT, 3);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); 
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 	curl_setopt($ch, CURLOPT_USERAGENT, 'PHP/'.phpversion().' 3WiFi/2.0');
 	if ($proxy != '')
 	{
+		curl_setopt($ch, CURLOPT_PROXYTYPE, $proxytype);
 		curl_setopt($ch, CURLOPT_PROXY, $proxy);
-		//curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxyauth);
+		curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxyauth);
 	}
 	curl_setopt($ch, CURLOPT_URL, $url);
 	$data = curl_exec($ch);
