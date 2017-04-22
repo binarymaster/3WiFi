@@ -812,6 +812,131 @@ switch ($action)
 	$json['upload']['error'] = $error;
 	break;
 
+	// Запрос всей информации о точке в базе
+	case 'queryall':
+	$json['result'] = false;
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level != 3)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$id = isset($_GET['id']) ? $_GET['id'] : null;
+	if(is_null($id) || !is_numeric($id))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	$id = (int)$id;
+	$sql = "SELECT 
+				* 
+			FROM 
+				`BASE_TABLE` 
+				INNER JOIN `GEO_TABLE` USING(BSSID) 
+				LEFT JOIN `comments` USING(cmtid) 
+			WHERE 
+				id = $id";
+	$res = QuerySql($sql);
+	if ($res->num_rows < 1)
+	{
+		$json['error'] = 'notfound';
+		break;
+	}
+	$row = $res->fetch_assoc();
+	$json['result'] = true;
+	$json['data'] = array(
+		'id'      => (int)$row['id'],
+		'time'    => $row['time'],
+		'comment' => $row['cmtval'],
+		'ip'      => _long2ip($row['IP']),
+		'port'    => (int)$row['Port'],
+		'auth'    => $row['Authorization'],
+		'name'    => $row['name'],
+		'radioOff' => (bool)$row['RadioOff'],
+		'hidden'  => (bool)$row['Hidden'],
+		'bssid'   => ($row['NoBSSID'] ? '' : dec2mac($row['BSSID'])),
+		'essid'   => $row['ESSID'],
+		'sec'     => sec2str($row['Security']),
+		'key'     => $row['WiFiKey'],
+		'wps'     => ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT)),
+		'lan_ip'  => _long2ip($row['LANIP']),
+		'lan_mask' => _long2ip($row['LANMask']),
+		'wan_ip'  => _long2ip($row['WANIP']),
+		'wan_mask' => _long2ip($row['WANMask']),
+		'wan_gw'  => _long2ip($row['WANGateway']),
+		'dns1'    => _long2ip($row['DNS1']),
+		'dns2'    => _long2ip($row['DNS2']),
+		'dns3'    => _long2ip($row['DNS3']),
+		'lat'     => 'none',
+		'lon'     => 'none',
+		'quadkey' => $row['quadkey'],
+	);
+	if ($row['NoBSSID'] == 0)
+	{
+		if ($row['latitude'] !== null)
+		{
+			$json['data']['lat'] = (float)$row['latitude'];
+			$json['data']['lon'] = (float)$row['longitude'];
+			if ($json['data']['lat'] == 0 && $json['data']['lon'] == 0)
+			{
+				$json['data']['lat'] = 'not found';
+				$json['data']['lon'] = 'not found';
+			}
+		}
+		else
+		{
+			$json['data']['lat'] = 'in progress';
+			$json['data']['lon'] = 'in progress';
+		}
+	}
+	$res->close();
+
+	$sql = "SELECT 
+				* 
+			FROM 
+				uploads 
+				INNER JOIN users USING(uid) 
+			WHERE 
+				id = $id";
+	$res = QuerySql($sql);
+	$json['uploaders'] = array();
+	while ($row = $res->fetch_assoc())
+	{
+		$entry = array(
+			'uid'        => (int)$row['uid'],
+			'login'      => $row['login'],
+			'nick'       => $row['nick'],
+			'creator' => (bool)$row['creator'],
+		);
+		$json['uploaders'][] = $entry;
+	}
+	$res->close();
+
+	$sql = "SELECT 
+				* 
+			FROM 
+				favorites 
+				INNER JOIN users USING(uid) 
+			WHERE 
+				id = $id";
+	$res = QuerySql($sql);
+	$json['stars'] = array();
+	while ($row = $res->fetch_assoc())
+	{
+		$entry = array(
+			'uid'        => (int)$row['uid'],
+			'login'      => $row['login'],
+			'nick'       => $row['nick'],
+		);
+		$json['stars'][] = $entry;
+	}
+	$res->close();
+	break;
+
 	// Удаление точек из базы
 	case 'delete':
 	$json['result'] = false;
@@ -841,6 +966,58 @@ switch ($action)
 	if (defined('TRY_USE_MEMORY_TABLES'))
 		QuerySql('DELETE FROM BASE_TABLE_CONST WHERE id = ' . $id);
 	$json['result'] = true;
+	break;
+
+	// Обновление координат точек
+	case 'geoupdate':
+	$json['result'] = false;
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level != 3)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!$UserManager->checkToken($_GET['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
+	$bssid = isset($_GET['bssid']) ? $_GET['bssid'] : null;
+	if(!ismac($bssid))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	$lat = isset($_GET['lat']) ? (float)$_GET['lat'] : 0;
+	$lon = isset($_GET['lon']) ? (float)$_GET['lon'] : 0;
+	require_once 'geoext.php';
+	if ($lat == 0 && $lon == 0)
+	{
+		$coords = GeoLocateAP($bssid);
+	}
+	else
+	{
+		$coords = "$lat;$lon;manual";
+	}
+	if ($coords == '')
+	{
+		$json['error'] = 'notfound';
+		break;
+	}
+	$json['result'] = true;
+	$bssid = mac2dec($bssid);
+	$coords = explode(';', $coords);
+	$latitude = $coords[0];
+	$longitude = $coords[1];
+	$quadkey = base_convert(latlon_to_quadkey($latitude, $longitude, MAX_ZOOM_LEVEL), 2, 10);
+	QuerySql("UPDATE GEO_TABLE SET `latitude`=$latitude,`longitude`=$longitude,`quadkey`=$quadkey WHERE `BSSID`=$bssid");
+	$json['lat'] = (float)$latitude;
+	$json['lon'] = (float)$longitude;
+	$json['provider'] = $coords[2];
 	break;
 
 	// Проверка состояния загрузки

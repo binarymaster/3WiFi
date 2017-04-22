@@ -1,0 +1,231 @@
+<title>%l10n_title_admin%</title>
+
+<head>
+<script type="text/javascript">
+function initpage()
+{
+	if (ProfileInfo.Level != 3) window.location.href = (ProfileInfo.Level < 0 ? 'home' : 'user');
+}
+
+function onFail(jqXHR, textStatus, errorThrown)
+{
+	alert('%l10n_err_data%');
+}
+
+function queryAP(e)
+{
+	var id = $('input[name=id]', e).val();
+	var data = '';
+	data += '&id=' + id;
+	$.get('3wifi.php?a=queryall' + data, function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+		}
+		else
+		{
+			var str = '';
+			for (s in json.data)
+			{
+				str += s + ': ' + json.data[s] + "\n";
+			}
+			if (json.uploaders.length > 0)
+			{
+				str += "\nuploaders:\n";
+				for (var i = 0; i < json.uploaders.length; i++)
+				{
+					for (s in json.uploaders[i])
+					{
+						str += s + ': ' + json.uploaders[i][s] + "\n";
+					}
+				}
+			}
+			if (json.stars.length > 0)
+			{
+				str += "\nstars:\n";
+				for (var i = 0; i < json.stars.length; i++)
+				{
+					for (s in json.stars[i])
+					{
+						str += s + ': ' + json.stars[i][s] + "\n";
+					}
+				}
+			}
+			alert(str);
+		}
+		return false;
+	}).fail(onFail);
+	return false;
+}
+
+function deleteAP(e)
+{
+	var id = $('input[name=id]', e).val();
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return false;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&id=' + id;
+			$.get('3wifi.php?a=delete' + data, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return false;
+				}
+				else
+				{
+					alert("%l10n_msg_delete_success%");
+				}
+			}).fail(onFail);
+		}
+	}).fail(onFail);
+	return false;
+}
+
+function geolocate(e)
+{
+	var bssid = $('input[name=bssid]', e).val();
+	var lat = $('input[name=lat]', e).val();
+	var lon = $('input[name=lon]', e).val();
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return false;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&bssid=' + encodeURIComponent(bssid);
+			data += '&lat=' + lat;
+			data += '&lon=' + lon;
+			$.get('3wifi.php?a=geoupdate' + data, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return false;
+				}
+				else
+				{
+					alert(json.lat + ' ' + json.lon + ' (' + json.provider + ')');
+				}
+			}).fail(onFail);
+		}
+	}).fail(onFail);
+	return false;
+}
+
+function getLogin(e)
+{
+	var invite = $('input[name=invite]', $(e).closest('form')).val();
+	var data = '';
+	data += '&invite=' + encodeURIComponent(invite);
+	$.get('user.php?a=inviteuser' + data, function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+		}
+		else
+		{
+			$('input[name=login]').val(json.login);
+		}
+		return false;
+	}).fail(onFail);
+	return false;
+}
+
+function resetUser(e)
+{
+	var login = $('input[name=login]', e).val();
+	var form = e;
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return false;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&login=' + encodeURIComponent(login);
+			$.get('user.php?a=resetpass' + data, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+				}
+				else
+				{
+					$('tt#pass').text(json.pass);
+					alert("%l10n_msg_user_reset_success%");
+				}
+				return false;
+			}).fail(onFail);
+		}
+	}).fail(onFail);
+	return false;
+}
+</script>
+</head>
+
+<body>
+<form onsubmit="return queryAP(this)">
+<fieldset>
+<legend>%l10n_msg_full_query%</legend>
+<label>ID: <input type="number" name="id" min="1" required="required"/></label>
+<input type="submit" value="%l10n_btn_query%"/>
+</fieldset>
+</form>
+<br/>
+
+<form onsubmit="return deleteAP(this)">
+<fieldset>
+<legend>%l10n_msg_delete_aps%</legend>
+<label>ID: <input type="number" name="id" min="1" required="required"/></label>
+<input type="submit" value="%l10n_btn_delete%"/>
+</fieldset>
+</form>
+<br/>
+
+<form onsubmit="return geolocate(this)">
+<fieldset>
+<legend>%l10n_msg_update_geo%</legend>
+<table>
+<tr><td><label for="bssid">%l10n_str_bssid%</label></td>
+<td><input type="text" name="bssid" id="bssid" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" required="required"/></td><td> (%l10n_bssid_format%)</td></tr>
+<tr><td><label for="lat">%l10n_str_lat%</label></td>
+<td><input type="number" name="lat" id="lat" min="-90" max="90" step="0.00000001" value="0"/></td><td>° [-90; 90]</td></tr>
+<tr><td><label for="lon">%l10n_str_lon%</label></td>
+<td><input type="number" name="lon" id="lon" min="-180" max="180" step="0.00000001" value="0"/></td><td>° [-180; 180]</td></tr>
+<tr><td colspan="3">%l10n_msg_geo_def_zero%</td></tr>
+</table>
+<input type="submit" value="%l10n_btn_update%"/>
+</fieldset>
+</form>
+<br/>
+
+<form onsubmit="return resetUser(this)">
+<fieldset>
+<legend>%l10n_msg_user_reset%</legend>
+<table>
+<tr><td><label for="invite">%l10n_str_invite%</label></td>
+<td><input type="text" name="invite" id="invite" pattern=".{12,12}"/></td><td><input type="button" value="%l10n_btn_get%" onclick="return getLogin(this)"/></td></tr>
+<tr><td><label for="login">%l10n_str_login%</label></td>
+<td><input type="text" name="login" id="login" pattern=".{5,30}" required="required"/></td><td><input type="submit" value="%l10n_btn_reset%"/></td></tr>
+<tr><td>%l10n_str_pass%</td>
+<td><tt id="pass"></tt></td></tr>
+</table>
+</fieldset>
+</form>
+<br/>
+
+</body>

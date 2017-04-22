@@ -836,6 +836,34 @@ switch($action)
 	}
 	break;
 
+	// Получение имени пользователя по коду приглашения
+	case 'inviteuser':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level != 3)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (strlen($_GET['invite']) != INVITE_LEN)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	$info = $UserManager->getInviteInfo($_GET['invite']);
+	if (!$info)
+	{
+		$json['error'] = 'invite';
+		break;
+	}
+	$info = $UserManager->getUserInfo($info['uid']);
+	$json['login'] = $info['login'];
+	$json['result'] = !is_null($json['login']);
+	break;
+
 	// Сброс пароля пользователя
 	case 'resetpass':
 	if (!$UserManager->isLogged())
@@ -855,7 +883,7 @@ switch($action)
 	}
 	if (!$UserManager->isUserLogin($_GET['login']))
 	{
-		$json['error'] = 'login';
+		$json['error'] = 'notfound';
 		break;
 	}
 	$json['pass'] = $UserManager->resetPass($_GET['login']);

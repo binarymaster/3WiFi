@@ -16,6 +16,7 @@ function validPage($page)
 		$page == 'upload' ||
 		$page == 'graph' ||
 		$page == 'stat' ||
+		$page == 'admin' ||
 		$page == 'user')
 	{
 		$result = $page;

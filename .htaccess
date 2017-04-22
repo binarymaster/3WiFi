@@ -23,6 +23,7 @@ RewriteRule wpspin$ index.php?page=wpspin [NC,L,QSA]
 RewriteRule upload$ index.php?page=upload [NC,L,QSA]
 RewriteRule graph$ index.php?page=graph [NC,L,QSA]
 RewriteRule stat$ index.php?page=stat [NC,L,QSA]
+RewriteRule admin$ index.php?page=admin [NC,L,QSA]
 RewriteRule user$ index.php?page=user [NC,L,QSA]
 
 # 404 page

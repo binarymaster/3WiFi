@@ -62,6 +62,8 @@ $l10n['err_limit'] =
 'Usage limit is reached';
 $l10n['err_token'] =
 'Token is incorrect, clear your browser cache and try again';
+$l10n['err_notfound'] =
+'Not found';
 $l10n['err_unknown'] =
 'Unknown error';
 $l10n['reg_ok'] =
@@ -496,6 +498,32 @@ $l10n['graph_task_proc'] =
 'Tasks processing';
 $l10n['graph_task_geo'] =
 'Detecting geolocation';
+
+/* admin */
+$l10n['title_admin'] =
+'3WiFi: Admin area';
+$l10n['msg_full_query'] =
+'AP full information query';
+$l10n['btn_query'] =
+'Query';
+$l10n['msg_delete_aps'] =
+'Delete AP from base';
+$l10n['msg_delete_success'] =
+'AP deleted successfully!';
+$l10n['msg_update_geo'] =
+'Update BSSID coordinates';
+$l10n['msg_geo_def_zero'] =
+'(leave coordinates at 0 to use geolocation)';
+$l10n['btn_update'] =
+'Update';
+$l10n['msg_user_reset'] =
+'Reset user password';
+$l10n['msg_user_reset_success'] =
+'Password was reset';
+$l10n['btn_get'] =
+'Obtain';
+$l10n['btn_reset'] =
+'Reset';
 
 /* user */
 $l10n['title_user'] =
