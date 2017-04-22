@@ -11,7 +11,7 @@
 <span style="text-align: left; float: left">
 <br>
 
-<p>Все API запросы отправляются по следующему URI: <tt>/3wifi.php?a=%method%</tt>, где <b>method</b> - название API-метода.</p>
+<p>Все API запросы отправляются по следующему URI: <tt>/api/%method%</tt>, где <b>method</b> - название API-метода.</p>
 <p>Различные методы могут принимать данные в разном формате. Большая часть методов использует API-ключи для доступа к функциям.</p>
 <p>Все методы возвращают результат выполнения <b>result</b>, который равен <b>true</b> в случае успеха, либо <b>false</b> в случае неудачи. В последнем случае также возвращается параметр <b>error</b> с описанием возникшей ошибки.</p>
 
@@ -59,11 +59,11 @@
 <tr>
 	<td colspan="2" style="text-align: left">
 		<p><b>Примеры:</b></p>
-		<tt>POST /3wifi.php?a=apikeys<br>
+		<tt>POST /api/apikeys<br>
 		Content-Type: application/x-www-form-urlencoded; charset=UTF-8<br>
 		<br>
 		login=user123&amp;password=pass123</tt><hr>
-		<tt>POST /3wifi.php?a=apikeys<br>
+		<tt>POST /api/apikeys<br>
 		Content-Type: application/json<br>
 		<br>
 		{"login": "user123", "password": "pass123"}</tt><hr>
@@ -94,15 +94,15 @@
 <tr>
 	<td colspan="2" style="text-align: left">
 		<p><b>Примеры (запрос одной точки):</b></p>
-		<tt>GET /3wifi.php?a=apiquery&amp;key=001122334455&amp;bssid=01:23:45:67:89:AB</tt><hr>
-		<tt>POST /3wifi.php?a=apiquery<br>
+		<tt>GET /api/apiquery&amp;key=001122334455&amp;bssid=01:23:45:67:89:AB</tt><hr>
+		<tt>POST /api/apiquery<br>
 		Content-Type: application/json<br>
 		<br>
 		{"key": "001122334455", "bssid": "01:23:45:67:89:AB"}</tt><hr>
 		<p><b>Ответ:</b></p>
 		<tt>{"result": true, "data": {"01:23:45:67:89:AB": [{"time": "2017-04-09 21:00:00", "bssid": "01:23:45:67:89:AB", "essid": "Wi-Fi AP", "sec": "WPA2", "key": "wifipass", "wps": "12345670", "lat": 55.76, "lon": 37.64}]}}</tt>
 		<p><b>Примеры (запрос нескольких точек):</b></p>
-		<tt>POST /3wifi.php?a=apiquery<br>
+		<tt>POST /api/apiquery<br>
 		Content-Type: application/json<br>
 		<br>
 		{"key": "001122334455", "bssid": ["11:22:33:44:55:66", "77:88:99:AA:BB:CC"]}</tt><hr>
@@ -129,15 +129,15 @@
 <tr>
 	<td colspan="2" style="text-align: left">
 		<p><b>Примеры (единичный запрос):</b></p>
-		<tt>GET /3wifi.php?a=apiwps&amp;key=001122334455&amp;bssid=01:23:45:67:89:AB</tt><hr>
-		<tt>POST /3wifi.php?a=apiwps<br>
+		<tt>GET /api/apiwps&amp;key=001122334455&amp;bssid=01:23:45:67:89:AB</tt><hr>
+		<tt>POST /api/apiwps<br>
 		Content-Type: application/json<br>
 		<br>
 		{"key": "001122334455", "bssid": "01:23:45:67:89:AB"}</tt><hr>
 		<p><b>Ответ:</b></p>
 		<tt>{"result": true, "data": {"01:23:45:67:89:AB": {"scores": [{"name": "Static PIN", "value": "12345670", "score": 0.75}]}}}</tt>
 		<p><b>Примеры (мульти-запрос):</b></p>
-		<tt>POST /3wifi.php?a=apiwps<br>
+		<tt>POST /api/apiwps<br>
 		Content-Type: application/json<br>
 		<br>
 		{"key": "001122334455", "bssid": ["11:22:33:44:55:66", "77:88:99:AA:BB:CC"]}</tt><hr>

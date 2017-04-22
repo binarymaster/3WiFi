@@ -1,0 +1,4 @@
+RewriteEngine on
+
+# Rewrite for APIs
+RewriteRule ^(\w+)$ ../3wifi.php?a=$1 [NC,L,QSA]
