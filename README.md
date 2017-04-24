@@ -22,4 +22,10 @@ php -f 3wifid.php geolocate
 # Starts memory tables manager (use only with memory tables enabled)
 php -f 3wifid.php memory
 ```
+
+## Database maintenance:
+```sh
+# Recheck not found BSSIDs in the database
+php -f 3wifid.php recheck
+```
 Before running the daemons, make sure that `php-cli` interpreter is accessible from your directory.

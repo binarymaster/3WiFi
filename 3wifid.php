@@ -221,15 +221,21 @@ switch ($argv[1])
 	}
 	break;
 
+	// Обновление ранее не найденных точек
+	case 'recheck':
+	$geoquery = 'SELECT `BSSID` FROM GEO_TABLE WHERE `latitude` = 0 AND `longitude` = 0';
+
 	// Получение координат для новых добавленных BSSID
 	case 'geolocate':
+	if (!isset($geoquery))
+		$geoquery = 'SELECT `BSSID` FROM GEO_TABLE WHERE `latitude` IS NULL';
 	require_once 'geoext.php';
 	require_once 'quadkey.php';
 
 	while (true)
 	{
 		logt('Fetching incomplete BSSIDs...');
-		$res = QuerySql('SELECT `BSSID` FROM GEO_TABLE WHERE `latitude` IS NULL');
+		$res = QuerySql($geoquery);
 		$total = $res->num_rows;
 		if ($total == 0)
 		{
@@ -269,12 +275,6 @@ switch ($argv[1])
 		$res->close();
 		sleep(10);
 	}
-	break;
-
-	// Обновление ранее не найденных точек
-	case 'recheck':
-	require_once 'geoext.php';
-	// TODO
 	break;
 
 	// Обслуживание таблиц в памяти
