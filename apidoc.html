@@ -41,8 +41,8 @@
 		POST (JSON-объект)</td>
 	<td style="text-align: left">
 		string <b>login</b> - логин пользователя</td>
-	<td rowspan="4" style="text-align: left">
-		array <b>data</b> - массив API-ключей, содержащий записи с полями <b>key</b> - ключ и <b>access</b> - права доступа для этого ключа (либо <b>read</b> - на чтение, либо <b>write</b> - на запись)</td>
+	<td rowspan="2" style="text-align: left">
+		object <b>profile</b> - данные профиля пользователя: <b>nick</b> - никнейм, <b>regdate</b> - дата регистрации, <b>level</b> - уровень доступа</td>
 </tr>
 <tr>
 	<td style="text-align: left">
@@ -51,6 +51,8 @@
 <tr>
 	<td style="text-align: left">
 		bool <b>genread</b> - генерировать ключ на чтение при его отсутствии (опционально)</td>
+	<td rowspan="2" style="text-align: left">
+		array <b>data</b> - массив API-ключей, содержащий записи с полями <b>key</b> - ключ и <b>access</b> - права доступа для этого ключа (либо <b>read</b> - на чтение, либо <b>write</b> - на запись)</td>
 </tr>
 <tr>
 	<td style="text-align: left">
@@ -68,7 +70,7 @@
 		<br>
 		{"login": "user123", "password": "pass123"}</tt><hr>
 		<p><b>Ответ:</b></p>
-		<tt>{"result": true, "data": [{"key": "0011223344", "access": "read"}, {"key": "5566778899", "access": "write"}]}</tt></td>
+		<tt>{"result": true, "profile": {"nick": "Anonymous", "regdate": "2015-12-13 12:00:00", "level": 1}, "data": [{"key": "0011223344", "access": "read"}, {"key": "5566778899", "access": "write"}]}</tt></td>
 </tr>
 
 <tr>

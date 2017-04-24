@@ -1575,6 +1575,11 @@ switch ($action)
 			$json['error'] = 'loginfail';
 			break;
 		}
+		$json['profile'] = array(
+			'nick' => $UserManager->Nick,
+			'regdate' => $UserManager->RegDate,
+			'level' => (int)$UserManager->Level,
+		);
 		$data = $UserManager->getApiKeys();
 		if (is_null($data['rapikey']) && $genread)
 		{
