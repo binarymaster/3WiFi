@@ -286,7 +286,10 @@ switch ($action)
 			$DiffPage = 0;
 		}
 
-		$sql .= ' AND `id` '.$Sign.' '.$NextPageStartId.' LIMIT '.($DiffPage*100).', '.$Limit;
+		$sql .= ' AND B.`id` '.$Sign.' '.$NextPageStartId;
+		if (!TRY_USE_MEMORY_TABLES)
+			$sql .= ' ORDER BY `time` DESC';
+		$sql .= ' LIMIT '.($DiffPage * 100).', '.$Limit;
 
 		$_SESSION['Search']['ArgsHash'] = md5($cmtid.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS);
 		$_SESSION['Search']['LastPage'] = $Page;
