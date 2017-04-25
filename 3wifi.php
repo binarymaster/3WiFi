@@ -219,9 +219,19 @@ switch ($action)
 		{
 			if (StrInStr($BSSID, '*'))
 			{
-				$mmac = mac2dec(mac_mask($BSSID));
-				$mask = mac2dec(mac_mask($BSSID, false));
-				$sql .= " AND (`BSSID` & $mask = $mmac)";
+				if (preg_replace("/F{2,}0{2,}/", 'F0', mac_mask($BSSID, false)) == 'F0')
+				{
+					$mmac = mac_mask($BSSID);
+					$mask = mac_mask($BSSID, false);
+					$n_mask = str_replace('0', 'F', ltrim($mask, 'F'));
+					$sql .= " AND `BSSID` BETWEEN (0x$mmac & 0x$mask) AND (0x$mmac | 0x$n_mask)";
+				}
+				else
+				{
+					$mmac = mac2dec(mac_mask($BSSID));
+					$mask = mac2dec(mac_mask($BSSID, false));
+					$sql .= " AND (`BSSID` & $mask = $mmac)";
+				}
 			}
 			else $sql .= ' AND `BSSID` = '.mac2dec($BSSID).'';
 		}
