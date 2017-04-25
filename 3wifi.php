@@ -195,22 +195,22 @@ switch ($action)
 		}
 
 		$sql = 'SELECT SQL_CALC_FOUND_ROWS 
-				`id`,`time`,
+				B.`id`,`time`,
 				`cmtid`,`cmtval`,
 				`IP`,`Port`,`Authorization`,`name`,
 				`NoBSSID`,`BSSID`,`ESSID`,`Security`,
 				`WiFiKey`,`WPSPIN`,`WANIP`,
 				`latitude`,`longitude`, uid IS NOT NULL fav 
-				FROM `BASE_TABLE` 
+				FROM `BASE_TABLE` AS B 
 				LEFT JOIN `comments` USING(cmtid) 
 				LEFT JOIN `GEO_TABLE` USING(BSSID) 
-				LEFT JOIN (SELECT uid,id FROM favorites WHERE uid='.$uid.') ufav USING(id) 
+				LEFT JOIN `favorites` AS F ON B.id = F.id AND uid = '.$uid.' 
 				WHERE 1';
 		if ($cmtid != -1)
 		{
 			$sql .= ' AND (`cmtid` '.($cmtid == 0 ? 'IS NULL)' : "= $cmtid)");
 		}
-		if ($BSSID != '')
+		if (str_replace('*', '', $BSSID) != '')
 		{
 			if (StrInStr($BSSID, '*'))
 			{
@@ -220,27 +220,27 @@ switch ($action)
 			}
 			else $sql .= ' AND `BSSID` = '.mac2dec($BSSID).'';
 		}
-		if ($ESSID != '')
+		if (FilterWildcards($ESSID, $Wildcards) != '')
 		{
 			if (HasWildcards($ESSID, $Wildcards)) $sql .= ' AND `ESSID` LIKE \''.UniStrWildcard($ESSID, $Wildcards).'\'';
 			else $sql .= ' AND `ESSID` = \''.$ESSID.'\'';
 		}
-		if ($Auth != '')
+		if (FilterWildcards($Auth, $Wildcards) != '')
 		{
 			if (HasWildcards($Auth, $Wildcards)) $sql .= ' AND `Authorization` LIKE \''.UniStrWildcard($Auth, $Wildcards).'\'';
 			else $sql .= ' AND `Authorization` = \''.$Auth.'\'';
 		}
-		if ($Name != '')
+		if (FilterWildcards($Name, $Wildcards) != '')
 		{
 			if (HasWildcards($Name, $Wildcards)) $sql .= ' AND `name` LIKE \''.UniStrWildcard($Name, $Wildcards).'\'';
 			else $sql .= ' AND `name` = \''.$Name.'\'';
 		}
-		if ($Key != '')
+		if (FilterWildcards($Key, $Wildcards) != '')
 		{
 			if (HasWildcards($Key, $Wildcards)) $sql .= ' AND `WiFiKey` LIKE \''.UniStrWildcard($Key, $Wildcards).'\'';
 			else $sql .= ' AND `WiFiKey` = \''.$Key.'\'';
 		}
-		if ($WPS != '')
+		if (FilterWildcards($WPS, $Wildcards) != '')
 		{
 			if (HasWildcards($WPS, $Wildcards)) $sql .= ' AND `WPSPIN` LIKE \''.UniStrWildcard($WPS, $Wildcards).'\'';
 			else $sql .= ' AND `WPSPIN` = \''.$WPS.'\'';
@@ -347,10 +347,8 @@ switch ($action)
 			$res->close();
 		}
 	}
-	$ipaddr = _ip2long($db->real_escape_string($ipaddr));
 	$auth = $db->real_escape_string($auth);
 	$name = $db->real_escape_string($name);
-	$bssid = $db->real_escape_string($bssid);
 	$essid = $db->real_escape_string($essid);
 	$key = $db->real_escape_string($key);
 	$wps = $db->real_escape_string($wps);
