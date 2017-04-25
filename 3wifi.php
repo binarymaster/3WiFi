@@ -161,7 +161,7 @@ switch ($action)
 		$str = str_replace($wc[1], '%', $str);
 		return $str;
 	}
-	function GenerateFindQuery($cmtid, $BSSID, $ESSID, $Auth, $Name, $Key, $WPS, $Page, $Limit)
+	function GenerateFindQuery($cmtid, $ipaddr, $BSSID, $ESSID, $Auth, $Name, $Key, $WPS, $Page, $Limit)
 	{
 		if(!isset($_SESSION['Search'])) $_SESSION['Search'] = array();
 		if(!isset($_SESSION['Search']['ArgsHash'])) $_SESSION['Search']['ArgsHash'] = '';
@@ -210,6 +210,11 @@ switch ($action)
 		{
 			$sql .= ' AND (`cmtid` '.($cmtid == 0 ? 'IS NULL)' : "= $cmtid)");
 		}
+		$ipaddr = ip2long($ipaddr) !== false ? ip2long($ipaddr) : '';
+		if ($ipaddr != '')
+		{
+			$sql .= " AND `IP` = $ipaddr";
+		}
 		if (str_replace('*', '', $BSSID) != '')
 		{
 			if (StrInStr($BSSID, '*'))
@@ -246,7 +251,7 @@ switch ($action)
 			else $sql .= ' AND `WPSPIN` = \''.$WPS.'\'';
 		}
 
-		if($_SESSION['Search']['ArgsHash'] == md5($cmtid.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS))
+		if($_SESSION['Search']['ArgsHash'] == md5($cmtid.$ipaddr.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS))
 		{
 			$sql = str_replace('SQL_CALC_FOUND_ROWS', '', $sql);
 		}
@@ -358,7 +363,7 @@ switch ($action)
 	if (isset($_POST['page'])) $cur_page = (int)$_POST['page'];
 	if ($cur_page < 1) $cur_page = 1;
 
-	$sql = GenerateFindQuery($cmtid, $bssid, $essid, $auth, $name, $key, $wps, $cur_page, $per_page);
+	$sql = GenerateFindQuery($cmtid, $ipaddr, $bssid, $essid, $auth, $name, $key, $wps, $cur_page, $per_page);
 	if ($res = QuerySql($sql))
 	{
 		if($_SESSION['Search']['LastRowsNum'] == -1)
