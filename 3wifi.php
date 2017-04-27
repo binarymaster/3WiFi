@@ -219,7 +219,7 @@ switch ($action)
 		{
 			if (StrInStr($BSSID, '*'))
 			{
-				if (preg_replace("/F{2,}0{2,}/", 'F0', mac_mask($BSSID, false)) == 'F0')
+				if (preg_replace("/F+0+/", 'F0', mac_mask($BSSID, false)) == 'F0')
 				{
 					$mmac = mac_mask($BSSID);
 					$mask = mac_mask($BSSID, false);
