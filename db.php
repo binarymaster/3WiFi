@@ -44,6 +44,7 @@ function db_connect()
 		}
 		else
 		{
+			$db->set_charset('utf8');
 			$result = true;
 		}
 	}
