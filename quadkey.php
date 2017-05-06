@@ -192,6 +192,7 @@ function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=false)
 	$q1 = base_convert(str_pad($quadkey, 2 * MAX_ZOOM_LEVEL, "0"), 2, 10);
 	$q2 = base_convert(str_pad($quadkey, 2 * MAX_ZOOM_LEVEL, "1"), 2, 10);
 	$mask = 2 * (MAX_ZOOM_LEVEL - $group_level);
+	$geo = (TRY_USE_MEMORY_TABLES ? GEO_MEM_TABLE : GEO_TABLE);
 
 	$clusters = array();
 	if (!$fetch_all)
@@ -199,7 +200,7 @@ function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=false)
 		$sql = "SELECT (`quadkey` >> $mask) as `cluster_qk`, BSSID,
 					COUNT(BSSID) AS count, AVG(longitude) AS lon_avg,
 					AVG(latitude) AS lat_avg 
-				FROM " . GEO_TABLE . "
+				FROM $geo
 				WHERE `quadkey` BETWEEN $q1 AND $q2 
 				GROUP BY (`cluster_qk`) ";
 
@@ -221,7 +222,7 @@ function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=false)
 	else
 	{ // fetch all appropriate records and group them manually
 		$sql = "SELECT (`quadkey` >> $mask) as `cluster_qk`, BSSID, longitude, latitude 
-				FROM " . GEO_TABLE . "
+				FROM $geo
 				WHERE `quadkey` BETWEEN $q1 AND $q2";
 
 		if (($res = $db->query($sql)))
