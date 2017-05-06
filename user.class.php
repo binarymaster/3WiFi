@@ -561,7 +561,7 @@ class User {
 		if (is_null($uid)) $uid = $this->uID;
 		if ($uid == NULL) return false;
 
-		$sql = 'SELECT time, users.regdate, invite, nick, invites.level FROM invites LEFT JOIN users USING(`uid`) WHERE invites.puid='.$this->quote($uid).' ORDER BY time';
+		$sql = 'SELECT time, users.regdate, invite, nick, IF(users.level IS NULL, invites.level, users.level) AS level FROM invites LEFT JOIN users USING(`uid`) WHERE invites.puid='.$this->quote($uid).' ORDER BY time';
 		$res = self::$mysqli->query($sql);
 		for ($result=array();$row=$res->fetch_assoc();$row['level']=(int)$row['level'],$result[]=$row);
 		$res->close();
