@@ -223,7 +223,7 @@ switch ($argv[1])
 
 	// Обновление ранее не найденных точек
 	case 'recheck':
-	$geoquery = 'SELECT `BSSID` FROM GEO_TABLE WHERE `latitude` = 0 AND `longitude` = 0';
+	$geoquery = 'SELECT `BSSID` FROM GEO_TABLE WHERE `latitude` = 0 AND `longitude` = 0  ORDER BY RAND()';
 
 	// Получение координат для новых добавленных BSSID
 	case 'geolocate':
