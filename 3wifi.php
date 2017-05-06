@@ -46,6 +46,10 @@ switch ($action)
 	case 'map':
 	set_time_limit(10);
 	list($tile_x1, $tile_y1, $tile_x2, $tile_y2) = explode(',', $_GET['tileNumber']);
+	$tile_x1 = (int)$tile_x1;
+	$tile_y1 = (int)$tile_y1;
+	$tile_x2 = (int)$tile_x2;
+	$tile_y2 = (int)$tile_y2;
 	$zoom = (int)$_GET['zoom'];
 	$callback = $_GET['callback'];
 	$clat = (float)$_GET['clat'];
@@ -111,17 +115,16 @@ switch ($action)
 			{
 				if (!$get_info_stmt->execute()) continue;
 
-				$res = $get_info_stmt->get_result();
-				while ($row = $res->fetch_assoc())
+				$get_info_stmt->bind_result($time, $essid, $key);
+				while ($get_info_stmt->fetch())
 				{
 					$aphint = array();
 
-					$xtime = $row['time'];
 					$xbssid = htmlspecialchars(dec2mac($bssid));
-					$xessid = htmlspecialchars($row['ESSID']);
-					$xwifikey = htmlspecialchars($row['WiFiKey']);
+					$xessid = htmlspecialchars($essid);
+					$xwifikey = htmlspecialchars($key);
 
-					if ($UserManager->Level >= 0) $aphint[] = $xtime;
+					if ($UserManager->Level >= 0) $aphint[] = $time;
 					$aphint[] = $xbssid;
 					$aphint[] = $xessid;
 					if ($UserManager->Level >= 0) $aphint[] = $xwifikey;
