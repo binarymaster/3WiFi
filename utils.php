@@ -69,6 +69,8 @@ function _ip2long($arg)
 {
 	$res = ip2long($arg);
 	if($res === false) return 'NULL';
+	if ($res > 0x7FFFFFFF) // prevent MySQL INT field clipping
+		$res -= 0x100000000;
 	return $res;
 }
 function isValidIP($addr)
