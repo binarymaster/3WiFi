@@ -200,6 +200,20 @@ form {
 	padding-top: 12px;
 	padding-bottom: 12px;
 }
+.content.map {
+	padding: 0px;
+}
+.content.find {
+	padding-left: 8px;
+	padding-right: 8px;
+}
+.content.ranges,
+.content.devmac,
+.content.stat,
+.content.graph,
+.content.user {
+	padding-top: 0px;
+}
 .footer {
 	background-color: black;
 	color: white;

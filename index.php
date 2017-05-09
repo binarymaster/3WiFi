@@ -105,6 +105,7 @@ $content = getStringBetween($hfile, '<body>', '</body>');
 $content = str_replace('%content%', $content, file_get_contents('index.html'));
 $content = str_replace('%title%', $title, $content);
 $content = str_replace('%head%', $head, $content);
+$content = str_replace('%page%', $page, $content);
 
 $theme_base = 'themes';
 $themes = scandir("$theme_base/");
@@ -126,7 +127,7 @@ if ( isset($theme) && in_array($theme, $themes, true) )
 else
 {
 	// use default theme
-	$theme_data['css'] = 'css/style.css?2017-03-05-r4';
+	$theme_data['css'] = 'css/style.css?2017-05-09';
 	$theme_data['head'] = '';
 	$theme_data['ajax'] = 'img/loadsm.gif';
 }
