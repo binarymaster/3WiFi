@@ -62,7 +62,7 @@ function GetFromAlterGeo($bssid)
 	while (!($data = cURL_Get("http://api.platform.altergeo.ru/loc/json?browser=firefox&sensor=false&wifi=mac:$bssid|ss:0")) && ($tries > 0))
 	{
 		$tries--;
-		sleep(2);
+		sleep(5);
 	}
 
 	$result = '';
