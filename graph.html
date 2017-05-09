@@ -79,9 +79,6 @@ function initpage()
 		'background-color': '#ffe',
 		opacity: 0.80
 	}).appendTo('body');
-	var wid = Math.round(screen.width / 1.75);
-	$('.graphbkg').css('width', wid);
-	$('.graphbkg').css('height', Math.round(wid / 1.8));
 	gl_opts = {
 		series: {
 			color: '#9d7',
@@ -146,19 +143,48 @@ function initpage()
 	showTasks();
 }
 </script>
+<style>
+.gtable
+{
+	width: 100%;
+}
+.gtable td
+{
+	position: relative;
+}
+.graphbkg
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+}
+.gtd:before
+{
+	content: "";
+	display: block;
+	padding-top: 75%;
+}
+</style>
 </head>
 
 <body>
 <h2 align=center class=header_cap>%l10n_msg_graph%</h2>
-<div align=center>
-<div class=graphbkg>
-	<div id=graphload class=graph></div>
-	<div align=left><span id=stat></span><span id=today></span></div>
-</div>
-
-<div class=graphbkg>
-	<div id=graphtask class=graph></div>
-	<div align=left><span id=task></span></div>
-</div>
-</div>
+<table class=gtable>
+<tr>
+	<td class=gtd>
+		<div class=graphbkg>
+			<div id=graphload class=dgraph></div>
+			<div align=left><span id=stat></span><span id=today></span></div>
+		</div>
+	</td>
+	<td class=gtd>
+		<div class=graphbkg>
+			<div id=graphtask class=dgraph></div>
+			<div align=left><span id=task>&nbsp;</span></div>
+		</div>
+	</td>
+</tr>
+</table>
 </body>
