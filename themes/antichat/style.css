@@ -360,29 +360,51 @@ hr
 	display: inherit;
 	position: relative;
 }
+table.st2
+{
+	background-image: url(img/bg.gif);
+	background-repeat: repeat-y;
+}
+table.st2 td#stat_es.first
+{
+	border-top: 1px solid #646C71;
+}
+table.st2 td#stat_ft
+{
+	border-bottom: 1px solid #646C71;
+}
 table.st2 td#stat_es,
 table.st2 td#stat_em
 {
 	cursor: pointer;
-	padding-left: 18px;
-	min-width: 112px;
-	width: 112px;
+	padding-left: 23px;
+	min-width: 176px;
+	width: 176px;
 	height: 25px;
-	background: url(img/raz.gif) no-repeat left;
+	color: #B9B9BD;
+	background: url(img/menu_off.gif) no-repeat 5px center;
+}
+table.st2 td#stat_es:hover,
+table.st2 td#stat_em:hover
+{
+	color: #E1E1E6;
+	background: url(img/menu_on.gif) no-repeat 5px center;
 }
 table.st2 td#stat_em
 {
-	min-width: 128px;
-	width: 128px;
+	min-width: 178px;
+	width: 178px;
 }
-table.st2 td.stat_sel
+table.st2 td#stat_es.stat_sel,
+table.st2 td#stat_em.stat_sel
 {
-    color: white;	
+	color: white;
+	background: url(img/menu_on.gif) no-repeat 5px center;
 }
 table.st2 td#stat_cn
 {
 	width: 100%;
-	padding-left: 32px;
+	padding-left: 4px;
 	vertical-align: top;
 }
 .userTabs a
@@ -462,6 +484,12 @@ table.st2 td#stat_cn
 	text-decoration: none;
 }
 
+.content.stat
+{
+	padding-left: 0px;
+	padding-top: 0px;
+}
+
 /*
  * copy from default theme
  */
@@ -473,6 +501,19 @@ table.st2 td#stat_cn
 	padding-right: 16px;
 	padding-top: 12px;
 	padding-bottom: 12px;
+}
+.content.map {
+	padding: 0px;
+}
+.content.find {
+	padding-left: 8px;
+	padding-right: 8px;
+}
+.content.ranges,
+.content.devmac,
+.content.graph,
+.content.user {
+	padding-top: 0px;
 }
 .modal {
 	display: none;
