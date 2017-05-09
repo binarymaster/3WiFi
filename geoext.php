@@ -1,6 +1,17 @@
 <?php
 require_once 'utils.php';
 
+function geoDbg($str)
+{
+	return; // debug output disabled
+	$f = fopen('geodbg.log', 'ab');
+	fwrite($f, "$str\r\n");
+	fclose($f);
+}
+function geoDebug($prov, $bssid, $data)
+{
+	geoDbg("[+] $prov / $bssid\r\n$data");
+}
 function my_gzdecode($data)
 {
 	$g = tempnam('', 'gztmp');
@@ -13,6 +24,7 @@ function my_gzdecode($data)
 }
 function GeoLocateAP($bssid)
 {
+	geoDbg("start locate $bssid");
 	$coords = GetFromYandex($bssid);
 	if ($coords == '') $coords = GetFromMylnikov($bssid);
 	if ($coords == '') $coords = GetFromAlterGeo($bssid);
@@ -21,6 +33,7 @@ function GeoLocateAP($bssid)
 }
 function GetFromYandex($bssid)
 {
+	geoDbg("yandex: $bssid");
 	$tries = 3;
 	$bssid = str_replace(":","",$bssid);
 	$bssid = str_replace("-","",$bssid);
@@ -32,6 +45,7 @@ function GetFromYandex($bssid)
 
 	$result = '';
 	if (!$data) return $result;
+	geoDebug('yandex', $bssid, $data);
 	$latitude = getStringBetween($data, ' latitude="', '"');
 	$longitude = getStringBetween($data, ' longitude="', '"');
 	if ($latitude != '' && $longitude != '')
@@ -42,6 +56,7 @@ function GetFromYandex($bssid)
 }
 function GetFromAlterGeo($bssid)
 {
+	geoDbg("altergeo: $bssid");
 	$tries = 3;
 	$bssid = strtolower(str_replace(":","-",$bssid));
 	while (!($data = cURL_Get("http://api.platform.altergeo.ru/loc/json?browser=firefox&sensor=false&wifi=mac:$bssid|ss:0")) && ($tries > 0))
@@ -52,6 +67,7 @@ function GetFromAlterGeo($bssid)
 
 	$result = '';
 	if (!$data) return $result;
+	geoDebug('altergeo', $bssid, $data);
 	$json = json_decode($data);
 	if (!$json) return $result;
 	if ($json->status == 'OK')
@@ -67,6 +83,7 @@ function GetFromAlterGeo($bssid)
 }
 function GetFromMicrosoft($bssid)
 {
+	geoDbg("microsoft: $bssid");
 	$headers = array(
 		'Accept: */*',
 		'Accept-Language: en-us',
@@ -101,6 +118,7 @@ function GetFromMicrosoft($bssid)
 
 	$result = '';
 	if (!$data) return $result;
+	geoDebug('microsoft', $bssid, $data);
 	$xml = simplexml_load_string($data);
 	if (!$xml) return $result;
 	if ($xml->GetLocationUsingFingerprintResult->ResponseStatus == 'Success' &&
@@ -120,6 +138,7 @@ function GetFromMicrosoft($bssid)
 }
 function GetFromMylnikov($bssid)
 {
+	geoDbg("mylnikov: $bssid");
 	$tries = 3;
 	$proto = 'https:';
 	while (!($data = cURL_Get("$proto//api.mylnikov.org/wifi/main.py/get?bssid=$bssid", ''/* 127.0.0.1:3128 */)) && ($tries > 0))
@@ -133,6 +152,7 @@ function GetFromMylnikov($bssid)
 	if (!$data) return $result;
 	$json = json_decode($data);
 	if (!$json) return $result;
+	geoDebug('mylnikov', $bssid, $data);
 	if ($json->result == 200)
 	{
 		$latitude = $json->data->lat;
