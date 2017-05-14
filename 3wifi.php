@@ -588,67 +588,49 @@ switch ($action)
 
 	$bssid = '';
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
-	$oui = mac2dec($bssid);
-	$oui = bcdiv($oui, bcpow('2', '24')); // XX:XX:XX:XX:XX:XX => XX:XX:XX:00:00:00
-	$oui = bcmul($oui, bcpow('2', '24'));
-	$mask = '281474959933440'; // FF:FF:FF:00:00:00
+	if(!ismac($bssid))
+	{
+		$json['result'] = false;
+		$json['error'] = 'form';
+		break;
+	}
+	$mac = mac2dec($bssid);
+	$oui = bcdiv($mac, bcpow('2', '24'));
+	$mac = base_convert($mac, 10, 16);
+	$oui = base_convert($oui, 10, 16);
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	$oui = $db->real_escape_string($oui);
-	if ($res = QuerySql("SELECT `BSSID`,`name` FROM `BASE_TABLE` WHERE (`NoBSSID` = 0 AND `BSSID` & $mask = $oui) AND `name` != ''"))
+	if ($res = QuerySql("
+		SELECT name, COUNT(name) cnt, ABS(BSSID - 0x$mac) diff 
+		FROM ( 
+			SELECT name, BSSID 
+			FROM `BASE_TABLE` 
+			WHERE BSSID BETWEEN 0x{$oui}000000 AND 0x{$oui}FFFFFF AND name != '' 
+			ORDER BY ABS(BSSID - 0x$mac) 
+		) T 
+		GROUP BY name HAVING(cnt > 1) 
+		ORDER BY ABS(BSSID - 0x$mac) 
+		LIMIT 10
+	"))
 	{
 		$devs = array();
-		while ($row = $res->fetch_row())
+		while ($row = $res->fetch_assoc())
 		{
-			$bss = dec2mac($row[0]);
-			$name = $row[1];
-
-			if (!isset($devs[$name]))
-			{
-				$devs[$name][12] = 0;
-				$devs[$name][11] = 0;
-				$devs[$name][10] = 0;
-				$devs[$name][9] = 0;
-				$devs[$name][8] = 0;
-				$devs[$name][7] = 0;
-				$devs[$name][6] = 0;
-			}
-			$match = 6;
-			for ($i = 9; $i < strlen($bss); $i++)
-			{
-				if ($i == 11 || $i == 14) $i++; // ':'
-				if ($bssid[$i] == $bss[$i])
-				{
-					$match++;
-				} else break;
-			}
-			$devs[$name][$match] += 1;
+			$devs[] = $row;
 		}
 		$res->close();
 	}
 	$db->close();
-	$scores = array();
-	foreach($devs as $name => $match)
-	{
-		$val =
-		$match[12] * 2048 + $match[11] * 1024 +
-		$match[10] * 256 + $match[9] * 64 +
-		$match[8] * 16 + $match[7] * 8 + $match[6] * 4;
-		$scores[$name] = (($val * 512) ^ (1/2)) / ((($val * 512) + 1048576) ^ (1/2));
-	}
-	arsort($scores);
-	$scores = array_slice($scores, 0, 8);
-
 	$json['scores'] = array();
-	foreach($scores as $name => $score)
+	foreach($devs as $dev)
 	{
 		$entry = array();
-		$entry['name'] = $name;
-		$entry['score'] = $score;
+		$entry['name'] = $dev['name'];
+		$entry['score'] = 1 - pow((int)$dev['diff'] / 0xFFFFFF, 1 / 8);
 		$json['scores'][] = $entry;
 	}
 	break;
