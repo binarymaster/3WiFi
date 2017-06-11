@@ -73,6 +73,25 @@ function _ip2long($arg)
 		$res -= 0x100000000;
 	return $res;
 }
+function _l2ul($arg)
+{
+	if ( sprintf('%u', -1) == '18446744073709551615' )
+	{
+		$res = sprintf('%u', $arg & 0xFFFFFFFF);
+	}
+	else
+	{
+		$res = sprintf('%u', $arg);
+	}
+	return $res;
+}
+function _ip2ulong($arg)
+{
+	$ip = ip2long($arg);
+	if($ip === false)
+		return false;
+	return _l2ul($ip);
+}
 function isValidIP($addr)
 {
 	$ip_arr = explode('.', $addr);

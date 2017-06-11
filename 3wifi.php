@@ -554,9 +554,12 @@ switch ($action)
 	{
 		require 'ipext.php';
 		$last_upper = 0;
+		// Prevent overflow on 64-bit systems
+		$overflow = (sprintf('%u', -1) == '18446744073709551615');
 		while ($row = $res->fetch_row())
 		{
 			$ip = (int)$row[0];
+			if ($overflow) $ip = $ip & 0xFFFFFFFF;
 			if (compare_ip($ip, $last_upper) <= 0)
 			{
 				continue;

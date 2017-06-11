@@ -1,4 +1,5 @@
 <?php
+require_once 'utils.php';
 
 // Regional Internet Registries
 define('RIR_RIPE', 1);
@@ -315,7 +316,8 @@ function get_ip_range($db, $ip)
 	if (($ip >= (int)0x0A000000 and $ip < (int)0x0B000000) or // 10.0.0.0-10.255.255.255
 		($ip >= (int)0x64400000 and $ip < (int)0x64800000) or // 100.64.0.0-100.127.255.255
 		($ip >= (int)0xAC100000 and $ip < (int)0xAC200000) or // 172.16.0.0-172.31.255.255
-		($ip >= (int)0xC0A80000 and $ip < (int)0xC0A90000))   // 192.168.0.0-192.168.255.255
+		($ip >= (int)0xC0A80000 and $ip < (int)0xC0A90000) or // 192.168.0.0-192.168.255.255
+		($ip >= (int)0x7F000000 and $ip < (int)0x80000000))   // 127.0.0.0-127.255.255.255
 	{
 		// exact range isn't known, just use /16 mask
 		return array('startIP' => $ip & ~0xFFFF,
@@ -326,7 +328,7 @@ function get_ip_range($db, $ip)
 	}
 	
 	// If stored in local db
-	$uIP = sprintf('%u', $ip);
+	$uIP = _l2ul($ip);
 	if ($res = $db->query(
 			"SELECT * FROM ranges
 			WHERE startIP <= $uIP AND endIP >= $uIP
@@ -360,8 +362,8 @@ function get_ip_range($db, $ip)
 		return $ip_range; // don't store big ranges
 	}
 	$ip_range["country"] = substr($ip_range["country"], 0, 2);
-	$startIP = sprintf('%u', $ip_range["startIP"]);
-	$endIP = sprintf('%u', $ip_range["endIP"]);
+	$startIP = _l2ul($ip_range["startIP"]);
+	$endIP = _l2ul($ip_range["endIP"]);
 	$netname = $db->real_escape_string($ip_range["netname"]);
 	$descr = $db->real_escape_string($ip_range["descr"]);
 	$country = $db->real_escape_string($ip_range["country"]);
