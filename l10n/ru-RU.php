@@ -210,6 +210,8 @@ $l10n['find_any_char'] =
 'любой символ';
 $l10n['find_any_str'] =
 'любой набор символов';
+$l10n['find_checksens'] =
+'Учитывать регистр';
 $l10n['btn_find'] =
 'Найти';
 $l10n['btn_jump'] =

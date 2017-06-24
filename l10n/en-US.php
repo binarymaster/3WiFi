@@ -210,6 +210,8 @@ $l10n['find_any_char'] =
 'any character';
 $l10n['find_any_str'] =
 'any string';
+$l10n['find_checksens'] =
+'Case sensitive';
 $l10n['btn_find'] =
 'Search';
 $l10n['btn_jump'] =
