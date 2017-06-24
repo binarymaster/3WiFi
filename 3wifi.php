@@ -150,9 +150,10 @@ switch ($action)
 	{
 		return StrInStr($str, $wc[0]) || StrInStr($str, $wc[1]);
 	}
-	function FilterWildcards($str, $wc)
+	function FilterWildcards($str, $wc, $strict = true)
 	{
-		$str = str_replace($wc[0], '', $str);
+		if ($strict)
+			$str = str_replace($wc[0], '', $str);
 		$str = str_replace($wc[1], '', $str);
 		return $str;
 	}
@@ -238,30 +239,30 @@ switch ($action)
 			}
 			else $sql .= ' AND `BSSID` = '.mac2dec($BSSID).'';
 		}
-		if (FilterWildcards($ESSID, $Wildcards) != '')
+		if (FilterWildcards($ESSID, $Wildcards, false) != '' || empty($ESSID))
 		{
 			if (HasWildcards($ESSID, $Wildcards)) $sql .= ' AND `ESSID` LIKE \''.UniStrWildcard($ESSID, $Wildcards).'\'';
 			else $sql .= ' AND `ESSID` = \''.$ESSID.'\'';
 		}
-		if (FilterWildcards($Auth, $Wildcards) != '')
+		if (FilterWildcards($Auth, $Wildcards, false) != '' || empty($Auth))
 		{
 			if (HasWildcards($Auth, $Wildcards)) $sql .= ' AND `Authorization` LIKE \''.UniStrWildcard($Auth, $Wildcards).'\'';
 			else $sql .= ' AND `Authorization` = \''.$Auth.'\'';
 		}
-		if (FilterWildcards($Name, $Wildcards) != '')
+		if (FilterWildcards($Name, $Wildcards, false) != '' || empty($Name))
 		{
 			if (HasWildcards($Name, $Wildcards)) $sql .= ' AND `name` LIKE \''.UniStrWildcard($Name, $Wildcards).'\'';
 			else $sql .= ' AND `name` = \''.$Name.'\'';
 		}
-		if (FilterWildcards($Key, $Wildcards) != '')
+		if (FilterWildcards($Key, $Wildcards, false) != '' || empty($Key))
 		{
 			if (HasWildcards($Key, $Wildcards)) $sql .= ' AND `WiFiKey` LIKE \''.UniStrWildcard($Key, $Wildcards).'\'';
 			else $sql .= ' AND `WiFiKey` = \''.$Key.'\'';
 		}
-		if (FilterWildcards($WPS, $Wildcards) != '')
+		if (FilterWildcards($WPS, $Wildcards, false) != '' || empty($WPS))
 		{
-			if (HasWildcards($WPS, $Wildcards)) $sql .= ' AND `WPSPIN` LIKE \''.UniStrWildcard($WPS, $Wildcards).'\'';
-			else $sql .= ' AND `WPSPIN` = \''.$WPS.'\'';
+			if (HasWildcards($WPS, $Wildcards)) $sql .= ' AND WPSPIN != 1 AND LPAD(WPSPIN, 8, "0") LIKE \''.UniStrWildcard($WPS, $Wildcards).'\'';
+			else $sql .= (empty($WPS) ? ' AND `WPSPIN` = 1' : ' AND `WPSPIN` = \''.$WPS.'\'');
 		}
 
 		if($_SESSION['Search']['ArgsHash'] == md5($cmtid.$ipaddr.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS))
