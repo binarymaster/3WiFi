@@ -401,17 +401,17 @@ switch ($action)
 
 		$FirstId = -1;
 		$LastId = -1;
-		while ($row = $res->fetch_row())
+		while ($row = $res->fetch_assoc())
 		{
-			if ($FirstId == -1) $FirstId = (int)$row[0];
-			$LastId = (int)$row[0];
+			if ($FirstId == -1) $FirstId = (int)$row['id'];
+			$LastId = (int)$row['id'];
 
 			$entry = array();
-			if ($UserManager->Level >= 1) $entry['id'] = (int)$row[0];
-			$entry['time'] = $row[1];
-			$entry['comment'] = ($row[2] == null ? '' : $row[3]);
-			$ip = _long2ip($row[4]);
-			$wanip = _long2ip($row[14]);
+			if ($UserManager->Level >= 1) $entry['id'] = (int)$row['id'];
+			$entry['time'] = $row['time'];
+			$entry['comment'] = ($row['cmtid'] == null ? '' : $row['cmtval']);
+			$ip = _long2ip($row['IP']);
+			$wanip = _long2ip($row['WANIP']);
 			if ($UserManager->Level > 1)
 			{
 				$entry['ipport'] = ($ip != '' ? $ip : ($wanip != '' ? $wanip : ''));
@@ -422,9 +422,9 @@ switch ($action)
 				{
 					$entry['ipport'] = $wanip;
 				}
-				if ($entry['ipport'] != '' && $row[5] != null) $entry['ipport'] .= ':'.$row[5];
-				$entry['auth'] = $row[6];
-				$entry['name'] = $row[7];
+				if ($entry['ipport'] != '' && $row['Port'] != null) $entry['ipport'] .= ':'.$row['Port'];
+				$entry['auth'] = $row['Authorization'];
+				$entry['name'] = $row['name'];
 			} else {
 				$entry['range'] = ($ip != '' ? $ip : ($wanip != '' ? $wanip : ''));
 				if (isLocalIP($entry['range'])
@@ -444,24 +444,24 @@ switch ($action)
 					$entry['range'] = '';
 			}
 			$entry['bssid'] = '';
-			if ((int)$row[8] == 0) $entry['bssid'] = dec2mac($row[9]);
-			$entry['essid'] = $row[10];
-			$entry['sec'] = sec2str((int)$row[11]);
-			$entry['key'] = $row[12];
-			$entry['wps'] = ($row[13] == 1 ? '' : str_pad($row[13], 8, '0', STR_PAD_LEFT));
+			if ((int)$row['NoBSSID'] == 0) $entry['bssid'] = dec2mac($row['BSSID']);
+			$entry['essid'] = $row['ESSID'];
+			$entry['sec'] = sec2str((int)$row['Security']);
+			$entry['key'] = $row['WiFiKey'];
+			$entry['wps'] = ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT));
 			$entry['lat'] = 'none';
 			$entry['lon'] = 'none';
-			if ((int)$row[8] == 0 && $row[15] !== null)
+			if ((int)$row['NoBSSID'] == 0 && $row['latitude'] !== null)
 			{
-				$entry['lat'] = (float)$row[15];
-				$entry['lon'] = (float)$row[16];
+				$entry['lat'] = (float)$row['latitude'];
+				$entry['lon'] = (float)$row['longitude'];
 				if ($entry['lat'] == 0 && $entry['lon'] == 0)
 				{
 					$entry['lat'] = 'not found';
 					$entry['lon'] = 'not found';
 				}
 			}
-			$entry['fav'] = (bool)$row[17];
+			$entry['fav'] = (bool)$row['fav'];
 
 			$json['data'][] = $entry;
 			unset($entry);

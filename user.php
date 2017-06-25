@@ -298,29 +298,29 @@ switch($action)
 	}
 	$json['result'] = true;
 	$json['data'] = array();
-	while ($row = $res->fetch_row())
+	while ($row = $res->fetch_assoc())
 	{
 		$ap = array();
-		$ap['id'] = (int)$row[0];
-		$ap['time'] = $row[1];
-		$ap['comment'] = $row[2];
-		$ap['ipport'] = _long2ip($row[3]);
-		if ($row[4] != '') $ap['ipport'] .= ':'.$row[4];
-		$ap['auth'] = $row[5];
-		$ap['name'] = $row[6];
-		$ap['bssid'] = ($row[7] == 0 ? dec2mac($row[8]) : '');
-		$ap['essid'] = $row[9];
-		$ap['sec'] = sec2str((int)$row[10]);
-		$ap['key'] = $row[11];
-		$ap['wps'] = ($row[12] == 1 ? '' : str_pad($row[12], 8, '0', STR_PAD_LEFT));
+		$ap['id'] = (int)$row['id'];
+		$ap['time'] = $row['time'];
+		$ap['comment'] = $row['cmtval'];
+		$ap['ipport'] = _long2ip($row['IP']);
+		if ($row['Port'] != '') $ap['ipport'] .= ':'.$row['Port'];
+		$ap['auth'] = $row['Authorization'];
+		$ap['name'] = $row['name'];
+		$ap['bssid'] = ($row['NoBSSID'] == 0 ? dec2mac($row['BSSID']) : '');
+		$ap['essid'] = $row['ESSID'];
+		$ap['sec'] = sec2str((int)$row['Security']);
+		$ap['key'] = $row['WiFiKey'];
+		$ap['wps'] = ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT));
 		$ap['lat'] = null;
 		$ap['lon'] = null;
-		if ($row[6] == 0 && $row[13] != 0 && $row[14] != 0)
+		if ($row['NoBSSID'] == 0 && $row['latitude'] != 0 && $row['longitude'] != 0)
 		{
-			$ap['lat'] = (float)$row[13];
-			$ap['lon'] = (float)$row[14];
+			$ap['lat'] = (float)$row['latitude'];
+			$ap['lon'] = (float)$row['longitude'];
 		}
-		$ap['fav'] = (bool)$row[15];
+		$ap['fav'] = (bool)$row['fav'];
 		$json['data'][] = $ap;
 		unset($ap);
 	}
@@ -438,14 +438,14 @@ switch($action)
 	}
 	$json['result'] = true;
 	$json['data'] = array();
-	while ($row = $res->fetch_row())
+	while ($row = $res->fetch_assoc())
 	{
 		$ap = array();
-		$ap['id'] = (int)$row[0];
-		$ap['time'] = $row[1];
-		$ap['comment'] = $row[2];
-		$ip = _long2ip($row[3]);
-		$wanip = _long2ip($row[10]);
+		$ap['id'] = (int)$row['id'];
+		$ap['time'] = $row['time'];
+		$ap['comment'] = $row['cmtval'];
+		$ip = _long2ip($row['IP']);
+		$wanip = _long2ip($row['WANIP']);
 		$ap['range'] = ($ip != '' ? $ip : ($wanip != '' ? $wanip : ''));
 		if (isLocalIP($ap['range'])
 		&& $ap['range'] != $wanip
@@ -462,17 +462,17 @@ switch($action)
 			$ap['range'] = implode('.', $oct).'.0.0/16';
 		} else
 			$ap['range'] = '';
-		$ap['bssid'] = ($row[4] == 0 ? dec2mac($row[5]) : '');
-		$ap['essid'] = $row[6];
-		$ap['sec'] = sec2str((int)$row[7]);
-		$ap['key'] = $row[8];
-		$ap['wps'] = ($row[9] == 1 ? '' : str_pad($row[9], 8, '0', STR_PAD_LEFT));
+		$ap['bssid'] = ($row['NoBSSID'] == 0 ? dec2mac($row['BSSID']) : '');
+		$ap['essid'] = $row['ESSID'];
+		$ap['sec'] = sec2str((int)$row['Security']);
+		$ap['key'] = $row['WiFiKey'];
+		$ap['wps'] = ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT));
 		$ap['lat'] = null;
 		$ap['lon'] = null;
-		if ($row[4] == 0 && $row[11] != 0 && $row[12] != 0)
+		if ($row['NoBSSID'] == 0 && $row['latitude'] != 0 && $row['longitude'] != 0)
 		{
-			$ap['lat'] = (float)$row[11];
-			$ap['lon'] = (float)$row[12];
+			$ap['lat'] = (float)$row['latitude'];
+			$ap['lon'] = (float)$row['longitude'];
 		}
 		$json['data'][] = $ap;
 		unset($ap);
