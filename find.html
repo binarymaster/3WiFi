@@ -165,6 +165,16 @@ function find(page)
 							e.essid += ' <img src="img/icon-hidden.png" title="%l10n_str_hidden%"/>';
 						}
 						e.key = encodeHTML(e.key, true);
+						if (e.lat == 'none')
+						{
+							e.lat = '%l10n_str_none%';
+							e.lon = '%l10n_str_none%';
+						}
+						else if (e.lat == 'not found')
+						{
+							e.lat = '%l10n_str_notfound%';
+							e.lon = '%l10n_str_notfound%';
+						}
 						switch (level)
 						{
 							case 1:
