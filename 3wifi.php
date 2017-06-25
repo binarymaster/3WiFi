@@ -121,8 +121,8 @@ switch ($action)
 					$aphint = array();
 
 					$xbssid = htmlspecialchars(dec2mac($bssid));
-					$xessid = htmlspecialchars($essid);
-					$xwifikey = htmlspecialchars($key);
+					$xessid = str_replace(' ', '&nbsp;', htmlspecialchars($essid));
+					$xwifikey = str_replace(' ', '&nbsp;', htmlspecialchars($key));
 
 					if ($UserManager->Level >= 0) $aphint[] = $time;
 					$aphint[] = $xbssid;
