@@ -584,6 +584,10 @@ table.st2 td#stat_cn
 form {
 	margin: 0;
 }
+TABLE.st1 TD img,
+TABLE.st1 TH img {
+	vertical-align: inherit;
+}
 .fAnswer {
 }
 .wrapper { position: relative }

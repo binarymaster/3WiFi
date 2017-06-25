@@ -202,6 +202,10 @@ $l10n['str_wifikey'] =
 'Wi-Fi Key:';
 $l10n['str_wpspin'] =
 'WPS PIN:';
+$l10n['str_nowifi'] =
+'Wireless AP is turned off';
+$l10n['str_hidden'] =
+'This network is hidden';
 $l10n['find_wildcard'] =
 'wildcard character';
 $l10n['find_wildcard_info'] =

@@ -202,6 +202,10 @@ $l10n['str_wifikey'] =
 'Ключ сети:';
 $l10n['str_wpspin'] =
 'Пин код WPS:';
+$l10n['str_nowifi'] =
+'Точка доступа отключена';
+$l10n['str_hidden'] =
+'Скрытая сеть';
 $l10n['find_wildcard'] =
 'заменяющий символ';
 $l10n['find_wildcard_info'] =

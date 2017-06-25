@@ -283,6 +283,7 @@ switch($action)
 	if (!$res = QuerySql(
 		"SELECT id, time, cmtval, 
 		IP, Port, Authorization, name, 
+		RadioOff, Hidden, 
 		NoBSSID, BSSID, ESSID, Security, 
 		WiFiKey, WPSPIN, latitude, longitude, 
 		fuid IS NOT NULL fav 
@@ -308,6 +309,8 @@ switch($action)
 		if ($row['Port'] != '') $ap['ipport'] .= ':'.$row['Port'];
 		$ap['auth'] = $row['Authorization'];
 		$ap['name'] = $row['name'];
+		$ap['nowifi'] = (bool)$row['RadioOff'];
+		$ap['hidden'] = (bool)$row['Hidden'];
 		$ap['bssid'] = ($row['NoBSSID'] == 0 ? dec2mac($row['BSSID']) : '');
 		$ap['essid'] = $row['ESSID'];
 		$ap['sec'] = sec2str((int)$row['Security']);
@@ -424,6 +427,7 @@ switch($action)
 	$uid = $UserManager->uID;
 	if (!$res = QuerySql(
 		"SELECT id,time,cmtval,IP,
+		RadioOff,Hidden,
 		NoBSSID,BSSID,ESSID,
 		Security,WiFiKey,WPSPIN,
 		WANIP,latitude,longitude 
@@ -462,6 +466,8 @@ switch($action)
 			$ap['range'] = implode('.', $oct).'.0.0/16';
 		} else
 			$ap['range'] = '';
+		$ap['nowifi'] = (bool)$row['RadioOff'];
+		$ap['hidden'] = (bool)$row['Hidden'];
 		$ap['bssid'] = ($row['NoBSSID'] == 0 ? dec2mac($row['BSSID']) : '');
 		$ap['essid'] = $row['ESSID'];
 		$ap['sec'] = sec2str((int)$row['Security']);

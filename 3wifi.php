@@ -204,6 +204,7 @@ switch ($action)
 				B.`id`,`time`,
 				`cmtid`,`cmtval`,
 				`IP`,`Port`,`Authorization`,`name`,
+				`RadioOff`,`Hidden`,
 				`NoBSSID`,`BSSID`,`ESSID`,`Security`,
 				`WiFiKey`,`WPSPIN`,`WANIP`,
 				`latitude`,`longitude`, uid IS NOT NULL fav 
@@ -443,6 +444,8 @@ switch ($action)
 				} else
 					$entry['range'] = '';
 			}
+			$entry['nowifi'] = (bool)$row['RadioOff'];
+			$entry['hidden'] = (bool)$row['Hidden'];
 			$entry['bssid'] = '';
 			if ((int)$row['NoBSSID'] == 0) $entry['bssid'] = dec2mac($row['BSSID']);
 			$entry['essid'] = $row['ESSID'];

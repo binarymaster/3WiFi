@@ -63,6 +63,12 @@ function errorStr(error)
 		return '%l10n_err_unknown%';
 	}
 }
+function encodeHTML(str, spaces)
+{
+	str = $('<div>').text(str).html();
+	if (spaces) str = str.replace(/ /g, '&nbsp;');
+	return str;
+}
 function showModal(frm)
 {
 	$('#win_login').css({left: '-9999px'});

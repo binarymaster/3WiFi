@@ -127,7 +127,7 @@ if ( isset($theme) && in_array($theme, $themes, true) )
 else
 {
 	// use default theme
-	$theme_data['css'] = 'css/style.css?2017-05-09-r2';
+	$theme_data['css'] = 'css/style.css?2017-06-25';
 	$theme_data['head'] = '';
 	$theme_data['ajax'] = 'img/loadsm.gif';
 }

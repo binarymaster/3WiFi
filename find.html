@@ -154,17 +154,28 @@ function find(page)
 						if (e.key.length < 20) of = null;
 						e.lat = String(e.lat).substr(0,9);
 						e.lon = String(e.lon).substr(0,9);
+						e.bssid = encodeHTML(e.bssid, true);
+						if (e.nowifi)
+						{
+							e.bssid += ' <img src="img/icon-nowifi.png" title="%l10n_str_nowifi%"/>';
+						}
+						e.essid = encodeHTML(e.essid, true);
+						if (e.hidden)
+						{
+							e.essid += ' <img src="img/icon-hidden.png" title="%l10n_str_hidden%"/>';
+						}
+						e.key = encodeHTML(e.key, true);
 						switch (level)
 						{
 							case 1:
 							appendTable('fdata', '<td>',
 							[e.time.split(' ')[0], e.comment, e.range, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, links],
-							[mrw, null, mn, mn, null, null, of, mn, nw, nw, rw]);
+							[mrw, null, mn, mrw, rw, null, rw, mn, nw, nw, rw]);
 							break;
 							case 2:
 							appendTable('fdata', '<td>',
 							[e.id, e.time.split(' ').join('<br>'), e.comment, e.ipport, e.auth, e.name, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, links],
-							[mn, mrw, null, mn, null, null, mn, null, null, of, mn, nw, nw, rw]);
+							[mn, mrw, null, mn, null, null, mrw, rw, null, rw, mn, nw, nw, rw]);
 							break;
 						}
 					}

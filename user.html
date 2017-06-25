@@ -84,10 +84,21 @@ function getMyUploads()
 			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.ipport));
 			tr.append($('<td>').text(ap.auth));
 			tr.append($('<td>').text(ap.name));
-			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.bssid));
-			tr.append($('<td>').css({'white-space': 'nowrap'}).text(ap.essid));
+			ap.bssid = encodeHTML(ap.bssid, true);
+			if (ap.nowifi)
+			{
+				ap.bssid += ' <img src="img/icon-nowifi.png" title="%l10n_str_nowifi%"/>';
+			}
+			tr.append($('<td>').css({'font-family': 'monospace'}).html(ap.bssid));
+			ap.essid = encodeHTML(ap.essid, true);
+			if (ap.hidden)
+			{
+				ap.essid += ' <img src="img/icon-hidden.png" title="%l10n_str_hidden%"/>';
+			}
+			tr.append($('<td>').css({'white-space': 'nowrap'}).html(ap.essid));
 			tr.append($('<td>').text(ap.sec));
-			tr.append($('<td>').css({'white-space': 'nowrap'}).text(ap.key));
+			ap.key = encodeHTML(ap.key, true);
+			tr.append($('<td>').css({'white-space': 'nowrap'}).html(ap.key));
 			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.wps));
 			var urls = '';
 			if (typeof ap.lat == 'number')
@@ -158,10 +169,21 @@ function getMyFavorites()
 			tr.append($('<td>').css({'font-family': 'monospace', 'white-space': 'nowrap'}).text(ap.time.split(' ')[0]));
 			tr.append($('<td>').text(ap.comment));
 			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.range));
-			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.bssid));
-			tr.append($('<td>').css({'white-space': 'nowrap'}).text(ap.essid));
+			ap.bssid = encodeHTML(ap.bssid, true);
+			if (ap.nowifi)
+			{
+				ap.bssid += ' <img src="img/icon-nowifi.png" title="%l10n_str_nowifi%"/>';
+			}
+			tr.append($('<td>').css({'font-family': 'monospace'}).html(ap.bssid));
+			ap.essid = encodeHTML(ap.essid, true);
+			if (ap.hidden)
+			{
+				ap.essid += ' <img src="img/icon-hidden.png" title="%l10n_str_hidden%"/>';
+			}
+			tr.append($('<td>').css({'white-space': 'nowrap'}).html(ap.essid));
 			tr.append($('<td>').text(ap.sec));
-			tr.append($('<td>').css({'white-space': 'nowrap'}).text(ap.key));
+			ap.key = encodeHTML(ap.key, true);
+			tr.append($('<td>').css({'white-space': 'nowrap'}).html(ap.key));
 			tr.append($('<td>').css({'font-family': 'monospace'}).text(ap.wps));
 			var urls = '';
 			if (typeof ap.lat == 'number')

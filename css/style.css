@@ -255,6 +255,10 @@ TABLE.st1 TH {
 TABLE.st1 TR:nth-child(2n) {
 	background: #fff8dc; /* Цвет фона четных строк */
 }
+TABLE.st1 TD img,
+TABLE.st1 TH img {
+	vertical-align: inherit;
+}
 TABLE.swp_st {
 	background: #fffff0; /* Цвет фона нечетных строк */
 	border: 1px solid #a52a2a; /* Рамка вокруг таблицы */
@@ -306,7 +310,7 @@ TABLE.st2 TD#stat_em {
 }
 TABLE.st2 TD.stat_sel {
 	background-color: black;
-    color: white;	
+	color: white;	
 }
 TABLE.st2 TD#stat_ft {
 	border-right: solid 1px #939393;
@@ -362,7 +366,7 @@ TABLE.st2 TD#stat_cn {
 }
 .header_cap {
 	font-family: monospace;
-    font-size: 18pt;
+	font-size: 18pt;
 }
 
 /* User Tabs */
