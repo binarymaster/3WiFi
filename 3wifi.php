@@ -1634,6 +1634,7 @@ switch ($action)
 	$key = (isset($data) ? $data['key'] : null);
 	$bssid = (isset($data) ? $data['bssid'] : null);
 	$essid = (isset($data) ? $data['essid'] : null);
+	$sens = isset($data) && isset($data['sens']) && in_array($data['sens'], array('1', 'on', 'true', 1, true), true);
 	if (is_string($bssid) && strlen($bssid))
 		$bssid = array($bssid);
 	if (is_string($essid) && strlen($essid))
@@ -1681,7 +1682,14 @@ switch ($action)
 			if ($find_essid && !empty($essid[$i]))
 			{
 				$ess = $db->real_escape_string($essid[$i]);
-				$where .= " AND ESSID = '$ess'";
+				if ($sens)
+				{
+					$where .= " AND BINARY ESSID = '$ess'";
+				}
+				else
+				{
+					$where .= " AND ESSID = '$ess'";
+				}
 			}
 			$sql = "SELECT 
 						time, BSSID, ESSID, Security, WiFiKey, WPSPIN, latitude, longitude 

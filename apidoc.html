@@ -74,15 +74,15 @@
 </tr>
 
 <tr>
-	<td rowspan="4"><b>apiquery</b></td>
-	<td rowspan="4">Запрашивает точки доступа из базы (точное совпадение с BSSID и/или ESSID)</td>
-	<td rowspan="4" style="text-align: left">
+	<td rowspan="5"><b>apiquery</b></td>
+	<td rowspan="5">Запрашивает точки доступа из базы (точное совпадение с BSSID и/или ESSID)</td>
+	<td rowspan="5" style="text-align: left">
 		GET (запрос)<br>
 		POST (форма)<br>
 		POST (JSON-объект)</td>
 	<td style="text-align: left">
 		string <b>key</b> - API-ключ с правами на чтение</td>
-	<td rowspan="3" style="text-align: left">
+	<td rowspan="4" style="text-align: left">
 		array <b>data</b> - массив найденных данных, ключи массива содержат либо "BSSID", либо пару "BSSID|ESSID", в зависимости от того, что было запрошено; каждая запись в массиве содержит в себе ещё один массив соответствий со следующими параметрами: <b>time</b> - дата и время загрузки записи в базу, <b>bssid</b> - BSSID, <b>essid</b> - ESSID, <b>sec</b> - тип защиты, <b>key</b> - ключ сети, <b>wps</b> - WPS пин код, <b>lat</b> - широта, <b>lon</b> - долгота</td>
 </tr>
 <tr>
@@ -92,6 +92,10 @@
 <tr>
 	<td style="text-align: left">
 		array <b>essid</b> - массив ESSID точек доступа (опционально), если указан - должен быть соразмерен с массивом BSSID и соответствовать записям в нём</td>
+</tr>
+<tr>
+	<td style="text-align: left">
+		bool <b>sens</b> - учитывать регистр символов ESSID (опционально)</td>
 </tr>
 <tr>
 	<td colspan="2" style="text-align: left">
