@@ -1730,7 +1730,14 @@ switch ($action)
 		{
 			if (!$find_essid || empty($essid[$i])) continue;
 			$ess = $db->real_escape_string($essid[$i]);
-			$where = "ESSID = '$ess'";
+			if ($sens)
+			{
+				$where = "BINARY ESSID = '$ess'";
+			}
+			else
+			{
+				$where = "ESSID = '$ess'";
+			}
 			$sql = "SELECT 
 						time, NoBSSID, BSSID, ESSID, Security, WiFiKey, WPSPIN, latitude, longitude 
 					FROM 
