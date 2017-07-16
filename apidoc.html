@@ -150,6 +150,42 @@
 		<p><b>Ответ:</b></p>
 		<tt>{"result": true, "data": {"11:22:33:44:55:66": {"scores": [{"name": "Static PIN", "value": "12345670", "score": 0.75}]}, "77:88:99:AA:BB:CC": {"scores": [{"name": "Static PIN", "value": "12345670", "score": 0.75}]}}}</tt></td>
 </tr>
+
+<tr>
+	<td rowspan="5"><b>apiranges</b></td>
+	<td rowspan="5">Получает список диапазонов по широте, долготе и радиусу</td>
+	<td rowspan="5" style="text-align: left">
+		GET (запрос)<br>
+		POST (форма)<br>
+		POST (JSON-объект)</td>
+	<td style="text-align: left">
+		string <b>key</b> - API-ключ с правами на чтение</td>
+	<td rowspan="4" style="text-align: left">
+		array <b>data</b> - массив найденных данных; каждая запись в массиве содержит параметры: <b>range</b> - IP диапазон, <b>netname</b> - название сети, <b>descr</b> - описание диапазона, <b>country</b> - двухсимвольный код страны</td>
+</tr>
+<tr>
+	<td style="text-align: left">
+		float <b>lat</b> - широта (от -90 до 90)</td>
+</tr>
+<tr>
+	<td style="text-align: left">
+		float <b>lon</b> - долгота (от -180 до 180)</td>
+</tr>
+<tr>
+	<td style="text-align: left">
+		float <b>rad</b> - радиус (от 0.001 до 25)</td>
+</tr>
+<tr>
+	<td colspan="2" style="text-align: left">
+		<p><b>Примеры (единичный запрос):</b></p>
+		<tt>GET /api/apiranges?key=001122334455&amp;lat=%var_lat%&amp;lon=%var_lon%&amp;rad=%var_rad%</tt><hr>
+		<tt>POST /api/apiranges<br>
+		Content-Type: application/json<br>
+		<br>
+		{"key": "001122334455", "lat": %var_lat%, "lon": %var_lon%, "rad": %var_rad%}</tt><hr>
+		<p><b>Ответ:</b></p>
+		<tt>{"result": true, "data": [{"range": "192.168.0.0/16", "netname": "", "descr": "Local IP range", "country": ""}]}</tt></td>
+</tr>
 </table>
 
 </span>

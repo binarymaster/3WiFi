@@ -523,71 +523,14 @@ switch ($action)
 		break;
 	}
 
-	$lat_km = 111.143 - 0.562 * cos(2 * deg2rad($lat));
-	$lon_km = abs(111.321 * cos(deg2rad($lon)) - 0.094 * cos(3 * deg2rad($lon)));
-	$lat1 = min(max($lat - $radius / $lat_km, -90), 90);
-	$lat2 = min(max($lat + $radius / $lat_km, -90), 90);
-	$lon1 = min(max($lon - $radius / $lon_km, -180), 180);
-	$lon2 = min(max($lon + $radius / $lon_km, -180), 180);
-	$tile_x1 = lon_to_tile_x($lon1, 7);
-	$tile_y1 = lat_to_tile_y($lat2, 7);
-	$tile_x2 = lon_to_tile_x($lon2, 7);
-	$tile_y2 = lat_to_tile_y($lat1, 7);
-	$quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, 7);
-	$quadkeys = '(' . implode(',', array_map(function($x){return base_convert($x, 2, 10);}, $quadkeys)) . ')';
-	$json['data'] = array();
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql(
-		"SELECT DISTINCT IP FROM 
-		(SELECT IP 
-		FROM `BASE_TABLE`, `GEO_TABLE` 
-		WHERE (`GEO_TABLE`.`quadkey` >> 32) IN $quadkeys AND
-				`BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
-				AND (`GEO_TABLE`.`quadkey` IS NOT NULL) 
-				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2) 
-				AND (IP != 0 AND IP != -1) 
-		UNION SELECT WANIP 
-		FROM `BASE_TABLE`, `GEO_TABLE` 
-		WHERE (`GEO_TABLE`.`quadkey` >> 32) IN $quadkeys AND
-				`BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
-				AND (`GEO_TABLE`.`quadkey` IS NOT NULL) 
-				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2) 
-				AND (WANIP != 0 AND WANIP != -1)
-		) IPTable ORDER BY CAST(IP AS UNSIGNED INTEGER)"));
-	{
-		require 'ipext.php';
-		$last_upper = 0;
-		// Prevent overflow on 64-bit systems
-		$overflow = (sprintf('%u', -1) == '18446744073709551615');
-		while ($row = $res->fetch_row())
-		{
-			$ip = (int)$row[0];
-			if ($overflow) $ip = $ip & 0xFFFFFFFF;
-			if (compare_ip($ip, $last_upper) <= 0)
-			{
-				continue;
-			}
-			$ip_range = get_ip_range($db, $ip);
-			if(is_null($ip_range))
-			{
-				continue;
-			}
-			$last_upper = $ip_range['endIP'];
-			$json['data'][] = array(
-				'range' => pretty_range($ip_range['startIP'], $ip_range['endIP']),
-				'netname' => $ip_range['netname'],
-				'descr' => $ip_range['descr'],
-				'country' => $ip_range['country']);
-		}
-		$res->close();
-		usort($json['data'], function($a, $b) { return strcmp($a['descr'], $b['descr']); });
-		array_unique($json['data'], SORT_REGULAR);
-	}
+	require 'ipext.php';
+	$json['data'] = API_get_ranges($lat, $lon, $radius);
 	$db->close();
 	break;
 
@@ -1837,6 +1780,74 @@ switch ($action)
 			$json['data'][dec2mac(mac2dec($mac))] = $data;
 	}
 	$json['result'] = true;
+	$db->close();
+	break;
+
+	// API определение диапазонов
+	case 'apiranges':
+	$json['result'] = false;
+	$mode = explode(';', $_SERVER["CONTENT_TYPE"]);
+	$mode = trim($mode[0]);
+	if ($mode == 'application/x-www-form-urlencoded')
+	{
+		$data = $_POST;
+	}
+	elseif ($mode == 'application/json')
+	{
+		$data = json_decode(file_get_contents('php://input'), true);
+	}
+	else
+	{
+		$data = $_REQUEST;
+	}
+	$key = (isset($data) ? $data['key'] : null);
+	$lat = (isset($data) ? $data['lat'] : null);
+	$lon = (isset($data) ? $data['lon'] : null);
+	$rad = (isset($data) ? $data['rad'] : null);
+	if (is_null($key) || empty($key) ||
+		is_null($lat) || empty($lat) ||
+		is_null($lon) || empty($lon) ||
+		is_null($rad) || empty($rad) )
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	$lat = (float)$lat;
+	$lon = (float)$lon;
+	$rad = (float)$rad;
+	if ($lat < -90 || $lat > 90)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if ($lon < -180 || $lon > 180)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if ($rad < 0 || $rad > 25)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if (!$UserManager->AuthByApiKey($key, true))
+	{
+		$json['error'] = 'loginfail';
+		break;
+	}
+	if ($UserManager->ApiAccess != 'read')
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!db_connect())
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	require 'ipext.php';
+	$json['result'] = true;
+	$json['data'] = API_get_ranges($lat, $lon, $rad);
 	$db->close();
 	break;
 }
