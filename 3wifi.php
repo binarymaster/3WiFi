@@ -66,7 +66,7 @@ switch ($action)
 	$res = get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom, $scat);
 
 	unset($json); // здесь используется JSON-P
-	Header('Content-Type: application/json-p');
+	Header('Content-Type: application/javascript');
 	$json['error'] = null;
 	$json['data']['type'] = 'FeatureCollection';
 	$json['data']['features'] = array();

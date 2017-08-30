@@ -599,7 +599,7 @@ switch($action)
 		break;
 	}
 	unset($json); // здесь используется JSON-P
-	Header('Content-Type: application/json-p');
+	Header('Content-Type: application/javascript');
 	$json['error'] = null;
 	$json['data']['type'] = 'FeatureCollection';
 	$json['data']['features'] = array();
