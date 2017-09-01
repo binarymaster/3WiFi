@@ -282,6 +282,8 @@ $l10n['wpspin_one_bssid'] =
 'Эта функция только для одного BSSID';
 $l10n['wpspin_bssid_wrong'] =
 'Некорректный BSSID';
+$l10n['wpspin_empty'] =
+'Пустой PIN';
 $l10n['wpspin_static'] =
 'Статичный PIN';
 $l10n['wpspin_algo'] =
