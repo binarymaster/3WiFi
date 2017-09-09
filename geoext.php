@@ -5,7 +5,7 @@ function geoDbg($str)
 {
 	return; // debug output disabled
 	$f = fopen('geodbg.log', 'ab');
-	fwrite($f, "$str\r\n");
+	fwrite($f, '['.date('H:i:s')."] $str\r\n");
 	fclose($f);
 }
 function geoDebug($prov, $bssid, $data)
@@ -22,13 +22,29 @@ function my_gzdecode($data)
 	unlink($g);
 	return $d;
 }
-function GeoLocateAP($bssid)
+function GetGeolocationServices()
+{
+	return array(
+		'Yandex',
+		'Microsoft',
+		//'AlterGeo',
+		//'Mylnikov',
+		'MylnikovOpen',
+	);
+}
+function GeoLocateAP($bssid, $svcs = null)
 {
 	geoDbg("start locate $bssid");
-	$coords = GetFromYandex($bssid);
-	if ($coords == '') $coords = GetFromMylnikov($bssid);
-	if ($coords == '') $coords = GetFromAlterGeo($bssid);
-	if ($coords == '') $coords = GetFromMicrosoft($bssid);
+	$coords = '';
+	if (!is_array($svcs))
+		$svcs = GetGeolocationServices();
+	foreach ($svcs as $svc)
+	{
+		$func = 'GetFrom' . $svc;
+		$coords = $func($bssid);
+		if ($coords != '')
+			break;
+	}
 	return $coords;
 }
 function GetFromYandex($bssid)
@@ -158,6 +174,29 @@ function GetFromMylnikov($bssid)
 		$latitude = $json->data->lat;
 		$longitude = $json->data->lon;
 		$result = $latitude.';'.$longitude.';mylnikov';
+	}
+	return $result;
+}
+function GetFromMylnikovOpen($bssid)
+{
+	geoDbg("mylnikov_open: $bssid");
+	$tries = 3;
+	while (!($data = cURL_Get("http://api.mylnikov.org/geolocation/wifi?v=1.1&data=open&bssid=$bssid")) && ($tries > 0))
+	{
+		$tries--;
+		sleep(2);
+	}
+
+	$result = '';
+	if (!$data) return $result;
+	$json = json_decode($data);
+	if (!$json) return $result;
+	geoDebug('mylnikov_open', $bssid, $data);
+	if ($json->result == 200)
+	{
+		$latitude = $json->data->lat;
+		$longitude = $json->data->lon;
+		$result = $latitude.';'.$longitude.';mylnikov_open';
 	}
 	return $result;
 }

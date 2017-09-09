@@ -3,8 +3,13 @@ include 'config.php';
 require_once 'utils.php';
 require_once 'db.php';
 
-Header('Content-Type: text/plain');
-echo "3WiFi Daemon Script\n\n";
+$silent = $argv[1] == 'geolocate' && !empty($argv[2]);
+
+if (!$silent)
+{
+	Header('Content-Type: text/plain');
+	echo "3WiFi Daemon Script\n\n";
+}
 
 if ($argv[0] != basename(__FILE__))
 {
@@ -228,13 +233,35 @@ switch ($argv[1])
 	// Получение координат для новых добавленных BSSID
 	case 'geolocate':
 	if (!isset($geoquery))
-		$geoquery = 'SELECT `BSSID` FROM GEO_TABLE WHERE `latitude` IS NULL';
+		$geoquery = 'SELECT `BSSID` FROM GEO_TABLE WHERE `latitude` IS NULL ORDER BY RAND() LIMIT ' . GEO_PORTION;
 	require_once 'geoext.php';
 	require_once 'quadkey.php';
+	if (!empty($argv[2]))
+	{
+		// geolocation service set, so this is worker
+		while($s = fgets(STDIN))
+		{
+			$s = rtrim($s);
+			if ($s == 'quit')
+				break;
+			if ($s == '')
+				continue;
+			$coords = GeoLocateAP(dec2mac($s), array($argv[2]));
+			echo "$s=$coords\n";
+			usleep(10000);
+		}
+		break;
+	}
+	$svcs = GetGeolocationServices();
+	$desc = array(
+		0 => array("pipe", "r"),
+		1 => array("pipe", "w"),
+	);
 
 	while (true)
 	{
-		logt('Fetching incomplete BSSIDs...');
+		logt('Fetching ' . GEO_PORTION . ' incomplete BSSIDs...');
+		$aps = array();
 		$res = QuerySql($geoquery);
 		$total = $res->num_rows;
 		if ($total == 0)
@@ -249,31 +276,123 @@ switch ($argv[1])
 			$time = microtime(true);
 			while ($row = $res->fetch_row())
 			{
-				$done++;
-				$bssid = $row[0];
-				$latitude = 0;
-				$longitude = 0;
-				$quadkey = 'NULL';
-				$coords = GeoLocateAP(dec2mac($bssid));
-				if ($coords != '')
+				$aps[] = $row[0];
+			}
+
+			$stage = array();
+			for ($i = 0; $i < count($aps); $i++)
+			{
+				$stage[$aps[$i]] = -1;
+			}
+			// start workers
+			$workers = array();
+			for ($i = 0; $i < count($svcs); $i++)
+			{
+				$proc = proc_open('php 3wifid.php geolocate ' . $svcs[$i], $desc, $pipes);
+				stream_set_blocking($pipes[1], 0);
+				$workers[] = array('proc' => $proc, 'pipes' => $pipes);
+			}
+
+			$sequential = false; // send queries to services sequentially, or in parallel
+			$finished = false;
+			while (!$finished)
+			{
+				for ($i = 0; $i < count($aps); $i++)
 				{
-					$found++;
-					$coords = explode(';', $coords);
-					$latitude = (float)$coords[0];
-					$longitude = (float)$coords[1];
-					$quadkey = base_convert(latlon_to_quadkey($latitude, $longitude, MAX_ZOOM_LEVEL), 2, 10);
+					// send BSSIDs
+					if ($stage[$aps[$i]] == -1)
+					{
+						$s = $aps[$i] . "\n";
+						if ($sequential)
+						{
+							// to first worker
+							fwrite($workers[0]['pipes'][0], $s);
+						}
+						else
+						{
+							// to all workers
+							for ($j = 0; $j < count($workers); $j++)
+								fwrite($workers[$j]['pipes'][0], $s);
+						}
+						$stage[$aps[$i]]++;
+					}
 				}
-				QuerySql("UPDATE GEO_TABLE SET `latitude`=$latitude,`longitude`=$longitude, `quadkey`=$quadkey WHERE `BSSID`=$bssid");
-				if ((microtime(true) - $time > $hangcheck) && ($done < $total))
+				// check workers output
+				for ($i = 0; $i < count($workers); $i++)
+				{
+					if (is_resource($workers[$i]['proc']))
+					{
+						// worker is alive
+						if ($s = fgets($workers[$i]['pipes'][1]))
+						{
+							// parse response
+							$s = rtrim($s);
+							if (strpos($s, '=') === false)
+								continue;
+							$s = explode('=', $s);
+							if ($stage[$s[0]] >= count($workers))
+								continue;
+							if ($s[1] != '')
+							{
+								// BSSID found
+								$stage[$s[0]] = count($workers);
+
+								$done++;
+								$found++;
+								$bssid = $s[0];
+								$coords = explode(';', $s[1]);
+								$latitude = (float)$coords[0];
+								$longitude = (float)$coords[1];
+								$quadkey = base_convert(latlon_to_quadkey($latitude, $longitude, MAX_ZOOM_LEVEL), 2, 10);
+								QuerySql("UPDATE GEO_TABLE SET `latitude`=$latitude,`longitude`=$longitude, `quadkey`=$quadkey WHERE `BSSID`=$bssid");
+							}
+							else
+							{
+								// BSSID not found
+								if ($sequential && $i + 1 < count($workers))
+									fwrite($workers[$i + 1]['pipes'][0], $s[0] . "\n");
+								$stage[$s[0]]++;
+								if ($stage[$s[0]] == count($workers))
+								{
+									$done++;
+									$bssid = $s[0];
+									$latitude = 0;
+									$longitude = 0;
+									$quadkey = 'NULL';
+									QuerySql("UPDATE GEO_TABLE SET `latitude`=$latitude,`longitude`=$longitude, `quadkey`=$quadkey WHERE `BSSID`=$bssid");
+								}
+							}
+						}
+					}
+				}
+				usleep(10000);
+				$finished = true;
+				for ($i = 0; $i < count($aps); $i++)
+				{
+					if ($stage[$aps[$i]] < count($workers))
+					{
+						$finished = false;
+						break;
+					}
+				}
+				if (!$finished && (microtime(true) - $time > $hangcheck) && ($done < $total))
 				{
 					logt("Status: $done of $total, $found found on map (Working)");
 					$time = microtime(true);
 				}
 			}
 			logt("Status: $done of $total, $found found on map (Done!)");
+			// stop workers
+			for ($i = 0; $i < count($workers); $i++)
+			{
+				fwrite($workers[$i]['pipes'][0], "quit\n");
+				fclose($workers[$i]['pipes'][0]);
+				fclose($workers[$i]['pipes'][1]);
+				proc_close($workers[$i]['proc']);
+			}
 		}
 		$res->close();
-		sleep(10);
+		sleep(1);
 	}
 	break;
 

@@ -363,6 +363,8 @@ function sec2str($sec)
 
 function logt($str)
 {
+	global $silent;
+	if ($silent) return;
 	echo '['.date('H:i:s').'] '.$str."\n";
 }
 

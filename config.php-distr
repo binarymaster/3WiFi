@@ -55,4 +55,7 @@ define('FAV_MAX', 200);
 define('LOC_MAX', 100);
 define('INVITE_LEN', 12);
 
+// Daemons
+define('GEO_PORTION', 100);
+
 ?>
