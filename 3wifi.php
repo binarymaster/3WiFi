@@ -178,16 +178,18 @@ switch ($action)
 		$DiffPage = 0;
 		$NextPageStartId = 0;
 
-		$TestBSSID = preg_replace("/\*{2,}/", '*', $BSSID);
-		$SplitCount = substr_count($TestBSSID, ':') + substr_count($TestBSSID, '.')+ substr_count($TestBSSID, '-');
-		$UnkCount = substr_count($TestBSSID, '*');
+		$TestBSSID = preg_replace("/\*{2,}/", '*', strtoupper($BSSID));
+		$DataCount = strlen(preg_replace('/[^0-9A-F]/', '', $TestBSSID));
 
 		$Wildcards = array('□','◯');
+		if (FilterWildcards($ESSID, $Wildcards) != '')
+			$DataCount++;
 
 		global $UserManager;
 		$uid = $UserManager->uID;
 
-		if(($UserManager->Level < 2) && ($SplitCount < $UnkCount || $TestBSSID == '*' || $BSSID == '') && (FilterWildcards($ESSID, $Wildcards) == ''))
+		if(($UserManager->Level < 2)
+		&& ($DataCount < 6 || $TestBSSID == '*' || $BSSID == ''))
 		{
 			$isLimitedRequest = true;
 		}
