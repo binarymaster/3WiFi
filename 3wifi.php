@@ -182,14 +182,20 @@ switch ($action)
 		$DataCount = strlen(preg_replace('/[^0-9A-F]/', '', $TestBSSID));
 
 		$Wildcards = array('□','◯');
-		if (FilterWildcards($ESSID, $Wildcards) != '')
-			$DataCount++;
+		$k = strlen(FilterWildcards($ESSID, $Wildcards));
+		if ($k >= 3)
+			$DataCount += $k * 2;
+		$k = strlen(FilterWildcards($Key, $Wildcards));
+		if ($k >= 3)
+			$DataCount += $k * 2;
+		$k = strlen(FilterWildcards($WPS, $Wildcards));
+		if ($k >= 6)
+			$DataCount += $k;
 
 		global $UserManager;
 		$uid = $UserManager->uID;
 
-		if(($UserManager->Level < 2)
-		&& ($DataCount < 6 || $TestBSSID == '*' || $BSSID == ''))
+		if(($UserManager->Level < 2) && ($DataCount < 6))
 		{
 			$isLimitedRequest = true;
 		}
