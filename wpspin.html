@@ -406,6 +406,7 @@ function initpage()
 	algos.push({id: "pinEdimax", name: "Edimax", mode: 1, func: function (mac) {return 3561153;}});
 	algos.push({id: "pinThomson", name: "Thomson", mode: 1, func: function (mac) {return 6795814;}});
 	algos.push({id: "pinHG532x", name: "HG532x", mode: 1, func: function (mac) {return 3425928;}});
+	algos.push({id: "pinONO", name: "CBN ONO", mode: 1, func: function (mac) {return 9575521;}});
 	for (var i = 0; i < algos.length; i++)
 	{
 		if (algos[i].mode == 1)
@@ -1282,5 +1283,12 @@ Huawei EchoLife HG532s
 
 %l10n_wpspin_tech%
 Pin = 3425928</textarea>
+
+<textarea id=pinONO>CBN CH6640E
+  5C:35:3B:xx:xx:xx
+  DC:53:7C:xx:xx:xx
+
+%l10n_wpspin_tech%
+Pin = 9575521</textarea>
 </div>
 </body>
