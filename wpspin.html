@@ -318,22 +318,32 @@ function initpage()
 	}});
 	algos.push({id: "pinEasyBox", name: "Vodafone EasyBox", mode: ALGO_MACSN, func: function (mac, ser)
 	{
-		var sn = zeroFill((ser == null ? (mac & 0xFFFF).toString(10) : ser.substr(-4)), 5);
-		var k1 = parseInt(sn[1]) + parseInt(sn[2]) + ((mac & 0xFF) >> 4) + (mac & 0xF);
-		k1 &= 0xF;
-		var k2 = parseInt(sn[3]) + parseInt(sn[4]) + ((mac & 0xFFFF) >> 12) + ((mac & 0xFFF) >> 8);
-		k2 &= 0xF;
-		var hpin = [];
-		hpin[0] = k1 ^ parseInt(sn[4]);
-		hpin[1] = k1 ^ parseInt(sn[3]);
-		hpin[2] = k2 ^ ((mac & 0xFFF) >> 8);
-		hpin[3] = k2 ^ ((mac & 0xFF) >> 4);
-		hpin[4] = ((mac & 0xFF) >> 4) ^ parseInt(sn[4]);
-		hpin[5] = (mac & 0xF) ^ parseInt(sn[3]);
-		hpin[6] = k1 ^ parseInt(sn[2]);
-		var hex = "";
-		for (var i = 0; i < hpin.length; i++) hex += hpin[i].toString(16);
-		return parseInt(hex, 16);
+		if (ser == null)
+			ser = (mac & 0xFFFF).toString(10);
+		if (ser.length < 4)
+			ser = zeroFill(ser, 4);
+		if (ser.length > 4)
+			ser = ser.substr(-4);
+		var sn = [];
+		for (var i = 0; i < ser.length; i++)
+		{
+			x = parseInt(ser[i]);
+			if (isNaN(x)) x = 0;
+			sn.push(x);
+		}
+		var nic = [(mac & 0xFFFF) >> 12, (mac & 0xFFF) >> 8, (mac & 0xFF) >> 4, mac & 0xF];
+
+		var k1 = (sn[0] + sn[1] + nic[2] + nic[3]) & 0xF;
+		var k2 = (sn[2] + sn[3] + nic[0] + nic[1]) & 0xF;
+
+		var pin =    ( k1 ^ sn[3]     )  << 4;
+		pin = (pin + ( k1 ^ sn[2]     )) << 4;
+		pin = (pin + ( k2 ^ nic[1]    )) << 4;
+		pin = (pin + ( k2 ^ nic[2]    )) << 4;
+		pin = (pin + ( nic[2] ^ sn[3] )) << 4;
+		pin = (pin + ( nic[3] ^ sn[2] )) << 4;
+		pin =  pin + ( k1 ^ sn[1]     );
+		return pin % 10000000;
 	}});
 	algos.push({id: "pinASUS", name: "ASUS PIN", mode: ALGO_MAC, func: function (mac)
 	{
