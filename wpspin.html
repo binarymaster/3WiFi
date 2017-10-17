@@ -210,6 +210,48 @@ function detect()
 		$('button').prop('disabled', false);
 	});
 }
+function algoDLink(mac)
+{
+	mac &= 0xFFFFFF;
+	mac ^= 0x55AA55;
+	mac ^= ((mac & 0xF) << 4)
+	| ((mac & 0xF) << 8)
+	| ((mac & 0xF) << 12)
+	| ((mac & 0xF) << 16)
+	| ((mac & 0xF) << 20);
+	mac %= 10000000;
+	if (mac < 1000000) mac += ((mac % 9) * 1000000) + 1000000;
+	return mac;
+}
+function algoEasyBox(mac, ser)
+{
+	if (ser == null)
+		ser = (mac & 0xFFFF).toString(10);
+	if (ser.length < 4)
+		ser = zeroFill(ser, 4);
+	if (ser.length > 4)
+		ser = ser.substr(-4);
+	var sn = [];
+	for (var i = 0; i < ser.length; i++)
+	{
+		x = parseInt(ser[i]);
+		if (isNaN(x)) x = 0;
+		sn.push(x);
+	}
+	var nic = [(mac & 0xFFFF) >> 12, (mac & 0xFFF) >> 8, (mac & 0xFF) >> 4, mac & 0xF];
+
+	var k1 = (sn[0] + sn[1] + nic[2] + nic[3]) & 0xF;
+	var k2 = (sn[2] + sn[3] + nic[0] + nic[1]) & 0xF;
+
+	var pin =    ( k1 ^ sn[3]     )  << 4;
+	pin = (pin + ( k1 ^ sn[2]     )) << 4;
+	pin = (pin + ( k2 ^ nic[1]    )) << 4;
+	pin = (pin + ( k2 ^ nic[2]    )) << 4;
+	pin = (pin + ( nic[2] ^ sn[3] )) << 4;
+	pin = (pin + ( nic[3] ^ sn[2] )) << 4;
+	pin =  pin + ( k1 ^ sn[1]     );
+	return pin % 10000000;
+}
 function initpage()
 {
 	ALGO_MAC = 0;
@@ -289,61 +331,15 @@ function initpage()
 		mac = zeroFill(mac.toString(2), 48);
 		return parseInt(reverse(mac), 2);
 	}});
-	algos.push({id: "pinDLink", name: "D-Link PIN", mode: ALGO_MAC, func: function (mac)
-	{
-		mac &= 0xFFFFFF;
-		mac ^= 0x55AA55;
-		mac ^= ((mac & 0xF) << 4)
-		| ((mac & 0xF) << 8)
-		| ((mac & 0xF) << 12)
-		| ((mac & 0xF) << 16)
-		| ((mac & 0xF) << 20);
-		mac %= 10000000;
-		if (mac < 1000000) mac += ((mac % 9) * 1000000) + 1000000;
-		return mac;
-	}});
+	algos.push({id: "pinDLink", name: "D-Link PIN", mode: ALGO_MAC, func: algoDLink});
 	algos.push({id: "pinDLink1", name: "D-Link PIN +1", mode: ALGO_MAC, func: function (mac)
 	{
-		mac++;
-		mac &= 0xFFFFFF;
-		mac ^= 0x55AA55;
-		mac ^= ((mac & 0xF) << 4)
-		| ((mac & 0xF) << 8)
-		| ((mac & 0xF) << 12)
-		| ((mac & 0xF) << 16)
-		| ((mac & 0xF) << 20);
-		mac %= 10000000;
-		if (mac < 1000000) mac += ((mac % 9) * 1000000) + 1000000;
-		return mac;
+		return algoDLink(mac + 1);
 	}});
-	algos.push({id: "pinEasyBox", name: "Vodafone EasyBox", mode: ALGO_MACSN, func: function (mac, ser)
+	algos.push({id: "pinEasyBox", name: "Vodafone EasyBox", mode: ALGO_MACSN, func: algoEasyBox});
+	algos.push({id: "pinLivebox", name: "Livebox Arcadyan", mode: ALGO_MACSN, func: function (mac, ser)
 	{
-		if (ser == null)
-			ser = (mac & 0xFFFF).toString(10);
-		if (ser.length < 4)
-			ser = zeroFill(ser, 4);
-		if (ser.length > 4)
-			ser = ser.substr(-4);
-		var sn = [];
-		for (var i = 0; i < ser.length; i++)
-		{
-			x = parseInt(ser[i]);
-			if (isNaN(x)) x = 0;
-			sn.push(x);
-		}
-		var nic = [(mac & 0xFFFF) >> 12, (mac & 0xFFF) >> 8, (mac & 0xFF) >> 4, mac & 0xF];
-
-		var k1 = (sn[0] + sn[1] + nic[2] + nic[3]) & 0xF;
-		var k2 = (sn[2] + sn[3] + nic[0] + nic[1]) & 0xF;
-
-		var pin =    ( k1 ^ sn[3]     )  << 4;
-		pin = (pin + ( k1 ^ sn[2]     )) << 4;
-		pin = (pin + ( k2 ^ nic[1]    )) << 4;
-		pin = (pin + ( k2 ^ nic[2]    )) << 4;
-		pin = (pin + ( nic[2] ^ sn[3] )) << 4;
-		pin = (pin + ( nic[3] ^ sn[2] )) << 4;
-		pin =  pin + ( k1 ^ sn[1]     );
-		return pin % 10000000;
+		return algoEasyBox(mac - 2, ser);
 	}});
 	algos.push({id: "pinASUS", name: "ASUS PIN", mode: ALGO_MAC, func: function (mac)
 	{
@@ -830,6 +826,14 @@ Vodafone EasyBox 803
 
 %l10n_wpspin_tech%
 https://www.sec-consult.com/fxdata/seccons/prod/temedia/advisories_txt/20130805-0_Vodafone_EasyBox_Default_WPS_PIN_Vulnerability_v10.txt</textarea>
+
+<textarea id=pinLivebox>Livebox 2.1 (Arcadyan)
+Livebox 2.2 (Arcadyan)
+  50:7E:5D:xx:xx:xx
+  A8:D3:F7:xx:xx:xx
+
+%l10n_wpspin_tech%
+https://www.wifi-libre.com/topic-869-todo-sobre-al-algoritmo-wps-livebox-arcadyan-orange-xxxx.html</textarea>
 
 <textarea id=pinASUS>ASUS DSL-N10 Rev.C1
 ASUS DSL-N10E
