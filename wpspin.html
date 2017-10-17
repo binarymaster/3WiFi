@@ -32,6 +32,10 @@ function pinChecksum(pin)
 	}
 	return (pin * 10) + ((10 - (a % 10)) % 10);
 }
+function genPin(mac, sn, i)
+{
+	return (algos[i].mode == ALGO_MACSN ? algos[i].func(mac, sn) : algos[i].func(mac));
+}
 function pinSuggest()
 {
 	$('#result').empty();
@@ -39,6 +43,8 @@ function pinSuggest()
 	for (var j = 0; j < ln.length; j++)
 	{
 		var m = ln[j];
+		var z = m.split('|');
+		m = z[0];
 		m = m.replace(/:/g, '').replace(/-/g, '').replace(/\./g, '').replace(/ /g, '');
 		m = parseInt(m, 16);
 		if (isNaN(m) || m > 0xFFFFFFFFFFFF) continue;
@@ -62,7 +68,7 @@ function pinSuggest()
 					if (mt.indexOf(info[k]) == 0)
 					{
 						sugg = true;
-						var pin = algos[i].func(m);
+						var pin = genPin(m, z[1], i);
 						if (typeof pin == 'string')
 						{
 							if (pin == '')
@@ -72,7 +78,7 @@ function pinSuggest()
 							pin = pinChecksum(pin);
 							pin = zeroFill(pin.toString(10), 8);
 						}
-						if (algos[i].mode == 1)
+						if (algos[i].mode == ALGO_STATIC)
 						{
 							$('#suggpin').append(encodeHTML(pin, true) + ' | %l10n_wpspin_static% - ' + algos[i].name + "\n");
 						} else {
@@ -92,6 +98,8 @@ function getAll()
 	if (m.length > 1)
 		return alert('%l10n_wpspin_one_bssid%.');
 	var bss = m[0].replace(/ /g, '').toUpperCase();
+	var z = m[0].split('|');
+	m[0] = z[0];
 	m = m[0].replace(/:/g, '').replace(/-/g, '').replace(/\./g, '').replace(/ /g, '');
 	m = parseInt(m, 16);
 	if (isNaN(m) || m > 0xFFFFFFFFFFFF)
@@ -99,7 +107,7 @@ function getAll()
 	$('#result').text("%l10n_wpspin_all_pins% "+bss+"\n\n");
 	for (var i = 0; i < algos.length; i++)
 	{
-		var pin = algos[i].func(m);
+		var pin = genPin(m, z[1], i);
 		if (typeof pin == 'string')
 		{
 			if (pin == '')
@@ -109,7 +117,7 @@ function getAll()
 			pin = pinChecksum(pin);
 			pin = zeroFill(pin.toString(10), 8);
 		}
-		if (algos[i].mode == 1)
+		if (algos[i].mode == ALGO_STATIC)
 		{
 			$('#result').append(encodeHTML(pin, true) + ' | %l10n_wpspin_static% - ' + algos[i].name + "\n");
 		} else {
@@ -128,13 +136,14 @@ function showAlgo()
 		{
 			switch (algos[i].mode)
 			{
-			case 0:
+			case ALGO_MAC:
+			case ALGO_MACSN:
 				$('#result').append(algos[i].name + " %l10n_wpspin_algo%,\n");
 				break;
-			case 1:
+			case ALGO_STATIC:
 				$('#result').append(algos[i].name + " %l10n_wpspin_stat%,\n");
 				break;
-			case 2:
+			case ALGO_EMPTY:
 				$('#result').append(algos[i].name + ",\n");
 				break;
 			}
@@ -203,15 +212,20 @@ function detect()
 }
 function initpage()
 {
+	ALGO_MAC = 0;
+	ALGO_MACSN = 1;
+	ALGO_EMPTY = 2;
+	ALGO_STATIC = 3;
+
 	algos = [];
-	algos.push({id: "pin24", name: "24-bit PIN", mode: 0, func: function (mac) {return mac & 0xFFFFFF;}});
-	algos.push({id: "pin28", name: "28-bit PIN", mode: 0, func: function (mac) {return mac & 0xFFFFFFF;}});
-	algos.push({id: "pin32", name: "32-bit PIN", mode: 0, func: function (mac) {return mac % 0x100000000;}});
-	algos.push({id: "pin36", name: "36-bit PIN", mode: 0, func: function (mac) {return mac % 0x1000000000;}});
-	algos.push({id: "pin40", name: "40-bit PIN", mode: 0, func: function (mac) {return mac % 0x10000000000;}});
-	algos.push({id: "pin44", name: "44-bit PIN", mode: 0, func: function (mac) {return mac % 0x100000000000;}});
-	algos.push({id: "pin48", name: "48-bit PIN", mode: 0, func: function (mac) {return mac;}});
-	algos.push({id: "pin24rh", name: "Reverse byte 24-bit", mode: 0, func: function (mac)
+	algos.push({id: "pin24", name: "24-bit PIN", mode: ALGO_MAC, func: function (mac) {return mac & 0xFFFFFF;}});
+	algos.push({id: "pin28", name: "28-bit PIN", mode: ALGO_MAC, func: function (mac) {return mac & 0xFFFFFFF;}});
+	algos.push({id: "pin32", name: "32-bit PIN", mode: ALGO_MAC, func: function (mac) {return mac % 0x100000000;}});
+	algos.push({id: "pin36", name: "36-bit PIN", mode: ALGO_MAC, func: function (mac) {return mac % 0x1000000000;}});
+	algos.push({id: "pin40", name: "40-bit PIN", mode: ALGO_MAC, func: function (mac) {return mac % 0x10000000000;}});
+	algos.push({id: "pin44", name: "44-bit PIN", mode: ALGO_MAC, func: function (mac) {return mac % 0x100000000000;}});
+	algos.push({id: "pin48", name: "48-bit PIN", mode: ALGO_MAC, func: function (mac) {return mac;}});
+	algos.push({id: "pin24rh", name: "Reverse byte 24-bit", mode: ALGO_MAC, func: function (mac)
 	{
 		mac &= 0xFFFFFF;
 		mac = zeroFill(mac.toString(16), 6);
@@ -220,7 +234,7 @@ function initpage()
 		+ mac.substr(0,2);
 		return parseInt(mac, 16);
 	}});
-	algos.push({id: "pin32rh", name: "Reverse byte 32-bit", mode: 0, func: function (mac)
+	algos.push({id: "pin32rh", name: "Reverse byte 32-bit", mode: ALGO_MAC, func: function (mac)
 	{
 		mac %= 0x100000000;
 		mac = zeroFill(mac.toString(16), 8);
@@ -230,7 +244,7 @@ function initpage()
 		+ mac.substr(0,2);
 		return parseInt(mac, 16);
 	}});
-	algos.push({id: "pin48rh", name: "Reverse byte 48-bit", mode: 0, func: function (mac)
+	algos.push({id: "pin48rh", name: "Reverse byte 48-bit", mode: ALGO_MAC, func: function (mac)
 	{
 		mac = zeroFill(mac.toString(16), 12);
 		mac = mac.substr(10,2)
@@ -241,41 +255,41 @@ function initpage()
 		+ mac.substr(0,2);
 		return parseInt(mac, 16);
 	}});
-	algos.push({id: "pin24rn", name: "Reverse nibble 24-bit", mode: 0, func: function (mac)
+	algos.push({id: "pin24rn", name: "Reverse nibble 24-bit", mode: ALGO_MAC, func: function (mac)
 	{
 		mac &= 0xFFFFFF;
 		mac = zeroFill(mac.toString(16), 6);
 		return parseInt(reverse(mac), 16);
 	}});
-	algos.push({id: "pin32rn", name: "Reverse nibble 32-bit", mode: 0, func: function (mac)
+	algos.push({id: "pin32rn", name: "Reverse nibble 32-bit", mode: ALGO_MAC, func: function (mac)
 	{
 		mac %= 0x100000000;
 		mac = zeroFill(mac.toString(16), 8);
 		return parseInt(reverse(mac), 16);
 	}});
-	algos.push({id: "pin48rn", name: "Reverse nibble 48-bit", mode: 0, func: function (mac)
+	algos.push({id: "pin48rn", name: "Reverse nibble 48-bit", mode: ALGO_MAC, func: function (mac)
 	{
 		mac = zeroFill(mac.toString(16), 12);
 		return parseInt(reverse(mac), 16);
 	}});
-	algos.push({id: "pin24rb", name: "Reverse bits 24-bit", mode: 0, func: function (mac)
+	algos.push({id: "pin24rb", name: "Reverse bits 24-bit", mode: ALGO_MAC, func: function (mac)
 	{
 		mac &= 0xFFFFFF;
 		mac = zeroFill(mac.toString(2), 24);
 		return parseInt(reverse(mac), 2);
 	}});
-	algos.push({id: "pin32rb", name: "Reverse bits 32-bit", mode: 0, func: function (mac)
+	algos.push({id: "pin32rb", name: "Reverse bits 32-bit", mode: ALGO_MAC, func: function (mac)
 	{
 		mac %= 0x100000000;
 		mac = zeroFill(mac.toString(2), 32);
 		return parseInt(reverse(mac), 2);
 	}});
-	algos.push({id: "pin48rb", name: "Reverse bits 48-bit", mode: 0, func: function (mac)
+	algos.push({id: "pin48rb", name: "Reverse bits 48-bit", mode: ALGO_MAC, func: function (mac)
 	{
 		mac = zeroFill(mac.toString(2), 48);
 		return parseInt(reverse(mac), 2);
 	}});
-	algos.push({id: "pinDLink", name: "D-Link PIN", mode: 0, func: function (mac)
+	algos.push({id: "pinDLink", name: "D-Link PIN", mode: ALGO_MAC, func: function (mac)
 	{
 		mac &= 0xFFFFFF;
 		mac ^= 0x55AA55;
@@ -288,7 +302,7 @@ function initpage()
 		if (mac < 1000000) mac += ((mac % 9) * 1000000) + 1000000;
 		return mac;
 	}});
-	algos.push({id: "pinDLink1", name: "D-Link PIN +1", mode: 0, func: function (mac)
+	algos.push({id: "pinDLink1", name: "D-Link PIN +1", mode: ALGO_MAC, func: function (mac)
 	{
 		mac++;
 		mac &= 0xFFFFFF;
@@ -302,9 +316,9 @@ function initpage()
 		if (mac < 1000000) mac += ((mac % 9) * 1000000) + 1000000;
 		return mac;
 	}});
-	algos.push({id: "pinEasyBox", name: "Vodafone EasyBox", mode: 0, func: function (mac)
+	algos.push({id: "pinEasyBox", name: "Vodafone EasyBox", mode: ALGO_MACSN, func: function (mac, ser)
 	{
-		var sn = zeroFill((mac & 0xFFFF).toString(10), 5);
+		var sn = zeroFill((ser == null ? (mac & 0xFFFF).toString(10) : ser.substr(-4)), 5);
 		var k1 = parseInt(sn[1]) + parseInt(sn[2]) + ((mac & 0xFF) >> 4) + (mac & 0xF);
 		k1 &= 0xF;
 		var k2 = parseInt(sn[3]) + parseInt(sn[4]) + ((mac & 0xFFFF) >> 12) + ((mac & 0xFFF) >> 8);
@@ -321,7 +335,7 @@ function initpage()
 		for (var i = 0; i < hpin.length; i++) hex += hpin[i].toString(16);
 		return parseInt(hex, 16);
 	}});
-	algos.push({id: "pinASUS", name: "ASUS PIN", mode: 0, func: function (mac)
+	algos.push({id: "pinASUS", name: "ASUS PIN", mode: ALGO_MAC, func: function (mac)
 	{
 		mac = zeroFill(mac.toString(16), 12);
 		var b = [];
@@ -338,7 +352,7 @@ function initpage()
 		}
 		return parseInt(pin.join(''), 10);
 	}});
-	algos.push({id: "pinAirocon", name: "Airocon Realtek", mode: 0, func: function (mac)
+	algos.push({id: "pinAirocon", name: "Airocon Realtek", mode: ALGO_MAC, func: function (mac)
 	{
 		mac = zeroFill(mac.toString(16), 12);
 		var b = [];
@@ -356,21 +370,21 @@ function initpage()
 		+ (((b[1] + b[2]) % 10) * 100000)
 		+ (((b[0] + b[1]) % 10) * 1000000);
 	}});
-	algos.push({id: "pinInvNIC", name: "Inv NIC to PIN", mode: 0, func: function (mac)
+	algos.push({id: "pinInvNIC", name: "Inv NIC to PIN", mode: ALGO_MAC, func: function (mac)
 	{
 		mac &= 0xFFFFFF;
 		return ~mac & 0xFFFFFF;
 	}});
-	algos.push({id: "pinNIC2", name: "NIC * 2", mode: 0, func: function (mac) {return (mac & 0xFFFFFF) * 2;}});
-	algos.push({id: "pinNIC3", name: "NIC * 3", mode: 0, func: function (mac) {return (mac & 0xFFFFFF) * 3;}});
-	algos.push({id: "pinOUIaddNIC", name: "OUI + NIC", mode: 0, func: function (mac)
+	algos.push({id: "pinNIC2", name: "NIC * 2", mode: ALGO_MAC, func: function (mac) {return (mac & 0xFFFFFF) * 2;}});
+	algos.push({id: "pinNIC3", name: "NIC * 3", mode: ALGO_MAC, func: function (mac) {return (mac & 0xFFFFFF) * 3;}});
+	algos.push({id: "pinOUIaddNIC", name: "OUI + NIC", mode: ALGO_MAC, func: function (mac)
 	{
 		mac = zeroFill(mac.toString(16), 12);
 		var oui = parseInt(mac.substr(0, 6), 16);
 		var nic = parseInt(mac.substr(6, 6), 16);
 		return (oui + nic) % 0x1000000;
 	}});
-	algos.push({id: "pinOUIsubNIC", name: "OUI - NIC", mode: 0, func: function (mac)
+	algos.push({id: "pinOUIsubNIC", name: "OUI - NIC", mode: ALGO_MAC, func: function (mac)
 	{
 		mac = zeroFill(mac.toString(16), 12);
 		var oui = parseInt(mac.substr(0, 6), 16);
@@ -382,34 +396,34 @@ function initpage()
 			return (oui + 0x1000000 - nic) & 0xFFFFFF;
 		}
 	}});
-	algos.push({id: "pinOUIxorNIC", name: "OUI ^ NIC", mode: 0, func: function (mac)
+	algos.push({id: "pinOUIxorNIC", name: "OUI ^ NIC", mode: ALGO_MAC, func: function (mac)
 	{
 		mac = zeroFill(mac.toString(16), 12);
 		var oui = parseInt(mac.substr(0, 6), 16);
 		var nic = parseInt(mac.substr(6, 6), 16);
 		return oui ^ nic;
 	}});
-	algos.push({id: "pinEmpty", name: "%l10n_wpspin_empty%", mode: 2, func: function (mac) {return '';}});
-	algos.push({id: "pinCisco", name: "Cisco", mode: 1, func: function (mac) {return 1234567;}});
-	algos.push({id: "pinBrcm1", name: "Broadcom 1", mode: 1, func: function (mac) {return 2017252;}});
-	algos.push({id: "pinBrcm2", name: "Broadcom 2", mode: 1, func: function (mac) {return 4626484;}});
-	algos.push({id: "pinBrcm3", name: "Broadcom 3", mode: 1, func: function (mac) {return 7622990;}});
-	algos.push({id: "pinBrcm4", name: "Broadcom 4", mode: 1, func: function (mac) {return 6232714;}});
-	algos.push({id: "pinBrcm5", name: "Broadcom 5", mode: 1, func: function (mac) {return 1086411;}});
-	algos.push({id: "pinBrcm6", name: "Broadcom 6", mode: 1, func: function (mac) {return 3195719;}});
-	algos.push({id: "pinDSL2740R", name: "DSL-2740R", mode: 1, func: function (mac) {return 6817554;}});
-	algos.push({id: "pinRealtek", name: "Realtek", mode: 1, func: function (mac) {return 9566146;}});
-	algos.push({id: "pinUpvel", name: "Upvel", mode: 1, func: function (mac) {return 2085483;}});
-	algos.push({id: "pinUR814AC", name: "UR-814AC", mode: 1, func: function (mac) {return 4397768;}});
-	algos.push({id: "pinUR825AC", name: "UR-825AC", mode: 1, func: function (mac) {return 0529417;}});
-	algos.push({id: "pinOnlime", name: "Onlime", mode: 1, func: function (mac) {return 9995604;}});
-	algos.push({id: "pinEdimax", name: "Edimax", mode: 1, func: function (mac) {return 3561153;}});
-	algos.push({id: "pinThomson", name: "Thomson", mode: 1, func: function (mac) {return 6795814;}});
-	algos.push({id: "pinHG532x", name: "HG532x", mode: 1, func: function (mac) {return 3425928;}});
-	algos.push({id: "pinONO", name: "CBN ONO", mode: 1, func: function (mac) {return 9575521;}});
+	algos.push({id: "pinEmpty", name: "%l10n_wpspin_empty%", mode: ALGO_EMPTY, func: function (mac) {return '';}});
+	algos.push({id: "pinCisco", name: "Cisco", mode: ALGO_STATIC, func: function (mac) {return 1234567;}});
+	algos.push({id: "pinBrcm1", name: "Broadcom 1", mode: ALGO_STATIC, func: function (mac) {return 2017252;}});
+	algos.push({id: "pinBrcm2", name: "Broadcom 2", mode: ALGO_STATIC, func: function (mac) {return 4626484;}});
+	algos.push({id: "pinBrcm3", name: "Broadcom 3", mode: ALGO_STATIC, func: function (mac) {return 7622990;}});
+	algos.push({id: "pinBrcm4", name: "Broadcom 4", mode: ALGO_STATIC, func: function (mac) {return 6232714;}});
+	algos.push({id: "pinBrcm5", name: "Broadcom 5", mode: ALGO_STATIC, func: function (mac) {return 1086411;}});
+	algos.push({id: "pinBrcm6", name: "Broadcom 6", mode: ALGO_STATIC, func: function (mac) {return 3195719;}});
+	algos.push({id: "pinDSL2740R", name: "DSL-2740R", mode: ALGO_STATIC, func: function (mac) {return 6817554;}});
+	algos.push({id: "pinRealtek", name: "Realtek", mode: ALGO_STATIC, func: function (mac) {return 9566146;}});
+	algos.push({id: "pinUpvel", name: "Upvel", mode: ALGO_STATIC, func: function (mac) {return 2085483;}});
+	algos.push({id: "pinUR814AC", name: "UR-814AC", mode: ALGO_STATIC, func: function (mac) {return 4397768;}});
+	algos.push({id: "pinUR825AC", name: "UR-825AC", mode: ALGO_STATIC, func: function (mac) {return 0529417;}});
+	algos.push({id: "pinOnlime", name: "Onlime", mode: ALGO_STATIC, func: function (mac) {return 9995604;}});
+	algos.push({id: "pinEdimax", name: "Edimax", mode: ALGO_STATIC, func: function (mac) {return 3561153;}});
+	algos.push({id: "pinThomson", name: "Thomson", mode: ALGO_STATIC, func: function (mac) {return 6795814;}});
+	algos.push({id: "pinHG532x", name: "HG532x", mode: ALGO_STATIC, func: function (mac) {return 3425928;}});
+	algos.push({id: "pinONO", name: "CBN ONO", mode: ALGO_STATIC, func: function (mac) {return 9575521;}});
 	for (var i = 0; i < algos.length; i++)
 	{
-		if (algos[i].mode == 1)
+		if (algos[i].mode == ALGO_STATIC)
 		{
 			$('#algosel').append($('<option>').val(algos[i].id).text('Static PIN - ' + algos[i].name));
 		} else {
