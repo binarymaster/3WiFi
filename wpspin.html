@@ -234,7 +234,7 @@ function algoBelkin(mac, ser)
 	var sn = [];
 	for (var i = 0; i < ser.length; i++)
 	{
-		x = parseInt(ser[i]);
+		x = parseInt(ser[i], 16);
 		if (isNaN(x)) x = 0;
 		sn.push(x);
 	}
@@ -263,7 +263,7 @@ function algoEasyBox(mac, ser)
 	var sn = [];
 	for (var i = 0; i < ser.length; i++)
 	{
-		x = parseInt(ser[i]);
+		x = parseInt(ser[i], 16);
 		if (isNaN(x)) x = 0;
 		sn.push(x);
 	}
