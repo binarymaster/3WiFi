@@ -223,8 +223,14 @@ function algoDLink(mac)
 	if (mac < 1000000) mac += ((mac % 9) * 1000000) + 1000000;
 	return mac;
 }
-function algoBelkin(mac, ser)
+function algoDSL_MAC_SN(mac, ser, init)
 {
+	/*
+		universal algorithm, returns pin derived from MAC and S/N
+		used by: Belkin, DSL-EasyBox, Arcadyan, and possibly other manufacturers
+
+		reverse-engineered by Stas'M
+	*/
 	if (ser == null)
 		ser = '';
 	if (ser.length < 4)
@@ -240,46 +246,86 @@ function algoBelkin(mac, ser)
 	}
 	var nic = [(mac & 0xFFFF) >> 12, (mac & 0xFFF) >> 8, (mac & 0xFF) >> 4, mac & 0xF];
 
-	var k1 = (sn[0] + sn[1] + nic[2] + nic[3]) & 0xF;
-	var k2 = (sn[2] + sn[3] + nic[0] + nic[1]) & 0xF;
+	/*
+		init vector:
+		bk1  - k1 sum composite bits (0~255)
+		bk2  - k2 sum composite bits (0~255)
+		bx[] - xor composite bits (array of 0~255)
+		k1   - k1 init nibble (0~15)
+		k2   - k2 init nibble (0~15)
+		pin  - pin init value (0~9999999)
+		xor  - xor init nibble (0~15)
+		sub  - substraction mode (0 - no sub, 1 - substraction, 2 - addition)
+		sk   - substraction multiple coefficient (0 - skv value, 1 - k1, 2 - k2)
+		skv  - substraction multiple value
+	*/
+	if (init.bk1 == null) init.bk1 = 60;
+	if (init.bk2 == null) init.bk2 = 195;
+	if (init.k1 == null) init.k1 = 0;
+	if (init.k2 == null) init.k2 = 0;
+	if (init.pin == null) init.pin = 0;
+	if (init.xor == null) init.xor = 0;
+	if (init.sub == null) init.sub = 0;
+	if (init.sk == null) init.sk = 0;
+	if (init.skv == null) init.skv = 0;
 
-	var pin =    ( k2 ^ sn[2]                  )  << 4;
-	pin = (pin + ( k1 ^ sn[3]                  )) << 4;
-	pin = (pin + ( k1 ^ nic[3] ^ sn[2] ^ sn[3] )) << 4;
-	pin = (pin + ( k2 ^ nic[2]                 )) << 4;
-	pin = (pin + ( nic[2] ^ nic[3]             )) << 4;
-	pin = (pin + ( k1 ^ k2                     )) << 4;
-	pin =  pin + ( k1 ^ k2 ^ sn[1] ^ nic[1]    );
-	return pin % 10000000;
-}
-function algoEasyBox(mac, ser)
-{
-	if (ser == null)
-		ser = (mac & 0xFFFF).toString(10);
-	if (ser.length < 4)
-		ser = zeroFill(ser, 4);
-	if (ser.length > 4)
-		ser = ser.substr(-4);
-	var sn = [];
-	for (var i = 0; i < ser.length; i++)
+	var k1 = init.k1 & 0xF;
+	var i = 0;
+	while (init.bk1)
 	{
-		x = parseInt(ser[i], 16);
-		if (isNaN(x)) x = 0;
-		sn.push(x);
+		// 0      1      2      3      4     5     6     7
+		// nic[0] nic[1] nic[2] nic[3] sn[0] sn[1] sn[2] sn[3]
+		if (init.bk1 & 1)
+		{
+			k1 += (i < 4 ? nic[i] : sn[i - 4]);
+			k1 &= 0xF;
+		}
+		init.bk1 >>= 1;
+		i++;
 	}
-	var nic = [(mac & 0xFFFF) >> 12, (mac & 0xFFF) >> 8, (mac & 0xFF) >> 4, mac & 0xF];
+	var k2 = init.k2 & 0xF;
+	i = 0;
+	while (init.bk2)
+	{
+		// 0      1      2      3      4     5     6     7
+		// nic[0] nic[1] nic[2] nic[3] sn[0] sn[1] sn[2] sn[3]
+		if (init.bk2 & 1)
+		{
+			k2 += (i < 4 ? nic[i] : sn[i - 4]);
+			k2 &= 0xF;
+		}
+		init.bk2 >>= 1;
+		i++;
+	}
 
-	var k1 = (sn[0] + sn[1] + nic[2] + nic[3]) & 0xF;
-	var k2 = (sn[2] + sn[3] + nic[0] + nic[1]) & 0xF;
-
-	var pin =    ( k1 ^ sn[3]     )  << 4;
-	pin = (pin + ( k1 ^ sn[2]     )) << 4;
-	pin = (pin + ( k2 ^ nic[1]    )) << 4;
-	pin = (pin + ( k2 ^ nic[2]    )) << 4;
-	pin = (pin + ( nic[2] ^ sn[3] )) << 4;
-	pin = (pin + ( nic[3] ^ sn[2] )) << 4;
-	pin =  pin + ( k1 ^ sn[1]     );
-	return pin % 10000000;
+	var pin = init.pin;
+	for (var j = 0; j < init.bx.length; j++)
+	{
+		var xor = init.xor & 0xF;
+		i = 0;
+		while (init.bx[j])
+		{
+			// 0   1   2       3       4       5      6      7
+			// k1, k2, nic[1], nic[2], nic[3], sn[1], sn[2], sn[3]
+			if (init.bx[j] & 1)
+			{
+				xor ^= (i > 4 ? sn[i - 4] : (i > 1 ? nic[i - 1] : (i > 0 ? k2 : k1)));
+			}
+			init.bx[j] >>= 1;
+			i++;
+		}
+		pin <<= 4;
+		pin |= xor;
+	}
+	switch (init.sub)
+	{
+		case 0: // by default
+		return pin % 10000000;
+		case 1: // spoiled from Belkin's reversed algo
+		return (pin % 10000000) - (Math.floor(pin / 10000000) * (init.sk > 1 ? k2 : (init.sk > 0 ? k1 : init.skv)));
+		case 2:
+		return (pin % 10000000) + (Math.floor(pin / 10000000) * (init.sk > 1 ? k2 : (init.sk > 0 ? k1 : init.skv)));
+	}
 }
 function initpage()
 {
@@ -365,11 +411,19 @@ function initpage()
 	{
 		return algoDLink(mac + 1);
 	}});
-	algos.push({id: "pinBelkin", name: "Belkin PIN", mode: ALGO_MACSN, func: algoBelkin});
-	algos.push({id: "pinEasyBox", name: "Vodafone EasyBox", mode: ALGO_MACSN, func: algoEasyBox});
+	algos.push({id: "pinBelkin", name: "Belkin PIN", mode: ALGO_MACSN, func: function (mac, ser)
+	{
+		return algoDSL_MAC_SN(mac, ser, {bx: [66, 129, 209, 10, 24, 3, 39]});
+	}});
+	algos.push({id: "pinEasyBox", name: "Vodafone EasyBox", mode: ALGO_MACSN, func: function (mac, ser)
+	{
+		if (ser == null)
+			ser = (mac & 0xFFFF).toString(10);
+		return algoDSL_MAC_SN(mac, ser, {bx: [129, 65, 6, 10, 136, 80, 33]});
+	}});
 	algos.push({id: "pinLivebox", name: "Livebox Arcadyan", mode: ALGO_MACSN, func: function (mac, ser)
 	{
-		return algoEasyBox(mac - 2, ser);
+		return algoDSL_MAC_SN(mac - 2, ser, {bx: [129, 65, 6, 10, 136, 80, 33]});
 	}});
 	algos.push({id: "pinASUS", name: "ASUS PIN", mode: ALGO_MAC, func: function (mac)
 	{
