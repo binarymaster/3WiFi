@@ -304,6 +304,24 @@ $l10n['wpspin_algos'] =
 'Implemented algorithms (choose for info):';
 $l10n['wpspin_not_selected'] =
 'Not selected';
+$l10n['wpspin_check_algo'] =
+'Check algorithm';
+$l10n['wpspin_dsl_crack'] =
+'DSL derivation algorithm cracker:';
+$l10n['wpspin_dsl_mode_straight'] =
+'Using straight mode';
+$l10n['wpspin_dsl_mode_custom'] =
+'Using mode';
+$l10n['wpspin_dsl_key_found'] =
+'Key found:';
+$l10n['wpspin_dsl_key_not_found'] =
+'No keys found, algorithm seems unapplicable';
+$l10n['wpspin_dsl_key_ambig'] =
+'Found key is ambiguous';
+$l10n['wpspin_dsl_many_keys'] =
+'Too many keys';
+$l10n['wpspin_dsl_more_data'] =
+'specify more data';
 $l10n['wpspin_tech'] =
 'Technical details:';
 $l10n['wpspin_some_fw'] =

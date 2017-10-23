@@ -153,6 +153,180 @@ function showAlgo()
 		}
 	}
 }
+function checkDSLkeys(keys)
+{
+	if (keys.length > 0)
+	{
+		if (keys.length == 1)
+		{
+			keys = keys[0];
+
+			var amb = false;
+			for (var i = 0; i < keys.length; i++)
+				if (keys[i].length > 1)
+				{
+					amb = true;
+					break;
+				}
+			if (amb)
+			{
+				$('#result').append("[*] %l10n_wpspin_dsl_key_ambig%, %l10n_wpspin_dsl_more_data%.\n");
+				return false;
+			}
+			else
+			{
+				$('#result').append("[+] %l10n_wpspin_dsl_key_found% "+keys.reverse().join(', ')+"\n");
+				return true;
+			}
+		}
+		else
+		{
+			$('#result').append("[*] %l10n_wpspin_dsl_many_keys% (" + keys.length + "), %l10n_wpspin_dsl_more_data%.\n");
+			return false;
+		}
+	}
+	else
+	{
+		$('#result').append("[-] %l10n_wpspin_dsl_key_not_found%.\n");
+		return false;
+	}
+}
+function runDSLcrack(data, bss_offset, sn_offset)
+{
+	if (bss_offset == 0 && sn_offset == 0)
+	{
+		$('#result').append("[*] %l10n_wpspin_dsl_mode_straight%...\n");
+	}
+	else
+	{
+		var a = [];
+		if (bss_offset > 0)
+			a.push("BSSID + " + bss_offset);
+		if (bss_offset < 0)
+			a.push("BSSID - " + (-bss_offset));
+		if (sn_offset > 0)
+			a.push("SN[-" + sn_offset + "]");
+		if (sn_offset == -1)
+			a.push("derived SN (dec)");
+		if (sn_offset == -2)
+			a.push("derived SN (hex)");
+		$('#result').append("[*] %l10n_wpspin_dsl_mode_custom% " + a.join(', ') + "...\n");
+		for (var i = 0; i < data.length; i++)
+		{
+			if (bss_offset != 0)
+				data[i][1] += bss_offset;
+			if (sn_offset > 0)
+				data[i][2] = data[i][2].substr(0, data[i][2].length - sn_offset);
+			if (sn_offset == -1)
+				data[i][2] = (data[i][1] & 0xFFFF).toString(10);
+			if (sn_offset == -2)
+				data[i][2] = (data[i][1] & 0xFFFF).toString(16);
+		}
+	}
+	var DSL_keys = intersect_pairs(data);
+	return checkDSLkeys(DSL_keys);
+}
+function unreference(obj)
+{
+	return JSON.parse(JSON.stringify(obj));
+}
+function crackAlgo()
+{
+	$('#result').empty();
+	var ln = $('#bssids').val().replace(/^\s+|\s+$/g, '').split("\n");
+	var pairs = [];
+	for (var j = 0; j < ln.length; j++)
+	{
+		var m = ln[j];
+		var z = m.split('|');
+		m = z[0];
+		m = m.replace(/:/g, '').replace(/-/g, '').replace(/\./g, '').replace(/ /g, '');
+		m = parseInt(m, 16);
+		if (isNaN(m) || m > 0xFFFFFFFFFFFF) continue;
+		pairs.push([Math.floor(parseInt(z[1]) / 10), m, (z[2] == null ? '' : z[2])]);
+		if (z[1] == '')
+			z[1] = '<empty>';
+		var mt = zeroFill(m.toString(16).toUpperCase(), 12);
+		mt = insert(mt, ':', 10);
+		mt = insert(mt, ':', 8);
+		mt = insert(mt, ':', 6);
+		mt = insert(mt, ':', 4);
+		mt = insert(mt, ':', 2);
+		var sugg = false;
+		$('#suggpin').empty();
+		for (var i = 0; i < algos.length; i++)
+		{
+			var pin = genPin(m, z[2], i);
+			if (typeof pin == 'string')
+			{
+				if (pin == '')
+					pin = '<empty>';
+			} else {
+				pin = pinChecksum(pin);
+				pin = zeroFill(pin.toString(10), 8);
+			}
+			if (z[1] == pin)
+			{
+				$('#suggpin').append(mt+" - "+z[1].padEnd(8)+" - "+algos[i].name);
+				sugg = true;
+			}
+		}
+		if (sugg) $('#result').append(encodeHTML($('#suggpin').val()) + "\n");
+	}
+	if (pairs.length > 1)
+	{
+		$('#result').append("\n%l10n_wpspin_dsl_crack%\n");
+
+		var result = runDSLcrack(unreference(pairs), 0, 0); // try without offset
+		if (!result)
+			result = runDSLcrack(unreference(pairs), 0, -1); // try derived S/N (decimal)
+		if (!result)
+			result = runDSLcrack(unreference(pairs), 0, -2); // try derived S/N (hexadecimal)
+		if (!result)
+			result = runDSLcrack(unreference(pairs), 0, 1); // cut last S/N char
+		if (!result)
+			result = runDSLcrack(unreference(pairs), 0, 2); // cut 2 last S/N chars
+		if (!result)
+		{
+			// try offset BSSID -1..-4
+			for (var i = 0; i < 4; i++)
+			{
+				result = runDSLcrack(unreference(pairs), - i - 1, 0);
+				if (result) break;
+			}
+		}
+		if (!result)
+		{
+			// try offset BSSID +1..+4
+			for (var i = 0; i < 4; i++)
+			{
+				result = runDSLcrack(unreference(pairs), i + 1, 0);
+				if (result) break;
+			}
+		}
+		if (!result)
+		{
+			// mixed BSSID & S/N offset
+			for (var i = 0; i < 4; i++)
+			for (var j = 0; j < 4; j++)
+			{
+				result = runDSLcrack(unreference(pairs), - i - 1, (j < 2 ? - j - 1 : j - 1));
+				if (result) break;
+			}
+		}
+		if (!result)
+		{
+			// mixed BSSID & S/N offset
+			for (var i = 0; i < 4; i++)
+			for (var j = 0; j < 4; j++)
+			{
+				result = runDSLcrack(unreference(pairs), i + 1, (j < 2 ? - j - 1 : j - 1));
+				if (result) break;
+			}
+		}
+	}
+	$('#algosel').val('algonone');
+}
 function detect()
 {
 	var formdata = $($('form')[0]).serialize();
@@ -326,6 +500,98 @@ function algoDSL_MAC_SN(mac, ser, init)
 		case 2:
 		return (pin % 10000000) + (Math.floor(pin / 10000000) * (init.sk > 1 ? k2 : (init.sk > 0 ? k1 : init.skv)));
 	}
+}
+function get_combs(nibs, nic, sn)
+{
+	/*
+		part of key cracking algorithm for universal DSL algorithm (that derives pin from MAC and S/N)
+
+		programmed by Stas'M in 2017-10-23
+	*/
+	var combs = [];
+	// loop through 7 nibbles
+	for (var i = 0; i < 7; i++)
+	{
+		combs[i] = [];
+		// get nibble
+		var nib = nibs & 0xF;
+		// brute-force xor combinations
+		for (var j = 0; j < 256; j++)
+		{
+			if (algoDSL_MAC_SN(nic, sn, {bx: [0, 0, 0, 0, 0, 0, j]}) == nib)
+				combs[i].push(j); // match
+		}
+		if (combs[i].length == 0)
+			return false; // some of nibbles is not affected by algorithm
+		nibs >>= 4;
+	}
+	return combs;
+}
+function get_all_combs(pin, nic, sn)
+{
+	/*
+		part of key cracking algorithm for universal DSL algorithm (that derives pin from MAC and S/N)
+
+		programmed by Stas'M in 2017-10-23
+	*/
+
+	// get all possible xor combinations
+	var pns = [];
+	// pin should contain 7 nibbles
+	while (pin < 0x10000000)
+	{
+		// get all possible xor combinations
+		var x = get_combs(pin, nic, sn);
+		if (x != false)
+			pns.push(x);
+		// actual pin is modulus of 10000000
+		pin += 10000000;
+	}
+	// only one of combination tables is correct
+	return pns;
+}
+function intersect(a, b)
+{
+	return a.filter((n) => b.includes(n));
+}
+function intersect_combs(a, b)
+{
+	var c = [];
+	for (var i = 0; i < 7; i++)
+	{
+		var x = intersect(a[i], b[i]);
+		if (x.length == 0)
+			return false;
+		c[i] = x;
+	}
+	return c;
+}
+function intersect_pairs(pairs)
+{
+	/*
+		part of key cracking algorithm for universal DSL algorithm (that derives pin from MAC and S/N)
+
+		programmed by Stas'M in 2017-10-23
+	*/
+
+	// assuming first pair is correct (have a key)
+	var c0 = get_all_combs(pairs[0][0], pairs[0][1], pairs[0][2]);
+	for (var i = 1; i < pairs.length; i++)
+	{
+		var c1 = get_all_combs(pairs[i][0], pairs[i][1], pairs[i][2]);
+		var c2 = [];
+		// collide combs with each other
+		for (var j = 0; j < c0.length; j++)
+		for (var k = 0; k < c1.length; k++)
+		{
+			var x = intersect_combs(c0[j], c1[k]);
+			if (x == false)
+				continue;
+			c2.push(x);
+		}
+		c0 = c2;
+	}
+	return c0;
 }
 function initpage()
 {
@@ -531,19 +797,21 @@ function initpage()
 		<p>%l10n_msg_wpspin_info%</p>
 		<table>
 			<tr><td>
-				<textarea id=bssids rows=3 cols=26 autofocus>12:34:56:78:9A:BC</textarea>
+				<textarea id=bssids rows=3 cols=32 autofocus>12:34:56:78:9A:BC</textarea>
 			</td><td>
 				<button onclick="pinSuggest()">%l10n_btn_suggest%</button> <button onclick="getAll()">%l10n_btn_getall%</button>
 			</td></tr>
 
 			<tr><td colspan=2>
-				<textarea id=result readonly rows=14 cols=46></textarea>
+				<textarea id=result readonly rows=14 cols=52></textarea>
 			</td></tr>
 		</table>
 
 		<div>%l10n_wpspin_algos%</div>
 
 		<select id=algosel onchange="showAlgo()"><option value=algonone>%l10n_wpspin_not_selected%</option></select>
+
+		&nbsp; <button onclick="crackAlgo()">%l10n_wpspin_check_algo%</button>
 	</td><td width=50% style="vertical-align: top">
 		<p>%l10n_msg_wpspin_db%</p>
 		<p>%l10n_msg_wpspin_db_info%</p>

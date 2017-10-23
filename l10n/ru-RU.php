@@ -304,6 +304,24 @@ $l10n['wpspin_algos'] =
 'Реализованные алгоритмы (выберите для информации):';
 $l10n['wpspin_not_selected'] =
 'Не выбран';
+$l10n['wpspin_check_algo'] =
+'Проверка алгоритма';
+$l10n['wpspin_dsl_crack'] =
+'Утилита расшифровки алгоритма DSL:';
+$l10n['wpspin_dsl_mode_straight'] =
+'Используем прямой перебор';
+$l10n['wpspin_dsl_mode_custom'] =
+'Используем режим';
+$l10n['wpspin_dsl_key_found'] =
+'Ключ найден:';
+$l10n['wpspin_dsl_key_not_found'] =
+'Ключи не найдены, похоже алгоритм не подходит';
+$l10n['wpspin_dsl_key_ambig'] =
+'Найденный ключ неоднозначен';
+$l10n['wpspin_dsl_many_keys'] =
+'Слишком много ключей';
+$l10n['wpspin_dsl_more_data'] =
+'введите больше данных';
 $l10n['wpspin_tech'] =
 'Технические детали:';
 $l10n['wpspin_some_fw'] =
