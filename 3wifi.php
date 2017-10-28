@@ -1056,106 +1056,81 @@ switch ($action)
 
 	// Общая статистика
 	case 'stat':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	date_default_timezone_set('UTC');
-	$json['stat']['date'] = date('Y.m.d H:i:s');
-	$mode = (isset($_GET['mode']) ? (int)$_GET['mode'] : 0);
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
+	$json['stat'] = array();
+	$mode = (isset($_GET['mode']) ? (int)$_GET['mode'] : 0);
 	if ($mode == 0 || $mode == 1)
 	{
-		$json['stat']['total'] = GetStatsValue(STATS_BASE_ROWN_NUMS);
-		if(1)
+		$res = getMainStats($db);
+		if (!$res)
 		{
-			if ($res = QuerySql('SELECT COUNT(id) FROM BASE_TABLE'))
-			{
-				$row = $res->fetch_row();
-				$json['stat']['total'] = (int)$row[0];
-				$res->close();
-			}
+			unset($json['stat']);
+			$json['result'] = false;
+			$json['error'] = 'database';
+			break;
 		}
-		if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE (`quadkey` IS NOT NULL)'))
-		{
-			$row = $res->fetch_row();
-			$json['stat']['onmap'] = (int)$row[0];
-			$res->close();
-		}
+		$json['stat'] = array_merge($json['stat'], $res);
 	}
 	if ($mode == 0)
 	{
-		if ($res = QuerySql('SELECT COUNT(id) FROM BASE_TABLE WHERE NoBSSID = 0'))
+		$res = getExtStats($db);
+		if (!$res)
 		{
-			$row = $res->fetch_row();
-			$json['stat']['bssids'] = (int)$row[0];
-			$res->close();
+			unset($json['stat']);
+			$json['result'] = false;
+			$json['error'] = 'database';
+			break;
 		}
-		if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE'))
-		{
-			$row = $res->fetch_row();
-			$json['stat']['uniqbss'] = (int)$row[0];
-			$res->close();
-		}
+		$json['stat'] = array_merge($json['stat'], $res);
 	}
 	if ($mode == 0 || $mode == 2)
 	{
-		if ($res = QuerySql('SELECT COUNT(BSSID) FROM GEO_TABLE WHERE latitude IS NULL'))
+		$res = getRealtimeStats($db);
+		if (!$res)
 		{
-			$row = $res->fetch_row();
-			$json['stat']['geoloc'] = (int)$row[0];
-			$res->close();
+			unset($json['stat']);
+			$json['result'] = false;
+			$json['error'] = 'database';
+			break;
 		}
-		if ($res = $db->query('SELECT COUNT(tid) FROM tasks WHERE tstate = 0'))
-		{
-			$row = $res->fetch_row();
-			$json['stat']['tasks']['uploading'] = (int)$row[0];
-			$res->close();
-		}
-		if ($res = $db->query('SELECT COUNT(tid) FROM tasks WHERE tstate > 0 AND tstate < 3'))
-		{
-			$row = $res->fetch_row();
-			$json['stat']['tasks']['processing'] = (int)$row[0];
-			$res->close();
-		}
-		if ($res = $db->query('SELECT comment FROM tasks WHERE tstate > 0 AND tstate < 3 ORDER BY created LIMIT 1'))
-		{
-			$row = $res->fetch_row();
-			$json['stat']['tasks']['comment'] = $row[0];
-			$res->close();
-		}
+		$json['stat'] = array_merge($json['stat'], $res);
 	}
 	$db->close();
 	break;
 
 	// Динамика загрузок
 	case 'loads':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	date_default_timezone_set('UTC');
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	$json['data'] = array();
-	if ($res = QuerySql('SELECT DATE_FORMAT(time,\'%Y.%m.%d\'), COUNT(id) FROM BASE_TABLE GROUP BY DATE_FORMAT(time,\'%Y%m%d\') ORDER BY id DESC LIMIT 30'))
+	$json['data'] = getLoads($db);
+	if ($json['data'] === false)
 	{
-		while ($row = $res->fetch_row())
-			$json['data'][] = array($row[0], (int)$row[1]);
-
-		$res->close();
+		unset($json['data']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
-	$json['data'] = array_reverse($json['data']);
 	break;
 
 	// Комментарии
 	case 'stcmt':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
 	if (!db_connect())
@@ -1164,351 +1139,237 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql('SELECT `cmtid`, COUNT(cmtid) FROM BASE_TABLE GROUP BY `cmtid` ORDER BY COUNT(cmtid) DESC'))
+	$json['stat'] = getComments($db);
+	if ($json['stat'] === false)
 	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = ($row[0] == null ? 'no comment' : getCommentVal((int)$row[0]));
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
 
 	// Названия устройств
 	case 'stdev':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = TOP_NAME;
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(DISTINCT `name`) FROM BASE_TABLE WHERE `name` != ''"))
+	$json['stat'] = getCountStats($db, 'name', TOP_NAME);
+	if ($json['stat'] === false)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql("SELECT `name`, COUNT(name) FROM BASE_TABLE WHERE `name` != '' GROUP BY `name` ORDER BY COUNT(name) DESC LIMIT ".TOP_NAME))
-	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = $row[0];
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
 
 	// Порты
 	case 'stport':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = TOP_PORT;
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(DISTINCT `Port`) FROM BASE_TABLE WHERE NOT(`Port` IS NULL)"))
+	$json['stat'] = getCountStats($db, 'Port', TOP_PORT);
+	if ($json['stat'] === false)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql("SELECT `Port`, COUNT(Port) FROM BASE_TABLE WHERE NOT(`Port` IS NULL) GROUP BY `Port` ORDER BY COUNT(Port) DESC LIMIT ".TOP_PORT))
-	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = $row[0];
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
 
 	// Данные авторизации
 	case 'stauth':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = TOP_AUTH;
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(DISTINCT `Authorization`) FROM BASE_TABLE WHERE `Authorization`!=''"))
+	$json['stat'] = getCountStats($db, 'Authorization', TOP_AUTH);
+	if ($json['stat'] === false)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql("SELECT `Authorization`, COUNT(Authorization) FROM BASE_TABLE WHERE `Authorization`!='' GROUP BY `Authorization` ORDER BY COUNT(Authorization) DESC LIMIT ".TOP_AUTH))
-	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = $row[0];
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
 
 	// BSSID точек доступа
 	case 'stbss':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = TOP_BSSID;
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(DISTINCT `BSSID`) FROM BASE_TABLE WHERE `NoBSSID`=0"))
+	$json['stat'] = getCountStats($db, 'BSSID', TOP_BSSID, array('`NoBSSID`=0'), 'dec2mac');
+	if ($json['stat'] === false)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql("SELECT `BSSID`, COUNT(BSSID) FROM BASE_TABLE WHERE `NoBSSID`=0 GROUP BY `BSSID` ORDER BY COUNT(BSSID) DESC LIMIT ".TOP_BSSID))
-	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = dec2mac($row[0]);
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
 
 	// ESSID точек доступа
 	case 'stess':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = TOP_ESSID;
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql('SELECT COUNT(DISTINCT `ESSID`) FROM BASE_TABLE'))
+	$json['stat'] = getCountStats($db, 'ESSID', TOP_ESSID);
+	if ($json['stat'] === false)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql('SELECT `ESSID`, COUNT(ESSID) FROM BASE_TABLE GROUP BY `ESSID` ORDER BY COUNT(ESSID) DESC LIMIT '.TOP_ESSID))
-	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = $row[0];
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
 
 	// Тип защиты точек доступа
 	case 'stsec':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = TOP_SECURITY;
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql('SELECT COUNT(DISTINCT `Security`) FROM BASE_TABLE'))
+	$json['stat'] = getCountStats($db, 'Security', TOP_SECURITY, array(), 'sec2str');
+	if ($json['stat'] === false)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql('SELECT `Security`, COUNT(Security) FROM BASE_TABLE GROUP BY `Security` ORDER BY COUNT(Security) DESC LIMIT '.TOP_SECURITY))
-	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = sec2str($row[0]);
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
 
 	// Ключи точек доступа
 	case 'stkey':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = TOP_WIFI_KEY;
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql('SELECT COUNT(DISTINCT `WiFiKey`) FROM BASE_TABLE'))
+	$json['stat'] = getCountStats($db, 'WiFiKey', TOP_WIFI_KEY);
+	if ($json['stat'] === false)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql('SELECT `WiFiKey`, COUNT(WiFiKey) FROM BASE_TABLE GROUP BY `WiFiKey` ORDER BY COUNT(WiFiKey) DESC LIMIT '.TOP_WIFI_KEY))
-	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = $row[0];
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
 
 	// WPS пин коды точек доступа
 	case 'stwps':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = TOP_WPS_PIN;
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql('SELECT COUNT(DISTINCT `WPSPIN`) FROM BASE_TABLE WHERE `WPSPIN` != 1'))
+	function statWPS($row)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
+		return str_pad($row, 8, '0', STR_PAD_LEFT);
 	}
-	if ($res = QuerySql('SELECT `WPSPIN`, COUNT(WPSPIN) FROM BASE_TABLE WHERE `WPSPIN` != 1 GROUP BY `WPSPIN` ORDER BY COUNT(WPSPIN) DESC LIMIT '.TOP_WPS_PIN))
+	$json['stat'] = getCountStats($db, 'WPSPIN', TOP_WPS_PIN, array('`WPSPIN` != 1'), 'statWPS');
+	if ($json['stat'] === false)
 	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = str_pad($row[0], 8, '0', STR_PAD_LEFT);
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
 
 	// DNS серверы
 	case 'stdns':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = TOP_DNS;
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-	if ($res = QuerySql("SELECT COUNT(DISTINCT DNS) FROM (
-	SELECT DNS1 AS DNS FROM BASE_TABLE WHERE DNS1 != 0 
-	UNION ALL 
-	SELECT DNS2 AS DNS FROM BASE_TABLE WHERE DNS2 != 0 
-	UNION ALL 
-	SELECT DNS3 AS DNS FROM BASE_TABLE WHERE DNS3 != 0) DNSTable"))
+	$json['stat'] = getMultiStats($db, array('DNS1', 'DNS2', 'DNS3'), TOP_DNS, array('`$col` != 0'), '_long2ip');
+	if ($json['stat'] === false)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
-	}
-	if ($res = QuerySql("SELECT DNS, COUNT(DNS) FROM (
-	SELECT DNS1 AS DNS FROM BASE_TABLE WHERE DNS1 != 0 
-	UNION ALL 
-	SELECT DNS2 AS DNS FROM BASE_TABLE WHERE DNS2 != 0 
-	UNION ALL 
-	SELECT DNS3 AS DNS FROM BASE_TABLE WHERE DNS3 != 0) DNSTable 
-	GROUP BY DNS ORDER BY COUNT(DNS) DESC LIMIT ".TOP_DNS))
-	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = _long2ip($row[0]);
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
 
 	// Активные участники (Сидеры)
 	case 'stsid':
+	require_once 'statext.php';
 	set_time_limit(30);
 	$json['result'] = true;
-	$json['stat']['top'] = TOP_SSID;
-
 	if (!db_connect())
 	{
 		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
-
-	if ($res = $db->query('SELECT COUNT(uid) FROM users'))
+	$json['stat'] = getUsers($db, TOP_SSID);
+	if ($json['stat'] === false)
 	{
-		$row = $res->fetch_row();
-		$json['stat']['total'] = (int)$row[0];
-		$res->close();
-	}
-
-	if ($res = $db->query('SELECT nick, COUNT(id) FROM uploads LEFT JOIN users USING(uid) GROUP BY uploads.uid ORDER BY COUNT(id) DESC LIMIT '.TOP_SSID))
-	{
-		$json['stat']['data'] = array();
-		while ($row = $res->fetch_row())
-		{
-			$data = array();
-			$data[] = (int)$row[1];
-			$data[] = $row[0];
-			$json['stat']['data'][] = $data;
-		}
-		$res->close();
+		unset($json['stat']);
+		$json['result'] = false;
+		$json['error'] = 'database';
+		break;
 	}
 	$db->close();
 	break;
