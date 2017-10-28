@@ -396,6 +396,60 @@ switch ($argv[1])
 	}
 	break;
 
+	// Кеширование статистики
+	case 'stats':
+	require_once 'statext.php';
+	if (!CACHE_STATS)
+		logt("Error: Stats caching is disabled in settings");
+	while (CACHE_STATS)
+	{
+		logt("Caching statistics...");
+		$res = getMainStats($db);
+		file_put_contents('uploads/cache_main.txt', serialize($res));
+		logt("getMainStats done.");
+		$res = getExtStats($db);
+		file_put_contents('uploads/cache_ext.txt', serialize($res));
+		logt("getExtStats done.");
+		$res = getLoads($db);
+		file_put_contents('uploads/cache_load.txt', serialize($res));
+		logt("getLoads done.");
+		$res = getComments($db);
+		file_put_contents('uploads/cache_cmt.txt', serialize($res));
+		logt("getComments done.");
+		$res = getCountStats($db, 'name', TOP_NAME);
+		file_put_contents('uploads/cache_dev.txt', serialize($res));
+		logt("getCountStats[name] done.");
+		$res = getCountStats($db, 'Port', TOP_PORT);
+		file_put_contents('uploads/cache_port.txt', serialize($res));
+		logt("getCountStats[Port] done.");
+		$res = getCountStats($db, 'Authorization', TOP_AUTH);
+		file_put_contents('uploads/cache_auth.txt', serialize($res));
+		logt("getCountStats[Authorization] done.");
+		$res = getCountStats($db, 'BSSID', TOP_BSSID, array('`NoBSSID`=0'), 'dec2mac');
+		file_put_contents('uploads/cache_bss.txt', serialize($res));
+		logt("getCountStats[BSSID] done.");
+		$res = getCountStats($db, 'ESSID', TOP_ESSID);
+		file_put_contents('uploads/cache_ess.txt', serialize($res));
+		logt("getCountStats[ESSID] done.");
+		$res = getCountStats($db, 'Security', TOP_SECURITY, array(), 'sec2str');
+		file_put_contents('uploads/cache_sec.txt', serialize($res));
+		logt("getCountStats[Security] done.");
+		$res = getCountStats($db, 'WiFiKey', TOP_WIFI_KEY);
+		file_put_contents('uploads/cache_key.txt', serialize($res));
+		logt("getCountStats[WiFiKey] done.");
+		$res = getCountStats($db, 'WPSPIN', TOP_WPS_PIN, array('`WPSPIN` != 1'), 'pin2str');
+		file_put_contents('uploads/cache_wps.txt', serialize($res));
+		logt("getCountStats[WPSPIN] done.");
+		$res = getMultiStats($db, array('DNS1', 'DNS2', 'DNS3'), TOP_DNS, array('`$col` != 0'), '_long2ip');
+		file_put_contents('uploads/cache_dns.txt', serialize($res));
+		logt("getMultiStats[DNS] done.");
+		$res = getUsers($db, TOP_SSID);
+		file_put_contents('uploads/cache_user.txt', serialize($res));
+		logt("getUsers done.");
+		sleep(10);
+	}
+	break;
+
 	// Обслуживание таблиц в памяти
 	case 'memory':
 	while (true)

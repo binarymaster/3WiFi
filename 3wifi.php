@@ -1069,7 +1069,9 @@ switch ($action)
 	$mode = (isset($_GET['mode']) ? (int)$_GET['mode'] : 0);
 	if ($mode == 0 || $mode == 1)
 	{
-		$res = getMainStats($db);
+		$res = loadStatsCache('main');
+		if (!$res)
+			$res = getMainStats($db);
 		if (!$res)
 		{
 			unset($json['stat']);
@@ -1081,7 +1083,9 @@ switch ($action)
 	}
 	if ($mode == 0)
 	{
-		$res = getExtStats($db);
+		$res = loadStatsCache('ext');
+		if (!$res)
+			$res = getExtStats($db);
 		if (!$res)
 		{
 			unset($json['stat']);
@@ -1117,7 +1121,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['data'] = getLoads($db);
+	$json['data'] = loadStatsCache('load');
+	if ($json['data'] === false)
+		$json['data'] = getLoads($db);
 	if ($json['data'] === false)
 	{
 		unset($json['data']);
@@ -1139,7 +1145,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getComments($db);
+	$json['stat'] = loadStatsCache('cmt');
+	if ($json['stat'] === false)
+		$json['stat'] = getComments($db);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1161,7 +1169,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getCountStats($db, 'name', TOP_NAME);
+	$json['stat'] = loadStatsCache('dev');
+	if ($json['stat'] === false)
+		$json['stat'] = getCountStats($db, 'name', TOP_NAME);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1183,7 +1193,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getCountStats($db, 'Port', TOP_PORT);
+	$json['stat'] = loadStatsCache('port');
+	if ($json['stat'] === false)
+		$json['stat'] = getCountStats($db, 'Port', TOP_PORT);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1205,7 +1217,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getCountStats($db, 'Authorization', TOP_AUTH);
+	$json['stat'] = loadStatsCache('auth');
+	if ($json['stat'] === false)
+		$json['stat'] = getCountStats($db, 'Authorization', TOP_AUTH);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1227,7 +1241,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getCountStats($db, 'BSSID', TOP_BSSID, array('`NoBSSID`=0'), 'dec2mac');
+	$json['stat'] = loadStatsCache('bss');
+	if ($json['stat'] === false)
+		$json['stat'] = getCountStats($db, 'BSSID', TOP_BSSID, array('`NoBSSID`=0'), 'dec2mac');
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1249,7 +1265,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getCountStats($db, 'ESSID', TOP_ESSID);
+	$json['stat'] = loadStatsCache('ess');
+	if ($json['stat'] === false)
+		$json['stat'] = getCountStats($db, 'ESSID', TOP_ESSID);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1271,7 +1289,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getCountStats($db, 'Security', TOP_SECURITY, array(), 'sec2str');
+	$json['stat'] = loadStatsCache('sec');
+	if ($json['stat'] === false)
+		$json['stat'] = getCountStats($db, 'Security', TOP_SECURITY, array(), 'sec2str');
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1293,7 +1313,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getCountStats($db, 'WiFiKey', TOP_WIFI_KEY);
+	$json['stat'] = loadStatsCache('key');
+	if ($json['stat'] === false)
+		$json['stat'] = getCountStats($db, 'WiFiKey', TOP_WIFI_KEY);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1315,7 +1337,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getCountStats($db, 'WPSPIN', TOP_WPS_PIN, array('`WPSPIN` != 1'), 'pin2str');
+	$json['stat'] = loadStatsCache('wps');
+	if ($json['stat'] === false)
+		$json['stat'] = getCountStats($db, 'WPSPIN', TOP_WPS_PIN, array('`WPSPIN` != 1'), 'pin2str');
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1337,7 +1361,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getMultiStats($db, array('DNS1', 'DNS2', 'DNS3'), TOP_DNS, array('`$col` != 0'), '_long2ip');
+	$json['stat'] = loadStatsCache('dns');
+	if ($json['stat'] === false)
+		$json['stat'] = getMultiStats($db, array('DNS1', 'DNS2', 'DNS3'), TOP_DNS, array('`$col` != 0'), '_long2ip');
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1359,7 +1385,9 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = getUsers($db, TOP_SSID);
+	$json['stat'] = loadStatsCache('user');
+	if ($json['stat'] === false)
+		$json['stat'] = getUsers($db, TOP_SSID);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);

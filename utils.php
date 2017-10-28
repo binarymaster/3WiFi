@@ -415,4 +415,11 @@ function filterNick(&$nick)
 	$nick = trim(preg_replace('/\s+/', ' ', $nick));
 }
 
+function loadStatsCache($name)
+{
+	if (!CACHE_STATS) return false;
+	$res = file_get_contents("uploads/cache_$name.txt");
+	if (!$res || strlen($res) == 0) return false;
+	return unserialize($res);
+}
 ?>

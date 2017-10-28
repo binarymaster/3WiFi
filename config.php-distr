@@ -25,6 +25,7 @@ define('GEO_MEM_TABLE', 'mem_geo');
 define('STATS_TABLE', 'stats');
 
 // Stats
+define('CACHE_STATS', false);
 define('TOP_PORT', 30);
 define('TOP_AUTH', 100);
 define('TOP_NAME', 30);
