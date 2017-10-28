@@ -69,8 +69,25 @@ function encodeHTML(str, spaces)
 	if (spaces) str = str.replace(/ /g, '&nbsp;');
 	return str;
 }
+function loadForm(frm)
+{
+	if ($.trim($(frm).html()) != '') return;
+	switch (frm)
+	{
+		case '#win_login':
+		$(frm).html('<div class=modal_main><div class=modal_div><h2>%l10n_msg_login%</h2><form id=frm_login method=post><table><tr><td>%l10n_str_login%</td><td><input type=text name=login></td></tr><tr><td>%l10n_str_pass%</td><td><input type=password name=password></td></tr><tr><td colspan=2 align=center style="font-size: 13px"><input type=checkbox id=stayhere style="vertical-align: middle; margin: 0 5 3 0"><label for=stayhere>%l10n_str_stay_here%</label></td></tr><tr><td colspan=2 align=center id=loginstat style="font-size: 13px; padding-top: 0px"></td></tr><tr><td><input type=button value="%l10n_btn_login%" onclick="doLogin()"></td><td align=right><a href="javascript://" onclick="showFrm(\'#win_reg\')">%l10n_str_reg%</a></td></tr></table></form></div></div>');
+		break;
+		case '#win_reg':
+		$(frm).html('<div class=modal_main><div class=modal_div><h2>%l10n_msg_reg%</h2><form id=frm_reg method=post><table><tr><td>%l10n_str_invite%</td><td><input type=text name=invite></td><td id=checkinv></td></tr><tr><td>%l10n_str_login%</td><td><input type=text name=login></td><td id=checklogin></td></tr><tr><td>%l10n_str_nick%</td><td><input type=text name=nick></td><td id=checknick></td></tr><tr><td>%l10n_str_pass%</td><td><input type=password name=password></td><td id=checkpass></td></tr><tr><td align=right><input type=checkbox onclick="$(\'#frm_reg\').find(\'input[type=button]\').prop(\'disabled\', !this.checked)"></td><td style="font-size: 12px">%l10n_str_accept_rules%</td></tr><tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr><tr><td><input type=button value="%l10n_btn_reg%" onclick="doReg()" disabled></td><td align=right><a href="javascript://" onclick="showFrm(\'#win_login\')">%l10n_str_has_login%</a></td></tr></table></form></div></div>');
+		break;
+		case '#win_newpass':
+		$(frm).html('<div class=modal_main><div class=modal_div><h2>%l10n_msg_chpass%</h2><form id=frm_newpass method=post><table><tr><td>%l10n_str_pass%</td><td><input type=password name=password></td></tr><tr><td>%l10n_str_pass_rep%</td><td><input type=password name=password2></td></tr><tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr><tr><td><input type=button value="%l10n_btn_chpass%" onclick="changePassword()"></td></tr></table></form></div></div>');
+		break;
+	}
+}
 function showModal(frm)
 {
+	loadForm(frm);
 	$('#win_login').css({left: '-9999px'});
 	$('#win_reg').css({left: '-9999px'});
 	$('#win_newpass').css({left: '-9999px'});
@@ -85,6 +102,7 @@ function hideModal()
 }
 function showFrm(frm)
 {
+	loadForm(frm);
 	var frm2 = (frm == '#win_login' ? '#win_reg' : '#win_login')
 	switch (Math.round(Math.random()*3))
 	{
@@ -324,47 +342,10 @@ function initmenu()
 <div class=modal>
 	<div class=modal_bkg onclick="hideModal()"></div>
 	<div class=modal_cnt align=center id=win_login>
-		<div class=modal_main>
-			<div class=modal_div>
-				<h2>%l10n_msg_login%</h2>
-				<form id=frm_login method=post><table>
-				<tr><td>%l10n_str_login%</td><td><input type=text name=login></td></tr>
-				<tr><td>%l10n_str_pass%</td><td><input type=password name=password></td></tr>
-				<tr><td colspan=2 align=center style="font-size: 13px"><input type=checkbox id=stayhere style="vertical-align: middle; margin: 0 5 3 0"><label for=stayhere>%l10n_str_stay_here%</label></td></tr>
-				<tr><td colspan=2 align=center id=loginstat style="font-size: 13px; padding-top: 0px"></td></tr>
-				<tr><td><input type=button value="%l10n_btn_login%" onclick="doLogin()"></td><td align=right><a href="javascript://" onclick="showFrm('#win_reg')">%l10n_str_reg%</a></td></tr>
-				</table></form>
-			</div>
-		</div>
 	</div>
 	<div class=modal_cnt align=center id=win_reg>
-		<div class=modal_main>
-			<div class=modal_div>
-				<h2>%l10n_msg_reg%</h2>
-				<form id=frm_reg method=post><table>
-				<tr><td>%l10n_str_invite%</td><td><input type=text name=invite></td><td id=checkinv></td></tr>
-				<tr><td>%l10n_str_login%</td><td><input type=text name=login></td><td id=checklogin></td></tr>
-				<tr><td>%l10n_str_nick%</td><td><input type=text name=nick></td><td id=checknick></td></tr>
-				<tr><td>%l10n_str_pass%</td><td><input type=password name=password></td><td id=checkpass></td></tr>
-				<tr><td align=right><input type=checkbox onclick="$('#frm_reg').find('input[type=button]').prop('disabled', !this.checked)"></td><td style="font-size: 12px">%l10n_str_accept_rules%</td></tr>
-				<tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr>
-				<tr><td><input type=button value="%l10n_btn_reg%" onclick="doReg()" disabled></td><td align=right><a href="javascript://" onclick="showFrm('#win_login')">%l10n_str_has_login%</a></td></tr>
-				</table></form>
-			</div>
-		</div>
 	</div>
 	<div class=modal_cnt align=center id=win_newpass>
-		<div class=modal_main>
-			<div class=modal_div>
-				<h2>%l10n_msg_chpass%</h2>
-				<form id=frm_newpass method=post><table>
-				<tr><td>%l10n_str_pass%</td><td><input type=password name=password></td></tr>
-				<tr><td>%l10n_str_pass_rep%</td><td><input type=password name=password2></td></tr>
-				<tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr>
-				<tr><td><input type=button value="%l10n_btn_chpass%" onclick="changePassword()"></td></tr>
-				</table></form>
-			</div>
-		</div>
 	</div>
 </div>
 </body>
