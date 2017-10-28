@@ -530,8 +530,6 @@ $l10n['graph_task_geo'] =
 'Detecting geolocation';
 
 /* admin */
-$l10n['title_admin'] =
-'3WiFi: Admin area';
 $l10n['msg_full_query'] =
 'AP full information query';
 $l10n['btn_query'] =
@@ -562,6 +560,8 @@ $l10n['msg_user'] =
 'User account';
 $l10n['tab_profile'] =
 'Profile info';
+$l10n['tab_admin'] =
+'Admin area';
 $l10n['tab_uploads'] =
 'Uploaded APs';
 $l10n['tab_favorites'] =

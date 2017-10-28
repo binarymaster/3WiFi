@@ -34,6 +34,7 @@ function initpage()
 		document.cookie = 'theme=' + this.value;
 		location.reload(true);
 	});
+	if (ProfileInfo.Level == 3) $('#tab2b').show();
 
 	stLoading = false;
 
@@ -44,9 +45,10 @@ function initpage()
 	});
 
 	$('#userlevel').text(levelToText(ProfileInfo.Level));
-	if (window.location.hash != '')
+	var section = window.location.hash;
+	if (section != '' && (section != '#admin' || ProfileInfo.Level == 3))
 	{
-		var tab = 'a[href='+window.location.hash+']';
+		var tab = 'a[href='+section+']';
 		if ($(tab).length > 0) $(tab).click();
 	}
  	for (var i = (ProfileInfo.Level < 3 ? 1 : 0); i <= (ProfileInfo.Level < 3 ? 1 : 3); i++)
@@ -200,6 +202,11 @@ function getMyFavorites()
 	});
 }
 
+function simpleFail(jqXHR, textStatus, errorThrown)
+{
+	alert('%l10n_err_data%');
+}
+
 function markFav(e,id)
 {
 	if ($('.userTabActive')[0].id == 'tab3b')
@@ -242,10 +249,6 @@ function markFav(e,id)
 		}).fail(onFail);
 		return;
 	}
-	var onFail = function(jqXHR, textStatus, errorThrown)
-	{
-		alert('%l10n_err_data%');
-	};
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -264,9 +267,9 @@ function markFav(e,id)
 					return;
 				}
 				$(e).find('img').attr('src', 'img/icon-fav-'+(json.fav ? 'on' : 'off')+'.png');
-			}).fail(onFail);
+			}).fail(simpleFail);
 		}
-	}).fail(onFail);
+	}).fail(simpleFail);
 }
 
 function getMyLocations()
@@ -414,10 +417,6 @@ function modifyLocation(e)
 
 function createInvite()
 {
-	var onFail = function(jqXHR, textStatus, errorThrown)
-	{
-		alert('%l10n_err_data%');
-	};
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -437,17 +436,13 @@ function createInvite()
 				}
 				ProfileInfo.invites--;
 				getInvitesInfo();
-			}).fail(onFail);
+			}).fail(simpleFail);
 		}
-	}).fail(onFail);
+	}).fail(simpleFail);
 }
 
 function updateInvite()
 {
-	var onFail = function(jqXHR, textStatus, errorThrown)
-	{
-		alert('%l10n_err_data%');
-	};
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -470,19 +465,15 @@ function updateInvite()
 						return;
 					}
 					getInvitesInfo();
-				}).fail(onFail);
+				}).fail(simpleFail);
 			}
 			$('#invchkall').prop('checked', false);
 		}
-	}).fail(onFail);
+	}).fail(simpleFail);
 }
 
 function deleteInvite()
 {
-	var onFail = function(jqXHR, textStatus, errorThrown)
-	{
-		alert('%l10n_err_data%');
-	};
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -505,11 +496,11 @@ function deleteInvite()
 					}
 					ProfileInfo.invites++;
 					getInvitesInfo();
-				}).fail(onFail);
+				}).fail(simpleFail);
 			}
 			$('#invchkall').prop('checked', false);
 		}
-	}).fail(onFail);
+	}).fail(simpleFail);
 }
 
 function getInvitesInfo()
@@ -578,10 +569,6 @@ function changeNick()
 	{
 		$('#nickeditor').children().prop('disabled', false);
 	};
-	var onFail = function(jqXHR, textStatus, errorThrown)
-	{
-		alert('%l10n_err_data%');
-	};
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -602,9 +589,9 @@ function changeNick()
 					alert("%l10n_user_nick_changed%");
 					location.reload(true);
 				}
-			}).fail(onFail);
+			}).fail(simpleFail);
 		}
-	}).fail(onFail);
+	}).fail(simpleFail);
 }
 
 function changePassword()
@@ -614,10 +601,6 @@ function changePassword()
 		alert("%l10n_user_password_diff%");
 		return;
 	}
-	var onFail = function(jqXHR, textStatus, errorThrown)
-	{
-		alert('%l10n_err_data%');
-	};
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -638,18 +621,14 @@ function changePassword()
 					alert("%l10n_user_password_changed%");
 					hideModal();
 				}
-			}).fail(onFail);
+			}).fail(simpleFail);
 		}
-	}).fail(onFail);
+	}).fail(simpleFail);
 	return;
 }
 
 function createApiKey(type)
 {
-	var onFail = function(jqXHR, textStatus, errorThrown)
-	{
-		alert('%l10n_err_data%');
-	};
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -669,9 +648,9 @@ function createApiKey(type)
 				}
 				if(json.data.r) $('#rapikey').text(json.data.r);
 				if(json.data.w) $('#wapikey').text(json.data.w);
-			}).fail(onFail);
+			}).fail(simpleFail);
 		}
-	}).fail(onFail);
+	}).fail(simpleFail);
 }
 
 function switchTab(num)
@@ -684,13 +663,13 @@ function switchTab(num)
 	}
 	switch (num)
 	{
-		case 2: getMyUploads();
+		case 3: getMyUploads();
 		break;
-		case 3: getMyFavorites(); getMyLocations();
+		case 4: getMyFavorites(); getMyLocations();
 		break;
-		case 4: getInvitesInfo();
+		case 5: getInvitesInfo();
 		break;
-		case 5: $('td#stat_em')[0].click();
+		case 6: $('td#stat_em')[0].click();
 		break;
 	}
 }
@@ -819,6 +798,169 @@ function loadstat(e, st)
 	});
 }
 
+function queryAP(e)
+{
+	var id = $('input[name=id]', e).val();
+	var data = '';
+	data += '&id=' + id;
+	$.get('3wifi.php?a=queryall' + data, function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+		}
+		else
+		{
+			var str = '';
+			for (s in json.data)
+			{
+				str += s + ': ' + json.data[s] + "\n";
+			}
+			if (json.uploaders.length > 0)
+			{
+				str += "\nuploaders:\n";
+				for (var i = 0; i < json.uploaders.length; i++)
+				{
+					for (s in json.uploaders[i])
+					{
+						str += s + ': ' + json.uploaders[i][s] + "\n";
+					}
+				}
+			}
+			if (json.stars.length > 0)
+			{
+				str += "\nstars:\n";
+				for (var i = 0; i < json.stars.length; i++)
+				{
+					for (s in json.stars[i])
+					{
+						str += s + ': ' + json.stars[i][s] + "\n";
+					}
+				}
+			}
+			alert(str);
+		}
+		return false;
+	}).fail(simpleFail);
+	return false;
+}
+
+function deleteAP(e)
+{
+	var id = $('input[name=id]', e).val();
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return false;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&id=' + id;
+			$.get('3wifi.php?a=delete' + data, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return false;
+				}
+				else
+				{
+					alert("%l10n_msg_delete_success%");
+				}
+			}).fail(simpleFail);
+		}
+	}).fail(simpleFail);
+	return false;
+}
+
+function geolocate(e)
+{
+	var bssid = $('input[name=bssid]', e).val();
+	var lat = $('input[name=lat]', e).val();
+	var lon = $('input[name=lon]', e).val();
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return false;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&bssid=' + encodeURIComponent(bssid);
+			data += '&lat=' + lat;
+			data += '&lon=' + lon;
+			$.get('3wifi.php?a=geoupdate' + data, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+					return false;
+				}
+				else
+				{
+					alert(json.lat + ' ' + json.lon + ' (' + json.provider + ')');
+				}
+			}).fail(simpleFail);
+		}
+	}).fail(simpleFail);
+	return false;
+}
+
+function getLogin(e)
+{
+	var invite = $('input[name=invite]', $(e).closest('form')).val();
+	var data = '';
+	data += '&invite=' + encodeURIComponent(invite);
+	$.get('user.php?a=inviteuser' + data, function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+		}
+		else
+		{
+			$('input[name=login]').val(json.login);
+		}
+		return false;
+	}).fail(simpleFail);
+	return false;
+}
+
+function resetUser(e)
+{
+	var login = $('input[name=login]', e).val();
+	var form = e;
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return false;
+		} else {
+			var data = '';
+			data += '&token=' + encodeURIComponent(json.token);
+			data += '&login=' + encodeURIComponent(login);
+			$.get('user.php?a=resetpass' + data, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+				}
+				else
+				{
+					$('tt#pass').text(json.pass);
+					alert("%l10n_msg_user_reset_success%");
+				}
+				return false;
+			}).fail(simpleFail);
+		}
+	}).fail(simpleFail);
+	return false;
+}
+
 </script>
 </head>
 
@@ -828,10 +970,11 @@ function loadstat(e, st)
 <div class=usetTabContainer>
 	<div class=userTabs>
 		<div id=tab1b class=userTabActive dir=ltr><a href="#info" onclick="switchTab(1)">%l10n_tab_profile%</a></div>
-		<div id=tab2b class=userTab dir=ltr><a href="#uploads" onclick="switchTab(2)">%l10n_tab_uploads%</a></div>
-		<div id=tab3b class=userTab dir=ltr><a href="#fave" onclick="switchTab(3)">%l10n_tab_favorites%</a></div>
-		<div id=tab4b class=userTab dir=ltr><a href="#inv" onclick="switchTab(4)">%l10n_tab_invites%</a></div>
-		<div id=tab5b class=userTab dir=ltr><a href="#stats" onclick="switchTab(5)">%l10n_tab_mystats%</a></div>
+		<div id=tab2b class=userTab dir=ltr style="display: none"><a href="#admin" onclick="switchTab(2)">%l10n_tab_admin%</a></div>
+		<div id=tab3b class=userTab dir=ltr><a href="#uploads" onclick="switchTab(3)">%l10n_tab_uploads%</a></div>
+		<div id=tab4b class=userTab dir=ltr><a href="#fave" onclick="switchTab(4)">%l10n_tab_favorites%</a></div>
+		<div id=tab5b class=userTab dir=ltr><a href="#inv" onclick="switchTab(5)">%l10n_tab_invites%</a></div>
+		<div id=tab6b class=userTab dir=ltr><a href="#stats" onclick="switchTab(6)">%l10n_tab_mystats%</a></div>
 	</div>
 	<div class=userCodeContainer>
 		<div id=tab1 class=userCode dir=ltr style="display: block;">
@@ -852,6 +995,57 @@ function loadstat(e, st)
 			</table>
 		</div>
 		<div id=tab2 class=userCode dir=ltr style="display: none;">
+			<form onsubmit="return queryAP(this)">
+			<fieldset>
+			<legend>%l10n_msg_full_query%</legend>
+			<label>ID: <input type="number" name="id" min="1" required="required"/></label>
+			<input type="submit" value="%l10n_btn_query%"/>
+			</fieldset>
+			</form>
+			<br/>
+
+			<form onsubmit="return deleteAP(this)">
+			<fieldset>
+			<legend>%l10n_msg_delete_aps%</legend>
+			<label>ID: <input type="number" name="id" min="1" required="required"/></label>
+			<input type="submit" value="%l10n_btn_delete%"/>
+			</fieldset>
+			</form>
+			<br/>
+
+			<form onsubmit="return geolocate(this)">
+			<fieldset>
+			<legend>%l10n_msg_update_geo%</legend>
+			<table>
+			<tr><td><label for="bssid">%l10n_str_bssid%</label></td>
+			<td><input type="text" name="bssid" id="bssid" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" required="required"/></td><td> (%l10n_bssid_format%)</td></tr>
+			<tr><td><label for="lat">%l10n_str_lat%</label></td>
+			<td><input type="number" name="lat" id="lat" min="-90" max="90" step="0.00000001" value="0"/></td><td>° [-90; 90]</td></tr>
+			<tr><td><label for="lon">%l10n_str_lon%</label></td>
+			<td><input type="number" name="lon" id="lon" min="-180" max="180" step="0.00000001" value="0"/></td><td>° [-180; 180]</td></tr>
+			<tr><td colspan="3">%l10n_msg_geo_def_zero%</td></tr>
+			</table>
+			<input type="submit" value="%l10n_btn_update%"/>
+			</fieldset>
+			</form>
+			<br/>
+
+			<form onsubmit="return resetUser(this)">
+			<fieldset>
+			<legend>%l10n_msg_user_reset%</legend>
+			<table>
+			<tr><td><label for="invite">%l10n_str_invite%</label></td>
+			<td><input type="text" name="invite" id="invite" pattern=".{12,12}"/></td><td><input type="button" value="%l10n_btn_get%" onclick="return getLogin(this)"/></td></tr>
+			<tr><td><label for="login">%l10n_str_login%</label></td>
+			<td><input type="text" name="login" id="login" pattern=".{5,30}" required="required"/></td><td><input type="submit" value="%l10n_btn_reset%"/></td></tr>
+			<tr><td>%l10n_str_pass%</td>
+			<td><tt id="pass"></tt></td></tr>
+			</table>
+			</fieldset>
+			</form>
+			<br/>
+		</div>
+		<div id=tab3 class=userCode dir=ltr style="display: none;">
 			<div style="max-height: 100%; overflow: auto">
 				<p style="margin-top: 7px">%l10n_user_last_uploads% <a href="javascript://" onclick="myDownload()">%l10n_user_download_all%</a>.</p>
 				<table class=st1 align=center>
@@ -863,7 +1057,7 @@ function loadstat(e, st)
 				</table>
 			</div>
 		</div>
-		<div id=tab3 class=userCode dir=ltr style="display: none;">
+		<div id=tab4 class=userCode dir=ltr style="display: none;">
 			<table>
 			<tr><td style="padding: 4 8 4 8" colspan=2>%l10n_user_favorited_aps% (<span id=favap_cnt>0</span> %l10n_str_of% 200).</td></tr>
 			<tr><td style="vertical-align: top" colspan=2>
@@ -894,7 +1088,7 @@ function loadstat(e, st)
 			</td></tr>
 			</table>
 		</div>
-		<div id=tab4 class=userCode dir=ltr style="display: none;">
+		<div id=tab5 class=userCode dir=ltr style="display: none;">
 			<div style="display: flex">
 				<div style="max-height: 100%; overflow: auto">
 					<table class=st1>
@@ -914,7 +1108,7 @@ function loadstat(e, st)
 				</div>
 			</div>
 		</div>
-		<div id=tab5 class=userCode dir=ltr style="display: none; padding: 0">
+		<div id=tab6 class=userCode dir=ltr style="display: none; padding: 0">
 			<table class=st2 cellspacing=0>
 			<tr><td id=stat_em onclick="loadstat(this,'stat')" style="border-top: none">%l10n_stat_summary%</td>
 				<td rowspan=11 style="width: 100%; vertical-align: top; padding: 0">
