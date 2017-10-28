@@ -459,7 +459,7 @@ switch ($action)
 			$entry['essid'] = $row['ESSID'];
 			$entry['sec'] = sec2str((int)$row['Security']);
 			$entry['key'] = $row['WiFiKey'];
-			$entry['wps'] = ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT));
+			$entry['wps'] = pin2str($row['WPSPIN']);
 			$entry['lat'] = 'none';
 			$entry['lon'] = 'none';
 			if ((int)$row['NoBSSID'] == 0 && $row['latitude'] !== null)
@@ -825,7 +825,7 @@ switch ($action)
 		'essid'   => $row['ESSID'],
 		'sec'     => sec2str($row['Security']),
 		'key'     => $row['WiFiKey'],
-		'wps'     => ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT)),
+		'wps'     => pin2str($row['WPSPIN']),
 		'lan_ip'  => _long2ip($row['LANIP']),
 		'lan_mask' => _long2ip($row['LANMask']),
 		'wan_ip'  => _long2ip($row['WANIP']),
@@ -1315,11 +1315,7 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	function statWPS($row)
-	{
-		return str_pad($row, 8, '0', STR_PAD_LEFT);
-	}
-	$json['stat'] = getCountStats($db, 'WPSPIN', TOP_WPS_PIN, array('`WPSPIN` != 1'), 'statWPS');
+	$json['stat'] = getCountStats($db, 'WPSPIN', TOP_WPS_PIN, array('`WPSPIN` != 1'), 'pin2str');
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1524,7 +1520,7 @@ switch ($action)
 					'essid' => $row['ESSID'],
 					'sec'   => sec2str($row['Security']),
 					'key'   => $row['WiFiKey'],
-					'wps'   => ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT)),
+					'wps'   => pin2str($row['WPSPIN']),
 					'lat'   => (float)$row['latitude'],
 					'lon'   => (float)$row['longitude'],
 				);
@@ -1571,7 +1567,7 @@ switch ($action)
 					'essid' => $row['ESSID'],
 					'sec'   => sec2str($row['Security']),
 					'key'   => $row['WiFiKey'],
-					'wps'   => ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT)),
+					'wps'   => pin2str($row['WPSPIN']),
 					'lat'   => (float)$row['latitude'],
 					'lon'   => (float)$row['longitude'],
 				);

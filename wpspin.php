@@ -1,4 +1,6 @@
 <?php
+require_once 'utils.php';
+
 /**
  * Абстрактный класс для генераторов WPS PIN по BSSID
  */
@@ -28,7 +30,7 @@ abstract class WpspinGenerator
 	 */
 	public function getPin($bssid)
 	{
-		return str_pad($this->getPinInt($bssid), 8, '0', STR_PAD_LEFT);
+		return pin2str($this->getPinInt($bssid));
 	}
 
 	/**
@@ -518,7 +520,7 @@ function API_pin_search($bssid)
 		{
 			$result['scores'][] = array(
 				'name' => 'From DB',
-				'value' => str_pad($pin, 8, '0', STR_PAD_LEFT),
+				'value' => pin2str($pin),
 				'score' => 1
 			);
 			unset($unkn[$pin]);

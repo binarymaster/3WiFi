@@ -76,7 +76,7 @@ switch ($_GET['Query'])
 	while ($row = $res->fetch_row())
 	{
 		$json['Keys'][] = $row[0];
-		$json['WPS'][] = ($row[1] == 1 ? '' : str_pad($row[1], 8, '0', STR_PAD_LEFT));
+		$json['WPS'][] = pin2str($row[1]);
 	}
 	$json['Successes'] = true;
 	break;

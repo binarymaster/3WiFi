@@ -57,6 +57,10 @@ function randomStr($size=32, $syms = true)
 	}
 	return $Str;
 }
+function pin2str($pin)
+{
+	return ($pin == 1 ? '' : str_pad($pin, 8, '0', STR_PAD_LEFT));
+}
 
 // IP block
 function _long2ip($arg)

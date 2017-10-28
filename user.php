@@ -315,7 +315,7 @@ switch($action)
 		$ap['essid'] = $row['ESSID'];
 		$ap['sec'] = sec2str((int)$row['Security']);
 		$ap['key'] = $row['WiFiKey'];
-		$ap['wps'] = ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT));
+		$ap['wps'] = pin2str($row['WPSPIN']);
 		$ap['lat'] = null;
 		$ap['lon'] = null;
 		if ($row['NoBSSID'] == 0 && $row['latitude'] != 0 && $row['longitude'] != 0)
@@ -385,7 +385,7 @@ switch($action)
 		$row[5] = ($row[5] == 1 ? '[X]' : '');
 		$row[7] = ($row[6] == 0 ? dec2mac($row[7]) : '');
 		$row[9] = sec2str((int)$row[9]);
-		$row[11] = ($row[11] == 1 ? '' : str_pad($row[11], 8, '0', STR_PAD_LEFT));
+		$row[11] = pin2str($row[11]);
 		$row[12] = ($row[12] != 0 ? _long2ip($row[12]) : ''); // LAN IP
 		$row[13] = ($row[13] != 0 ? _long2ip($row[13]) : ''); // LAN Mask
 		$row[14] = ($row[14] != 0 ? _long2ip($row[14]) : ''); // WAN IP
@@ -472,7 +472,7 @@ switch($action)
 		$ap['essid'] = $row['ESSID'];
 		$ap['sec'] = sec2str((int)$row['Security']);
 		$ap['key'] = $row['WiFiKey'];
-		$ap['wps'] = ($row['WPSPIN'] == 1 ? '' : str_pad($row['WPSPIN'], 8, '0', STR_PAD_LEFT));
+		$ap['wps'] = pin2str($row['WPSPIN']);
 		$ap['lat'] = null;
 		$ap['lon'] = null;
 		if ($row['NoBSSID'] == 0 && $row['latitude'] != 0 && $row['longitude'] != 0)
@@ -1258,7 +1258,7 @@ switch($action)
 		{
 			$data = array();
 			$data[] = (int)$row[1];
-			$data[] = str_pad($row[0], 8, '0', STR_PAD_LEFT);
+			$data[] = pin2str($row[0]);
 			$json['stat']['data'][] = $data;
 		}
 		$res->close();
