@@ -264,6 +264,10 @@ var ProfileInfo = {%profile%};
 
 function initmenu()
 {
+	if(this != top)
+	{
+		top.location.href = this.location.href;
+	}
 	if (ProfileInfo.isUser == 0) $('a[href=user]').hide();
 
 	if(!isMobile())
