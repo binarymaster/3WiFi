@@ -138,6 +138,10 @@ $l10n['map_clusters'] =
 'Enable/disable clusterization on high zoom';
 $l10n['map_aps_save'] =
 'Save visible access points to file';
+$l10n['map_ranges'] =
+'Go to ranges list';
+$l10n['map_favorite'] =
+'Add location to favorites';
 $l10n['loc_save'] =
 'Your current location will be added to favorites.\n\nDescribe the location:';
 $l10n['loc_name'] =
