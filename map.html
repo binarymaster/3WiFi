@@ -101,6 +101,32 @@ function initmap()
 		);
 	myMap.controls.add(clustButton);
 
+	// Кнопка перехода к диапазонам
+	var rangesButton = new ymaps.control.Button({
+		data: {
+			title: 'Перейти к списку диапазонов',
+			image: 'img/icon-ip.png'
+		},
+		options: {
+			float: 'right',
+			selectOnClick: false
+		}
+	});
+	rangesButton.events
+		.add(
+			'click',
+			function () {
+				var coords = myMap.getCenter();
+				var bounds = myMap.getBounds();
+				var rad = ymaps.coordSystem.geo.getDistance(bounds[0], bounds[1]);
+				rad = Math.ceil(((rad / 1000) / 2) * 10) / 10;
+				var lat = Math.round(coords[0] * 10000000) / 10000000;
+				var lon = Math.round(coords[1] * 10000000) / 10000000;
+				window.open('ranges?lat=' + lat + '&lon=' + lon + '&rad=' + rad, '_blank');
+			}
+		);
+	myMap.controls.add(rangesButton);
+
 	// Кнопка добавления локации в избранное
 	var faveButton = new ymaps.control.Button({
 		data: {
