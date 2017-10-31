@@ -46,6 +46,7 @@ function parsestat(st, d)
 function loadstat(e, st)
 {
 	if (stLoading) return;
+	recheckCoordsLock();
 
 	stLoading = true;
 	$('td#stat_es').removeClass('stat_sel');
@@ -132,6 +133,9 @@ function loadstat(e, st)
 		stLoading = false;
 	});
 }
+function delCoordCallback()
+{
+}
 function initpage()
 {
 	stLoading = false;
@@ -147,6 +151,7 @@ function initpage()
 <table class=st2 cellspacing=0>
 <tr><td id=stat_es onclick="loadstat(this,'stat')" class=first>%l10n_stat_summary%</td>
 	<td rowspan=13 id=stat_cn>
+		<span class=coordlock></span>
 		<table class=st1 style="display: none;">
 		<tbody>
 		<tr><th>%l10n_tbl_count% <span id=sttot></span></th><th><span id=stval>%l10n_tbl_value%</span> <span id=stcnt></span></th></tr>

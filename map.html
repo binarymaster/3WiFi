@@ -182,6 +182,41 @@ function initmap()
 		);
 	myMap.controls.add(faveButton);
 
+	// Кнопка закрепления локации
+	var lockButton = new ymaps.control.Button({
+		data: {
+			title: '%l10n_map_lock_coords%',
+			image: 'img/icon-location.png'
+		},
+		options: {
+			float: 'right',
+			selectOnClick: false
+		}
+	});
+	lockButton.events
+		.add(
+			'click',
+			function () {
+				if (ProfileInfo.Level < 1)
+				{
+					alert(errorStr('lowlevel'));
+					return false;
+				}
+				var coords = myMap.getCenter();
+				var bounds = myMap.getBounds();
+				var rad = ymaps.coordSystem.geo.getDistance(bounds[0], bounds[1]);
+				rad = Math.ceil(((rad / 1000) / 2) * 10) / 10;
+				var lat = Math.round(coords[0] * 10000000) / 10000000;
+				var lon = Math.round(coords[1] * 10000000) / 10000000;
+				document.cookie = 'uselocation=' + escape('lat=' + lat + '&lon=' + lon + '&rad=' + rad);
+				if (getCookie('uselocation') != '')
+				{
+					alert('%l10n_loc_locked%');
+				}
+			}
+		);
+	myMap.controls.add(lockButton);
+
 	// Кнопка сохранения точек в файл
 	var iconSave = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjxzdmcgaGVpZ2h0PSIxNnB4IiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxNiAxNiIgd2lkdGg9IjE2cHgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6c2tldGNoPSJodHRwOi8vd3d3LmJvaGVtaWFuY29kaW5nLmNvbS9za2V0Y2gvbnMiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj48dGl0bGUvPjxkZWZzLz48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGlkPSJJY29ucyB3aXRoIG51bWJlcnMiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIj48ZyBmaWxsPSIjMDAwMDAwIiBpZD0iR3JvdXAiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC03MjAuMDAwMDAwLCAtNDMyLjAwMDAwMCkiPjxwYXRoIGQ9Ik03MjEsNDQ2IEw3MzMsNDQ2IEw3MzMsNDQzIEw3MzUsNDQzIEw3MzUsNDQ2IEw3MzUsNDQ4IEw3MjEsNDQ4IFogTTcyMSw0NDMgTDcyMyw0NDMgTDcyMyw0NDYgTDcyMSw0NDYgWiBNNzI2LDQzMyBMNzMwLDQzMyBMNzMwLDQ0MCBMNzMyLDQ0MCBMNzI4LDQ0NSBMNzI0LDQ0MCBMNzI2LDQ0MCBaIE03MjYsNDMzIiBpZD0iUmVjdGFuZ2xlIDIxNyIvPjwvZz48L2c+PC9zdmc+';
 	var saveButton = new ymaps.control.Button({

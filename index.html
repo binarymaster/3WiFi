@@ -259,6 +259,46 @@ function loginBtn()
 		doLogout();
 	}
 }
+function getCookie(cname)
+{
+	var name = cname + "=";
+	var decodedCookie = decodeURIComponent(document.cookie);
+	var ca = decodedCookie.split(';');
+	for(var i = 0; i <ca.length; i++)
+	{
+		var c = ca[i];
+		while (c.charAt(0) == ' ')
+		{
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0)
+		{
+			return c.substring(name.length, c.length);
+		}
+	}
+	return "";
+}
+function delCookie(name)
+{
+	document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
+function recheckCoordsLock()
+{
+	if (getCookie('uselocation') != '')
+	{
+		$('.coordlock').html('<img src="img/icon-location.png"/> %l10n_loc_locked% &nbsp;<button class=delcoord>%l10n_btn_reset%</button>');
+		$('button.delcoord').click(function ()
+		{
+			if (!confirm('%l10n_map_unlock_coords%')) return false;
+			delCookie('uselocation');
+			if (getCookie('uselocation') == '')
+			{
+				$('.coordlock').html('');
+				delCoordCallback();
+			}
+		});
+	}
+}
 
 var ProfileInfo = {%profile%};
 
@@ -295,6 +335,7 @@ function initmenu()
 			return true;
 		});
 	}
+	recheckCoordsLock();
 }
 </script>
 %head%

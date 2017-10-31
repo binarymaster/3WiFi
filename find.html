@@ -95,6 +95,7 @@ function switchPage(num)
 }
 function find(page)
 {
+	recheckCoordsLock();
 	$($('input[name=page]')[level-1]).val(page);
 
 	var formdata = $($('form')[level-1]).serialize();
@@ -269,6 +270,9 @@ function insertAtCaret(text)
 	}
 	txtarea.scrollTop = scrollPos;
 }
+function delCoordCallback()
+{
+}
 function initpage()
 {
 	level = 0;
@@ -290,12 +294,12 @@ function initpage()
 <form enctype="multipart/form-data" method="POST" onsubmit="find(1); return false">
 <table id=fuserform style="display:none">
 <tbody>
-<tr><td>%l10n_str_bssid%</td><td><input name="bssid" type="text" value="" /></td><td style="font-weight: bold">(&nbsp;* - %l10n_find_wildcard%&nbsp;)</td></tr>
-<tr><td>%l10n_str_essid%</td><td><input name="essid" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('□')">□</button> - %l10n_find_any_char%, <button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - %l10n_find_any_str%&nbsp;)</td></tr>
+<tr><td>%l10n_str_bssid%</td><td><input name="bssid" type="text" value="" /></td><td colspan=2 style="font-weight: bold">(&nbsp;* - %l10n_find_wildcard%&nbsp;)</td></tr>
+<tr><td>%l10n_str_essid%</td><td><input name="essid" type="text" value="◯" /></td><td colspan=2 style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('□')">□</button> - %l10n_find_any_char%, <button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - %l10n_find_any_str%&nbsp;)</td></tr>
 <tr><td>%l10n_str_wifikey%</td><td><input name="key" type="text" value="◯" /></td></tr>
 <tr><td>%l10n_str_wpspin%</td><td><input name="wps" type="text" value="◯" /></td></tr>
 <input name="page" type="hidden" value="1" />
-<tr><td><input type=submit value="%l10n_btn_find%" /></td><td><label><input type=checkbox name=sens /> %l10n_find_checksens%</label></td><td id=found1 colspan=2></td></tr>
+<tr><td><input type=submit value="%l10n_btn_find%" /></td><td><label><input type=checkbox name=sens /> %l10n_find_checksens%</label></td><td id=found1></td><td class=coordlock></td></tr>
 </tbody>
 </table>
 </form>
@@ -308,7 +312,7 @@ function initpage()
 <tr><td>%l10n_str_bssid%</td><td><input name="bssid" type="text" value="" /></td><td>%l10n_str_essid%</td><td><input name="essid" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;<button style="width:24px; height:22px" type=button onclick="insertAtCaret('◯')">◯</button> - %l10n_find_any_str%&nbsp;)</td></tr>
 <tr><td>%l10n_str_wifikey%</td><td><input name="key" type="text" value="◯" /></td><td>%l10n_str_wpspin%</td><td><input name="wps" type="text" value="◯" /></td></tr>
 <input name="page" type="hidden" value="1" />
-<tr><td><input type=submit value="%l10n_btn_find%" /></td><td><label><input type=checkbox name=sens /> %l10n_find_checksens%</label></td><td id=found2 colspan=2></td></tr>
+<tr><td><input type=submit value="%l10n_btn_find%" /></td><td><label><input type=checkbox name=sens /> %l10n_find_checksens%</label></td><td id=found2 colspan=2></td><td class=coordlock></td></tr>
 </tbody>
 </table>
 </form>

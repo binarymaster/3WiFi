@@ -138,6 +138,10 @@ $l10n['map_clusters'] =
 'Enable/disable clusterization on high zoom';
 $l10n['map_aps_save'] =
 'Save visible access points to file';
+$l10n['map_lock_coords'] =
+'Lock selected location';
+$l10n['map_unlock_coords'] =
+'Reset current location?';
 $l10n['map_ranges'] =
 'Go to ranges list';
 $l10n['map_favorite'] =
@@ -150,6 +154,8 @@ $l10n['loc_added'] =
 'Location successfully added';
 $l10n['loc_updated'] =
 'Location successfully updated';
+$l10n['loc_locked'] =
+'Location locked';
 
 /* find */
 $l10n['title_find'] =

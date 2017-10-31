@@ -7,6 +7,9 @@
 <script type="text/javascript">
 function showLoads()
 {
+	if (loadsTimeout != null)
+		clearTimeout(loadsTimeout);
+	recheckCoordsLock();
 	$.get('3wifi.php?a=loads', function(d)
 	{
 		var lo = 0, hi = 0, dt = 0;
@@ -32,10 +35,10 @@ function showLoads()
 		gl_data.pop();
 		gl_data.push(d);
 		$.plot('#graphload', gl_data, gl_opts);
-		setTimeout(showLoads, 600000); // 10 min
+		loadsTimeout = setTimeout(showLoads, 600000); // 10 min
 	}).fail(function(jqXHR, textStatus, errorThrown) {
 		$('#stat').text('%l10n_err_data%');
-		setTimeout(showLoads, 5000);
+		loadsTimeout = setTimeout(showLoads, 5000);
 	});
 }
 function zip(arr)
@@ -69,6 +72,10 @@ function showTasks()
 		$('#task').text('%l10n_err_data%');
 		setTimeout(showTasks, 5000);
 	});
+}
+function delCoordCallback()
+{
+	showLoads();
 }
 function initpage()
 {
@@ -110,6 +117,7 @@ function initpage()
 	});
 	$('#today').empty();
 	$('#stat').text('%l10n_str_updating%');
+	loadsTimeout = null;
 	showLoads();
 
 	gtv_load = [];
@@ -188,4 +196,5 @@ function initpage()
 	</td>
 </tr>
 </table>
+<div class=coordlock></div>
 </body>
