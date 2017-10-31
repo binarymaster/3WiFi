@@ -71,21 +71,25 @@ $lat = DEFAULT_LAT;
 $lon = DEFAULT_LON;
 $rad = DEFAULT_RAD;
 
-if (isset($_GET['lat']))
+function setFloat($in, $out)
 {
-	$_GET['lat'] = str_replace(',', '.', $_GET['lat']);
-	$lat = (float)$_GET['lat'];
+	if (isset($in))
+	{
+		$in = str_replace(',', '.', $in);
+		$out = (float)$in;
+	}
 }
-if (isset($_GET['lon']))
-{
-	$_GET['lon'] = str_replace(',', '.', $_GET['lon']);
-	$lon = (float)$_GET['lon'];
-}
-if (isset($_GET['rad']))
-{
-	$_GET['rad'] = str_replace(',', '.', $_GET['rad']);
-	$rad = (float)$_GET['rad'];
-}
+
+$uselocation = array();
+parse_str($_COOKIE['uselocation'], &$uselocation);
+
+setFloat($uselocation['lat'], &$lat);
+setFloat($uselocation['lon'], &$lon);
+setFloat($uselocation['rad'], &$rad);
+
+setFloat($_GET['lat'], &$lat);
+setFloat($_GET['lon'], &$lon);
+setFloat($_GET['rad'], &$rad);
 
 $langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
 if (empty($langs)) $langs = 'en';
