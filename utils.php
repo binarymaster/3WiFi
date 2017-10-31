@@ -422,4 +422,30 @@ function loadStatsCache($name)
 	if (!$res || strlen($res) == 0) return false;
 	return unserialize($res);
 }
+
+function useLocationAllowed($query)
+{
+	global $UserManager, $db;
+
+	$uselocation = array();
+	parse_str($query, &$uselocation);
+	if ($UserManager->Level < 1)
+		return false;
+	if (!isset($uselocation['lat']) || empty($uselocation['lat']))
+		return false;
+	if (!isset($uselocation['lon']) || empty($uselocation['lon']))
+		return false;
+	if (!isset($uselocation['rad']) || empty($uselocation['rad']))
+		return false;
+	$lat = (float)$uselocation['lat'];
+	$lon = (float)$uselocation['lon'];
+	$rad = (float)$uselocation['rad'];
+	if ($lat < -90 || $lat > 90) return false;
+	if ($lon < -180 || $lon > 180) return false;
+	if ($rad < 0 || $rad > 25) return false;
+
+	require_once 'quadkey.php';
+	return query_radius_ids($db, $lat, $lon, $rad);
+}
+
 ?>

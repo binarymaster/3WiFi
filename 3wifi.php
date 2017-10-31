@@ -165,7 +165,7 @@ switch ($action)
 		$str = str_replace($wc[1], '%', $str);
 		return $str;
 	}
-	function GenerateFindQuery($cmtid, $ipaddr, $BSSID, $ESSID, $Auth, $Name, $Key, $WPS, $sens, $Page, $Limit)
+	function GenerateFindQuery($cmtid, $ipaddr, $BSSID, $ESSID, $Auth, $Name, $Key, $WPS, $sens, $UseLocation, $Page, $Limit)
 	{
 		if(!isset($_SESSION['Search'])) $_SESSION['Search'] = array();
 		if(!isset($_SESSION['Search']['ArgsHash'])) $_SESSION['Search']['ArgsHash'] = '';
@@ -195,12 +195,13 @@ switch ($action)
 		global $UserManager;
 		$uid = $UserManager->uID;
 
-		if(($UserManager->Level < 2) && ($DataCount < 6))
+		if((!$UseLocation) && ($UserManager->Level < 2) && ($DataCount < 6))
 		{
 			$isLimitedRequest = true;
 		}
 
 		$binary = ($sens ? 'BINARY' : '');
+		$joinloc = ($UseLocation ? 'JOIN radius_ids RI ON B.id = RI.id' : '');
 
 		if($Page == 1) 
 		{
@@ -216,7 +217,7 @@ switch ($action)
 				`NoBSSID`,`BSSID`,`ESSID`,`Security`,
 				`WiFiKey`,`WPSPIN`,`WANIP`,
 				`latitude`,`longitude`, uid IS NOT NULL fav 
-				FROM `BASE_TABLE` AS B 
+				FROM `BASE_TABLE` AS B '.$joinloc.' 
 				LEFT JOIN `comments` USING(cmtid) 
 				LEFT JOIN `GEO_TABLE` USING(BSSID) 
 				LEFT JOIN `favorites` AS F ON B.id = F.id AND uid = '.$uid.' 
@@ -276,7 +277,7 @@ switch ($action)
 			else $sql .= (empty($WPS) ? ' AND `WPSPIN` = 1' : ' AND `WPSPIN` = \''.$WPS.'\'');
 		}
 
-		if($_SESSION['Search']['ArgsHash'] == md5($cmtid.$ipaddr.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS.$binary))
+		if($_SESSION['Search']['ArgsHash'] == md5($cmtid.$ipaddr.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS.$binary.$joinloc))
 		{
 			$sql = str_replace('SQL_CALC_FOUND_ROWS', '', $sql);
 		}
@@ -385,12 +386,14 @@ switch ($action)
 	$key = $db->real_escape_string($key);
 	$wps = $db->real_escape_string($wps);
 
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+
 	$cur_page = 1;
 	$per_page = 100;
 	if (isset($_POST['page'])) $cur_page = (int)$_POST['page'];
 	if ($cur_page < 1) $cur_page = 1;
 
-	$sql = GenerateFindQuery($cmtid, $ipaddr, $bssid, $essid, $auth, $name, $key, $wps, $sens, $cur_page, $per_page);
+	$sql = GenerateFindQuery($cmtid, $ipaddr, $bssid, $essid, $auth, $name, $key, $wps, $sens, $useloc, $cur_page, $per_page);
 	if ($res = QuerySql($sql))
 	{
 		if($_SESSION['Search']['LastRowsNum'] == -1)
