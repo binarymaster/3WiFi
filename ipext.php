@@ -441,35 +441,18 @@ function API_get_ranges($lat, $lon, $radius)
 	global $db;
 	$result = array();
 
-	$lat_km = 111.143 - 0.562 * cos(2 * deg2rad($lat));
-	$lon_km = abs(111.321 * cos(deg2rad($lon)) - 0.094 * cos(3 * deg2rad($lon)));
-	$lat1 = min(max($lat - $radius / $lat_km, -90), 90);
-	$lat2 = min(max($lat + $radius / $lat_km, -90), 90);
-	$lon1 = min(max($lon - $radius / $lon_km, -180), 180);
-	$lon2 = min(max($lon + $radius / $lon_km, -180), 180);
-	$tile_x1 = lon_to_tile_x($lon1, 7);
-	$tile_y1 = lat_to_tile_y($lat2, 7);
-	$tile_x2 = lon_to_tile_x($lon2, 7);
-	$tile_y2 = lat_to_tile_y($lat1, 7);
-	$quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, 7);
-	$quadkeys = '(' . implode(',', array_map(function($x){return base_convert($x, 2, 10);}, $quadkeys)) . ')';
+	if (!query_radius_ids($db, $lat, $lon, $radius)) return null;
+	// MySQL cannot refer to a TEMPORARY table more than once in the same query.
+	QuerySql("CREATE TEMPORARY TABLE radius_ids2 SELECT * FROM radius_ids");
 
 	if ($res = QuerySql(
 		"SELECT DISTINCT IP FROM 
 		(SELECT IP 
-		FROM `BASE_TABLE`, `GEO_TABLE` 
-		WHERE (`GEO_TABLE`.`quadkey` >> 32) IN $quadkeys AND
-				`BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
-				AND (`GEO_TABLE`.`quadkey` IS NOT NULL) 
-				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2) 
-				AND (IP != 0 AND IP != -1) 
+		FROM `BASE_TABLE` JOIN radius_ids USING(id) 
+		WHERE (IP != 0 AND IP != -1) 
 		UNION SELECT WANIP 
-		FROM `BASE_TABLE`, `GEO_TABLE` 
-		WHERE (`GEO_TABLE`.`quadkey` >> 32) IN $quadkeys AND
-				`BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
-				AND (`GEO_TABLE`.`quadkey` IS NOT NULL) 
-				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2) 
-				AND (WANIP != 0 AND WANIP != -1)
+		FROM `BASE_TABLE` JOIN radius_ids2 USING(id) 
+		WHERE (WANIP != 0 AND WANIP != -1)
 		) IPTable ORDER BY CAST(IP AS UNSIGNED INTEGER)"));
 	{
 		$last_upper = 0;

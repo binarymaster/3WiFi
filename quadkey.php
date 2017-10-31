@@ -335,3 +335,30 @@ function get_tile_bbox($quadkey)
 
 	return array(array($lat1, $lon1), array($lat2, $lon2));
 }
+
+function query_radius_ids($db, $lat, $lon, $radius)
+{
+	$lat_km = 111.143 - 0.562 * cos(2 * deg2rad($lat));
+	$lon_km = abs(111.321 * cos(deg2rad($lon)) - 0.094 * cos(3 * deg2rad($lon)));
+	$lat1 = min(max($lat - $radius / $lat_km, -90), 90);
+	$lat2 = min(max($lat + $radius / $lat_km, -90), 90);
+	$lon1 = min(max($lon - $radius / $lon_km, -180), 180);
+	$lon2 = min(max($lon + $radius / $lon_km, -180), 180);
+	$tile_x1 = lon_to_tile_x($lon1, 7);
+	$tile_y1 = lat_to_tile_y($lat2, 7);
+	$tile_x2 = lon_to_tile_x($lon2, 7);
+	$tile_y2 = lat_to_tile_y($lat1, 7);
+	$quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, 7);
+	$quadkeys = '(' . implode(',', array_map(function($x){return base_convert($x, 2, 10);}, $quadkeys)) . ')';
+
+	$res = QuerySql(
+		"CREATE TEMPORARY TABLE IF NOT EXISTS radius_ids AS (SELECT id 
+		FROM `BASE_TABLE`, `GEO_TABLE` 
+		WHERE (`GEO_TABLE`.`quadkey` >> 32) IN $quadkeys AND
+				`BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
+				AND (`GEO_TABLE`.`quadkey` IS NOT NULL) 
+				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2)
+		)
+	");
+	return $res !== false;
+}
