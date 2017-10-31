@@ -156,6 +156,8 @@ $l10n['loc_updated'] =
 'Location successfully updated';
 $l10n['loc_locked'] =
 'Location locked';
+$l10n['loc_large'] =
+'Selected area radius is too large, zoom in on the map.';
 
 /* find */
 $l10n['title_find'] =

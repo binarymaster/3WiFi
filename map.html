@@ -122,6 +122,11 @@ function initmap()
 				rad = Math.ceil(((rad / 1000) / 2) * 10) / 10;
 				var lat = Math.round(coords[0] * 10000000) / 10000000;
 				var lon = Math.round(coords[1] * 10000000) / 10000000;
+				if (rad > 25)
+				{
+					alert('%l10n_loc_large%');
+					return false;
+				}
 				window.open('ranges?lat=' + lat + '&lon=' + lon + '&rad=' + rad, '_blank');
 			}
 		);
@@ -208,6 +213,11 @@ function initmap()
 				rad = Math.ceil(((rad / 1000) / 2) * 10) / 10;
 				var lat = Math.round(coords[0] * 10000000) / 10000000;
 				var lon = Math.round(coords[1] * 10000000) / 10000000;
+				if (rad > 25)
+				{
+					alert('%l10n_loc_large%');
+					return false;
+				}
 				document.cookie = 'uselocation=' + escape('lat=' + lat + '&lon=' + lon + '&rad=' + rad);
 				if (getCookie('uselocation') != '')
 				{
