@@ -1068,13 +1068,14 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
 	$json['stat'] = array();
 	$mode = (isset($_GET['mode']) ? (int)$_GET['mode'] : 0);
 	if ($mode == 0 || $mode == 1)
 	{
-		$res = loadStatsCache('main');
+		$res = ($useloc ? false : loadStatsCache('main'));
 		if (!$res)
-			$res = getMainStats($db);
+			$res = getMainStats($db, $useloc);
 		if (!$res)
 		{
 			unset($json['stat']);
@@ -1086,9 +1087,9 @@ switch ($action)
 	}
 	if ($mode == 0)
 	{
-		$res = loadStatsCache('ext');
+		$res = ($useloc ? false : loadStatsCache('ext'));
 		if (!$res)
-			$res = getExtStats($db);
+			$res = getExtStats($db, $useloc);
 		if (!$res)
 		{
 			unset($json['stat']);
@@ -1124,9 +1125,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['data'] = loadStatsCache('load');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['data'] = ($useloc ? false : loadStatsCache('load'));
 	if ($json['data'] === false)
-		$json['data'] = getLoads($db);
+		$json['data'] = getLoads($db, $useloc);
 	if ($json['data'] === false)
 	{
 		unset($json['data']);
@@ -1148,9 +1150,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('cmt');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('cmt'));
 	if ($json['stat'] === false)
-		$json['stat'] = getComments($db);
+		$json['stat'] = getComments($db, $useloc);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1172,9 +1175,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('dev');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('dev'));
 	if ($json['stat'] === false)
-		$json['stat'] = getCountStats($db, 'name', TOP_NAME);
+		$json['stat'] = getCountStats($db, 'name', TOP_NAME, $useloc);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1196,9 +1200,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('port');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('port'));
 	if ($json['stat'] === false)
-		$json['stat'] = getCountStats($db, 'Port', TOP_PORT);
+		$json['stat'] = getCountStats($db, 'Port', TOP_PORT, $useloc);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1220,9 +1225,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('auth');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('auth'));
 	if ($json['stat'] === false)
-		$json['stat'] = getCountStats($db, 'Authorization', TOP_AUTH);
+		$json['stat'] = getCountStats($db, 'Authorization', TOP_AUTH, $useloc);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1244,9 +1250,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('bss');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('bss'));
 	if ($json['stat'] === false)
-		$json['stat'] = getCountStats($db, 'BSSID', TOP_BSSID, array('`NoBSSID`=0'), 'dec2mac');
+		$json['stat'] = getCountStats($db, 'BSSID', TOP_BSSID, $useloc, array('`NoBSSID`=0'), 'dec2mac');
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1268,9 +1275,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('ess');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('ess'));
 	if ($json['stat'] === false)
-		$json['stat'] = getCountStats($db, 'ESSID', TOP_ESSID);
+		$json['stat'] = getCountStats($db, 'ESSID', TOP_ESSID, $useloc);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1292,9 +1300,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('sec');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('sec'));
 	if ($json['stat'] === false)
-		$json['stat'] = getCountStats($db, 'Security', TOP_SECURITY, array(), 'sec2str');
+		$json['stat'] = getCountStats($db, 'Security', TOP_SECURITY, $useloc, array(), 'sec2str');
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1316,9 +1325,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('key');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('key'));
 	if ($json['stat'] === false)
-		$json['stat'] = getCountStats($db, 'WiFiKey', TOP_WIFI_KEY);
+		$json['stat'] = getCountStats($db, 'WiFiKey', TOP_WIFI_KEY, $useloc);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1340,9 +1350,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('wps');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('wps'));
 	if ($json['stat'] === false)
-		$json['stat'] = getCountStats($db, 'WPSPIN', TOP_WPS_PIN, array('`WPSPIN` != 1'), 'pin2str');
+		$json['stat'] = getCountStats($db, 'WPSPIN', TOP_WPS_PIN, $useloc, array('`WPSPIN` != 1'), 'pin2str');
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1364,9 +1375,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('dns');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('dns'));
 	if ($json['stat'] === false)
-		$json['stat'] = getMultiStats($db, array('DNS1', 'DNS2', 'DNS3'), TOP_DNS, array('`$col` != 0'), '_long2ip');
+		$json['stat'] = getMultiStats($db, array('DNS1', 'DNS2', 'DNS3'), TOP_DNS, $useloc, array('`$col` != 0'), '_long2ip');
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
@@ -1388,9 +1400,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['stat'] = loadStatsCache('user');
+	$useloc = useLocationAllowed($_COOKIE['uselocation']);
+	$json['stat'] = ($useloc ? false : loadStatsCache('user'));
 	if ($json['stat'] === false)
-		$json['stat'] = getUsers($db, TOP_SSID);
+		$json['stat'] = getUsers($db, TOP_SSID, $useloc);
 	if ($json['stat'] === false)
 	{
 		unset($json['stat']);
