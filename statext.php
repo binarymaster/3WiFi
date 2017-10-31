@@ -110,7 +110,7 @@ function getComments($db, $useloc = false)
 	$sql = 'SELECT `cmtid`, COUNT(cmtid) FROM BASE_TABLE ';
 	if ($useloc)
 		$sql .= 'JOIN radius_ids USING(id) ';
-	$sql .= 'GROUP BY `cmtid` ORDER BY COUNT(cmtid) DESC';
+	$sql .= 'GROUP BY `cmtid` HAVING COUNT(cmtid) > 1 ORDER BY COUNT(cmtid) DESC';
 	if ($res = QuerySql($sql))
 	{
 		$result['data'] = array();
@@ -188,7 +188,7 @@ function getCountStats($db, $col, $top, $useloc = false, $where = array(), $post
 	$sql = "SELECT `$col`, COUNT($col) FROM BASE_TABLE ";
 	if ($useloc)
 		$sql .= "JOIN radius_ids USING(id) ";
-	$sql .= "WHERE $where GROUP BY `$col` ORDER BY COUNT($col) DESC LIMIT $top";
+	$sql .= "WHERE $where GROUP BY `$col` HAVING COUNT($col) > 1 ORDER BY COUNT($col) DESC LIMIT $top";
 	if ($res = QuerySql($sql))
 	{
 		$result['data'] = array();
@@ -238,7 +238,7 @@ function getMultiStats($db, $cols, $top, $useloc = false, $where = array(), $pos
 	}
 	else
 		return false;
-	if ($res = QuerySql("SELECT `{$cols[0]}`, COUNT({$cols[0]}) FROM ($from) TmpTable GROUP BY `{$cols[0]}` ORDER BY COUNT({$cols[0]}) DESC LIMIT $top"))
+	if ($res = QuerySql("SELECT `{$cols[0]}`, COUNT({$cols[0]}) FROM ($from) TmpTable GROUP BY `{$cols[0]}` HAVING COUNT({$cols[0]}) > 1 ORDER BY COUNT({$cols[0]}) DESC LIMIT $top"))
 	{
 		$result['data'] = array();
 		while ($row = $res->fetch_row())
