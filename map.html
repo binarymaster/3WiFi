@@ -261,6 +261,19 @@ function initmap()
 	});
 	myMap.controls.add(saveButton, {float: 'right', selectOnClick: false});
 }
+function loginConfirm()
+{
+	if (!confirm("%l10n_msg_map_reveal%")) return;
+
+	loginBtn();
+}
+function refreshLocation()
+{
+	var coords = myMap.getCenter();
+	var lat = Math.round(coords[0] * 10000000) / 10000000;
+	var lon = Math.round(coords[1] * 10000000) / 10000000;
+	window.location = "?lat=" + lat + "&lon=" + lon;
+}
 function initpage()
 {
 	ymaps.ready(initmap);	

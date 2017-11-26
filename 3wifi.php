@@ -73,6 +73,7 @@ switch ($action)
 	$bssid = '';
 	$get_info_stmt = $db->prepare('SELECT time, ESSID, WiFiKey FROM ' . BASE_TABLE . ' WHERE `BSSID`=?');
 	$get_info_stmt->bind_param('s', $bssid);
+	include_once loadLanguage();
 	foreach ($res as $quadkey => $cluster)
 	{
 		if ($cluster['count'] == 1)
@@ -128,6 +129,12 @@ switch ($action)
 					$aphint[] = $xbssid;
 					$aphint[] = $xessid;
 					if ($UserManager->Level >= 0) $aphint[] = $xwifikey;
+					if ($UserManager->Level < 0)
+					{
+						$html = '<span style="color: gray; cursor: pointer" onclick="loginConfirm()">';
+						$html .= htmlspecialchars($l10n['msg_map_hidden']).'</span>';
+						$aphint[] = $html;
+					}
 					$hints[] = implode('<br>', $aphint);
 				}
 			}

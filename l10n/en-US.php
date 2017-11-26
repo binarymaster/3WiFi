@@ -158,6 +158,10 @@ $l10n['loc_locked'] =
 'Location locked';
 $l10n['loc_large'] =
 'Selected area radius is too large, zoom in on the map.';
+$l10n['msg_map_hidden'] =
+'<password here>';
+$l10n['msg_map_reveal'] =
+'Login is required to view passwords.\n\nDo you want to login now?';
 
 /* find */
 $l10n['title_find'] =

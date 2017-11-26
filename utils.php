@@ -448,4 +448,36 @@ function useLocationAllowed($query)
 	return query_radius_ids($db, $lat, $lon, $rad);
 }
 
+// Web interface
+
+function detectBestLang($langs)
+{
+	$langs = explode(',', $langs);
+	$parsed = array();
+	foreach ($langs as $lang)
+	{
+		$v = explode(';q=', $lang);
+		if (!isset($v[1])) $v[1] = 1;
+		$parsed[$v[0]] = (float)$v[1];
+	}
+	$available = scandir('l10n/');
+	arsort($parsed);
+	foreach ($parsed as $lang => $q)
+	{
+		if ( in_array("$lang.php", $available, true) )
+		{
+			return $lang;
+		}
+	}
+	return 'en';
+}
+
+function loadLanguage()
+{
+	$langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+	if (empty($langs)) $langs = 'en';
+
+	$lang = detectBestLang($langs);
+	return "l10n/$lang.php";
+}
 ?>

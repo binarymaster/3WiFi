@@ -33,27 +33,6 @@ function validForm($form)
 	}
 	return $result;
 }
-function detectBestLang($langs)
-{
-	$langs = explode(',', $langs);
-	$parsed = array();
-	foreach ($langs as $lang)
-	{
-		$v = explode(';q=', $lang);
-		if (!isset($v[1])) $v[1] = 1;
-		$parsed[$v[0]] = (float)$v[1];
-	}
-	$available = scandir('l10n/');
-	arsort($parsed);
-	foreach ($parsed as $lang => $q)
-	{
-		if ( in_array("$lang.php", $available, true) )
-		{
-			return $lang;
-		}
-	}
-	return 'en';
-}
 function preparePage(&$content)
 {
 	global $page;
@@ -161,11 +140,7 @@ setFloat($_GET['lat'], &$lat);
 setFloat($_GET['lon'], &$lon);
 setFloat($_GET['rad'], &$rad);
 
-$langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
-if (empty($langs)) $langs = 'en';
-
-$lang = detectBestLang($langs);
-include_once "l10n/$lang.php";
+include_once loadLanguage();
 
 $broadcast = '';
 if(TRY_USE_MEMORY_TABLES)

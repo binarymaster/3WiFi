@@ -174,7 +174,7 @@ function doLogin()
 		if (json.result)
 		{
 			$('#loginstat').html('<img src="img/ok.png" style="position: relative; top: 3px"> %l10n_login_ok%');
-			setTimeout($('#stayhere').prop('checked') ? 'window.location.reload();' : 'window.location.href = \'user\';', 1000);
+			setTimeout($('#stayhere').prop('checked') ? (typeof refreshLocation == "function" ? 'refreshLocation();' : 'window.location.reload();') : 'window.location.href = \'user\';', 1000);
 		}
 		else
 		{
