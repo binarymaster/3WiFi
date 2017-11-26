@@ -1,0 +1,75 @@
+<div class=modal_main>
+	<div class=modal_div>
+		<h2>%l10n_msg_reg%</h2>
+		<form id=frm_reg method=post>
+			<table>
+			<tr><td>%l10n_str_invite%</td><td><input type=text name=invite></td><td id=checkinv></td></tr>
+			<tr><td>%l10n_str_login%</td><td><input type=text name=login></td><td id=checklogin></td></tr>
+			<tr><td>%l10n_str_nick%</td><td><input type=text name=nick></td><td id=checknick></td></tr>
+			<tr><td>%l10n_str_pass%</td><td><input type=password name=password></td><td id=checkpass></td></tr>
+			<tr><td align=right>
+				<input type=checkbox onclick="$('#frm_reg').find('input[type=button]').prop('disabled', !this.checked)"/>
+			</td><td style="font-size: 12px">%l10n_str_accept_rules%</td></tr>
+			<tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr>
+			<tr><td>
+				<input type=button value="%l10n_btn_reg%" onclick="doReg()" disabled /></td>
+			<td align=right><a href="javascript://" onclick="showFrm('#win_login')">%l10n_str_has_login%</a></td></tr>
+			</table>
+		</form>
+	</div>
+</div>
+
+<script type="text/javascript">
+$('#frm_reg :input').keydown(function(e) { if (e.keyCode==13) doReg(); });
+$('#frm_reg :input[name=invite]').keyup(function(e) { $('#checkinv').empty(); });
+var reglog = $('#frm_reg :input[name=login]');
+reglog.keyup(function(e)
+{
+	var chk = reglog.val();
+	if (chk == '')
+	{
+		$('#checklogin').empty();
+		return;
+	}
+	$.post('user.php?a=checklogin', 'invite='+encodeURIComponent($('#frm_reg :input[name=invite]').val())+'&login='+encodeURIComponent(chk), function(json)
+	{
+		if (json.error == 'invite')
+		{
+			$('#checkinv').html('<img src="img/no.png">');
+		}
+		else
+		{
+			$('#checkinv').empty();
+			$('#checklogin').html('<img src="img/'+(json.result ? 'ok' : 'no')+'.png">');
+		}
+	});
+});
+var regnick = $('#frm_reg :input[name=nick]');
+regnick.keyup(function(e)
+{
+	var chk = regnick.val();
+	if (chk == '')
+	{
+		$('#checknick').empty();
+		return;
+	}
+	$.post('user.php?a=checknick', 'invite='+encodeURIComponent($('#frm_reg :input[name=invite]').val())+'&nick='+encodeURIComponent(chk), function(json)
+	{
+		if (json.error == 'invite')
+		{
+			$('#checkinv').html('<img src="img/no.png">');
+		}
+		else
+		{
+			$('#checkinv').empty();
+			$('#checknick').html('<img src="img/'+(json.result ? 'ok' : 'no')+'.png">');
+		}
+	});
+});
+var regpass = $('#frm_reg :input[name=password]');
+regpass.keyup(function(e)
+{
+	var chk = regpass.val();
+	$('#checkpass').html(chk == '' ? '' : '<img src="img/'+(chk.length < 6 || chk.length > 100 ? 'no' : 'ok')+'.png">');
+});
+</script>

@@ -69,86 +69,62 @@ function encodeHTML(str, spaces)
 	if (spaces) str = str.replace(/ /g, '&nbsp;');
 	return str;
 }
-function loadForm(frm)
+function loadForm(frm, callback)
 {
-	if ($.trim($(frm).html()) != '') return;
+	if ($.trim($(frm).html()) != '')
+	{
+		callback();
+		return;
+	}
 	switch (frm)
 	{
 		case '#win_login':
-		$(frm).html('<div class=modal_main><div class=modal_div><h2>%l10n_msg_login%</h2><form id=frm_login method=post><table><tr><td>%l10n_str_login%</td><td><input type=text name=login></td></tr><tr><td>%l10n_str_pass%</td><td><input type=password name=password></td></tr><tr><td colspan=2 align=center style="font-size: 13px"><input type=checkbox id=stayhere style="vertical-align: middle; margin: 0 5 3 0"><label for=stayhere>%l10n_str_stay_here%</label></td></tr><tr><td colspan=2 align=center id=loginstat style="font-size: 13px; padding-top: 0px"></td></tr><tr><td><input type=button value="%l10n_btn_login%" onclick="doLogin()"></td><td align=right><a href="javascript://" onclick="showFrm(\'#win_reg\')">%l10n_str_reg%</a></td></tr></table></form></div></div>');
-		$('#frm_login :input').keydown(function(e) { if (e.keyCode==13) doLogin(); });
+		$(frm).load('?fetch=' + frm.substr(1), function(response, status, xhr)
+		{
+			if (status == "error")
+			{
+				$(frm).html('');
+				return false;
+			}
+			callback();
+		});
 		break;
 		case '#win_reg':
-		$(frm).html('<div class=modal_main><div class=modal_div><h2>%l10n_msg_reg%</h2><form id=frm_reg method=post><table><tr><td>%l10n_str_invite%</td><td><input type=text name=invite></td><td id=checkinv></td></tr><tr><td>%l10n_str_login%</td><td><input type=text name=login></td><td id=checklogin></td></tr><tr><td>%l10n_str_nick%</td><td><input type=text name=nick></td><td id=checknick></td></tr><tr><td>%l10n_str_pass%</td><td><input type=password name=password></td><td id=checkpass></td></tr><tr><td align=right><input type=checkbox onclick="$(\'#frm_reg\').find(\'input[type=button]\').prop(\'disabled\', !this.checked)"></td><td style="font-size: 12px">%l10n_str_accept_rules%</td></tr><tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr><tr><td><input type=button value="%l10n_btn_reg%" onclick="doReg()" disabled></td><td align=right><a href="javascript://" onclick="showFrm(\'#win_login\')">%l10n_str_has_login%</a></td></tr></table></form></div></div>');
-		$('#frm_reg :input').keydown(function(e) { if (e.keyCode==13) doReg(); });
-		$('#frm_reg :input[name=invite]').keyup(function(e) { $('#checkinv').empty(); });
-		var reglog = $('#frm_reg :input[name=login]');
-		reglog.keyup(function(e)
+		$(frm).load('?fetch=' + frm.substr(1), function(response, status, xhr)
 		{
-			var chk = reglog.val();
-			if (chk == '')
+			if (status == "error")
 			{
-				$('#checklogin').empty();
-				return;
+				$(frm).html('');
+				return false;
 			}
-			$.post('user.php?a=checklogin', 'invite='+encodeURIComponent($('#frm_reg :input[name=invite]').val())+'&login='+encodeURIComponent(chk), function(json)
-			{
-				if (json.error == 'invite')
-				{
-					$('#checkinv').html('<img src="img/no.png">');
-				}
-				else
-				{
-					$('#checkinv').empty();
-					$('#checklogin').html('<img src="img/'+(json.result ? 'ok' : 'no')+'.png">');
-				}
-			});
-		});
-		var regnick = $('#frm_reg :input[name=nick]');
-		regnick.keyup(function(e)
-		{
-			var chk = regnick.val();
-			if (chk == '')
-			{
-				$('#checknick').empty();
-				return;
-			}
-			$.post('user.php?a=checknick', 'invite='+encodeURIComponent($('#frm_reg :input[name=invite]').val())+'&nick='+encodeURIComponent(chk), function(json)
-			{
-				if (json.error == 'invite')
-				{
-					$('#checkinv').html('<img src="img/no.png">');
-				}
-				else
-				{
-					$('#checkinv').empty();
-					$('#checknick').html('<img src="img/'+(json.result ? 'ok' : 'no')+'.png">');
-				}
-			});
-		});
-		var regpass = $('#frm_reg :input[name=password]');
-		regpass.keyup(function(e)
-		{
-			var chk = regpass.val();
-			$('#checkpass').html(chk == '' ? '' : '<img src="img/'+(chk.length < 6 || chk.length > 100 ? 'no' : 'ok')+'.png">');
+			callback();
 		});
 		break;
 		case '#win_newpass':
-		$(frm).html('<div class=modal_main><div class=modal_div><h2>%l10n_msg_chpass%</h2><form id=frm_newpass method=post><table><tr><td>%l10n_str_pass%</td><td><input type=password name=password></td></tr><tr><td>%l10n_str_pass_rep%</td><td><input type=password name=password2></td></tr><tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px"></td></tr><tr><td><input type=button value="%l10n_btn_chpass%" onclick="changePassword()"></td></tr></table></form></div></div>');
-		$('#frm_newpass :input').keydown(function(e) { if (e.keyCode==13) changePassword(); });
+		$(frm).load('?fetch=' + frm.substr(1), function(response, status, xhr)
+		{
+			if (status == "error")
+			{
+				$(frm).html('');
+				return false;
+			}
+			callback();
+		});
 		break;
 	}
 }
 function showModal(frm)
 {
-	loadForm(frm);
-	$('#win_login').css({left: '-9999px'});
-	$('#win_reg').css({left: '-9999px'});
-	$('#win_newpass').css({left: '-9999px'});
-	$(frm).css({left: '50%'});
-	$(frm).css({top: '50%'});
-	$('.modal').show();
-	$('.modal').animate({opacity: 1}, 250);
+	loadForm(frm, function()
+	{
+		$('#win_login').css({left: '-9999px'});
+		$('#win_reg').css({left: '-9999px'});
+		$('#win_newpass').css({left: '-9999px'});
+		$(frm).css({left: '50%'});
+		$(frm).css({top: '50%'});
+		$('.modal').show();
+		$('.modal').animate({opacity: 1}, 250);
+	});
 }
 function hideModal()
 {
@@ -156,35 +132,37 @@ function hideModal()
 }
 function showFrm(frm)
 {
-	loadForm(frm);
-	var frm2 = (frm == '#win_login' ? '#win_reg' : '#win_login')
-	switch (Math.round(Math.random()*3))
+	loadForm(frm, function()
 	{
-		case 0: // right to left
-		$(frm).css({left: '150%'});
-		$(frm).css({top: '50%'});
-		$(frm2).animate({left: '-50%'}, 500);
-		$(frm).animate({left: '50%'}, 500);
-		break;
-		case 1: // left to right
-		$(frm).css({left: '-50%'});
-		$(frm).css({top: '50%'});
-		$(frm2).animate({left: '150%'}, 500);
-		$(frm).animate({left: '50%'}, 500);
-		break;
-		case 2: // bottom to top
-		$(frm).css({left: '50%'});
-		$(frm).css({top: '150%'});
-		$(frm2).animate({top: '-50%'}, 500);
-		$(frm).animate({top: '50%'}, 500);
-		break;
-		case 3: // top to bottom
-		$(frm).css({left: '50%'});
-		$(frm).css({top: '-50%'});
-		$(frm2).animate({top: '150%'}, 500);
-		$(frm).animate({top: '50%'}, 500);
-		break;
-	}
+		var frm2 = (frm == '#win_login' ? '#win_reg' : '#win_login')
+		switch (Math.round(Math.random()*3))
+		{
+			case 0: // right to left
+			$(frm).css({left: '150%'});
+			$(frm).css({top: '50%'});
+			$(frm2).animate({left: '-50%'}, 500);
+			$(frm).animate({left: '50%'}, 500);
+			break;
+			case 1: // left to right
+			$(frm).css({left: '-50%'});
+			$(frm).css({top: '50%'});
+			$(frm2).animate({left: '150%'}, 500);
+			$(frm).animate({left: '50%'}, 500);
+			break;
+			case 2: // bottom to top
+			$(frm).css({left: '50%'});
+			$(frm).css({top: '150%'});
+			$(frm2).animate({top: '-50%'}, 500);
+			$(frm).animate({top: '50%'}, 500);
+			break;
+			case 3: // top to bottom
+			$(frm).css({left: '50%'});
+			$(frm).css({top: '-50%'});
+			$(frm2).animate({top: '150%'}, 500);
+			$(frm).animate({top: '50%'}, 500);
+			break;
+		}
+	});
 }
 function doLogin()
 {

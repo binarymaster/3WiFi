@@ -1,0 +1,25 @@
+<div class=modal_main>
+	<div class=modal_div>
+		<h2>%l10n_msg_login%</h2>
+		<form id=frm_login method=post>
+			<table>
+			<tr><td>%l10n_str_login%</td><td><input type=text name=login></td></tr>
+			<tr><td>%l10n_str_pass%</td><td><input type=password name=password></td></tr>
+			<tr><td colspan=2 align=center style="font-size: 13px">
+				<input type=checkbox id=stayhere style="vertical-align: middle; margin: 0 5 3 0"/>
+				<label for=stayhere>%l10n_str_stay_here%</label>
+			</td></tr>
+			<tr><td colspan=2 align=center id=loginstat style="font-size: 13px; padding-top: 0px"></td></tr>
+			<tr><td>
+				<input type=button value="%l10n_btn_login%" onclick="doLogin()"/>
+			</td><td align=right>
+				<a href="javascript://" onclick="showFrm('#win_reg')">%l10n_str_reg%</a>
+			</td></tr>
+			</table>
+		</form>
+	</div>
+</div>
+
+<script type="text/javascript">
+$('#frm_login :input').keydown(function(e) { if (e.keyCode==13) doLogin(); });
+</script>
