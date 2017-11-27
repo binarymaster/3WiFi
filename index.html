@@ -260,6 +260,15 @@ function delCookie(name)
 {
 	document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
+function settingsGetBool(name, def)
+{
+	var ret = localStorage.getItem(name);
+	return (ret == null ? def : (ret == 1));
+}
+function settingsSetBool(name, val)
+{
+	localStorage.setItem(name, (val ? '1':'0'));
+}
 function recheckCoordsLock()
 {
 	if (getCookie('uselocation') != '')

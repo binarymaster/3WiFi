@@ -12,7 +12,14 @@ function initmap()
 		controls: ['geolocationControl','searchControl','typeSelector','fullscreenControl','zoomControl']
 	}),
 
-	remoteObjectManager = new ymaps.RemoteObjectManager('3wifi.php?a=map&tileNumber=%t&zoom=%z&clat=%var_lat%&clon=%var_lon%',
+	baseTileUrl = '3wifi.php?a=map&tileNumber=%t&zoom=%z&clat=%var_lat%&clon=%var_lon%';
+	var myTileUrl = baseTileUrl;
+
+	var showaps = settingsGetBool('3wifi.map.showaps', true);
+	var clusters = settingsGetBool('3wifi.map.clusters', true);
+	if (!clusters) myTileUrl += '&scat=1';
+
+	remoteObjectManager = new ymaps.RemoteObjectManager(myTileUrl,
 	{	// Разбивать запросы по тайлам
 		splitRequests: false,
 		// Опции кластеров задаются с префиксом cluster.
@@ -32,7 +39,7 @@ function initmap()
 	if (ProfileInfo.Level >= 1)
 		myMap.geoObjects.add(userLocations);
 
-	myMap.geoObjects.add(remoteObjectManager);
+	if (showaps) myMap.geoObjects.add(remoteObjectManager);
 
 	// Кнопка скрытия/показа точек доступа
 	var iconShowAP = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cjxzdmcgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogPGc+CiAgPHRpdGxlPkxheWVyIDE8L3RpdGxlPgogIDxwYXRoIGlkPSJzdmdfMSIgZD0ibS02MTIsMzIwbDAsOTZsOTYsMGwwLC05NmwtOTYsMHptODMsODNsLTcwLDBsMCwtNzBsNzAsMGwwLDcweiIvPgogIDxwYXRoIGlkPSJzdmdfMiIgZD0ibTcuMzQwNDQ2LDIuNzU5NjM4YzIuODczNTkyLC0wLjIwNjk1MSA1LjgxMzcxNiwwLjg2ODE4NSA3Ljg2NDYyNCwyLjg5MzEyNGMwLjI2ODczLDAuMjc2NjQgMC4yMzM2ODYsMC43NjA1NzEgLTAuMDQ5ODIzLDEuMDE0MDkyYy0wLjI2MDM5MiwwLjMwNjk2NCAtMC43ODE4NDcsMC4zMTIzOSAtMS4wNTA1NzksMC4wMTMzNjljLTEuNzU0NDYsLTEuNjg5MDYzIC00LjIzMTU2MywtMi42MDI0MDkgLTYuNjYzODQzLC0yLjQyMDc1M2MtMi4wMjA2MTUsMC4xMjk5OTcgLTMuOTc4MDQxLDEuMDAwMzU5IC01LjQ0NDI3MiwyLjM5NDM4NmMtMC4xMzAzOTUsMC4xMzMyNzYgLTAuMjk2OTA2LDAuMjQyNzAxIC0wLjQ4ODY1MSwwLjI1MjA4MWMtMC40ODAzMTEsMC4wNTYzMjMgLTAuOTI0NTA2LC0wLjQ0NTY2NCAtMC44MjA4NDYsLTAuOTE1NDkyYzAuMDI5MjQ5LC0wLjE2ODY1OCAwLjEzNzU2OSwtMC4zMDkxMzkgMC4yNjE0MzQsLTAuNDIxNDc2YzEuNzE2NTY0LC0xLjY0MzU2NCA0LjAyMTAyNCwtMi42NTI5NjcgNi4zOTE5NTYsLTIuODA5MzMxeiIgZmlsbD0iIzAwMDAwMCIvPgogIDxwYXRoIHN0cm9rZT0ibnVsbCIgaWQ9InN2Z18zIiBkPSJtNy4yNjkzMTYsNS41Nzc2NDVjMi4yMDE1MzgsLTAuMjM5NDUxIDQuNDg3NiwwLjU3MjA0NiA2LjA0NTUzMywyLjE0NTE4NmMwLjI0MzQwNCwwLjI3ODA4MiAwLjIxMzA4NCwwLjczMjc5MyAtMC4wNTczOTQsMC45ODI2OThjLTAuMjQ2Njg3LDAuMzAxOTAzIC0wLjc0Mzk1MywwLjMzNTgxMiAtMS4wMjM1MDcsMC4wNjIwNTRjLTAuOTk3NDc3LC0wLjk4MzM3NSAtMi4zNDYwMDQsLTEuNjA3Nzg0IC0zLjc0NDMyNCwtMS43MTAwMDRjLTEuNjk4MTM2LC0wLjE0MDg0OSAtMy40MzMwNjYsMC41MDM0MjkgLTQuNjQyMTg2LDEuNjk5OTE4Yy0wLjI3ODgxNiwwLjI5NDY5OSAtMC43OTgxNTgsMC4yNjExNTcgLTEuMDQ5MTA2LC0wLjA1MjM2NmMtMC4yNzA1MDksLTAuMjU1MzAyIC0wLjI5Mjg5MSwtMC43MjIzMDggLTAuMDMzMjM1LC0wLjk5Mjc4N2MxLjE5ODI5NywtMS4xOTg5NyAyLjgxODc0MywtMS45NjE3MTcgNC41MDQyMTksLTIuMTM0Njk4eiIgZmlsbD0iIzAwMDAwMCIvPgogIDxwYXRoIHN0cm9rZT0ibnVsbCIgaWQ9InN2Z180IiBkPSJtNy41OTQ3MDYsOC4zNTgwOTRjMS4zODkzMDMsLTAuMTM3OTM4IDIuODI1NjEsMC4zOTQwMzcgMy43OTIzNjYsMS40MDAxODhjMC4yNjQ3MTQsMC4yNzU1MzggMC4yMzQwNTQsMC43NDk3NDggLTAuMDQ0NzkzLDEuMDA0NzEzYy0wLjI1MzE1NiwwLjMwNTU1MiAtMC43NjA1NzEsMC4zMjYxNTYgLTEuMDM1NzQsMC4wMzk3MzRjLTAuNTQ0OTQzLC0wLjU1OTM4MSAtMS4yOTk3ODEsLTAuOTEyOTc3IC0yLjA4MTI5MiwtMC45NTU1OTRjLTAuODg2OTQ3LC0wLjA2MzIyIC0xLjc4NDQxMiwwLjI4NzEyNSAtMi40MTQyNTEsMC45MTA0MzNjLTAuMTU0OTIyLDAuMTc0MTE2IC0wLjM4NDk5LDAuMjgwOTk0IC0wLjYyMDQ1NiwwLjI1MzIxN2MtMC41NDY3NTEsLTAuMDM4MzIzIC0wLjkyNjMxNSwtMC43NjgyMDMgLTAuNTQ5NjYzLC0xLjIwNjI2N2MwLjc2MDU3LC0wLjgyNDg2MiAxLjg0MDc2NiwtMS4zMzU4OTUgMi45NTM4MjksLTEuNDQ2NDI0eiIgZmlsbD0iIzAwMDAwMCIvPgogIDxwYXRoIHN0cm9rZT0ibnVsbCIgaWQ9InN2Z181IiBkPSJtNy44MDg4NjIsMTAuOTU0MzcxYzAuODk1Mjg3LC0wLjE1MDIyOSAxLjgwMzkxMiwwLjU4OTA2NSAxLjgzMjgyNCwxLjQ5NjkyMmMwLjA4MzA1NiwwLjg5MDIyNyAtMC43MDI4MDcsMS43MzQ5OSAtMS41OTYyMjYsMS43MTU0MjljLTAuODAzMTg2LDAuMDI3ODM4IC0xLjU0NzUzOSwtMC42Mzg0ODIgLTEuNjE3OTYyLC0xLjQzNzMxN2MtMC4xMTQ1MTMsLTAuODM4NiAwLjU0MTMyMywtMS42NzgyNDEgMS4zODEzNjQsLTEuNzc1MDM0eiIgZmlsbD0iIzAwMDAwMCIvPgogPC9nPgo8L3N2Zz4=';
@@ -40,19 +47,20 @@ function initmap()
 	var showButton = new ymaps.control.Button({
 		data: {
 			title: '%l10n_map_show_aps%',
-			image: iconShowAP
+			image: (showaps ? iconShowAP : iconHideAP)
 		},
 		options: {
 			float: 'right'
 		},
 		state: {
-			selected: true
+			selected: showaps
 		}
 	});
 	showButton.events
 		.add(
 			'select',
 			function () {
+				settingsSetBool('3wifi.map.showaps', true);
 				myMap.geoObjects.add(remoteObjectManager);
 				showButton.data.set('image', iconShowAP);
 			}
@@ -60,6 +68,7 @@ function initmap()
 		.add(
 			'deselect',
 			function () {
+				settingsSetBool('3wifi.map.showaps', false);
 				myMap.geoObjects.remove(remoteObjectManager);
 				showButton.data.set('image', iconHideAP);
 			}
@@ -72,20 +81,21 @@ function initmap()
 	var clustButton = new ymaps.control.Button({
 		data: {
 			title: '%l10n_map_clusters%',
-			image: iconClustAP
+			image: (clusters ? iconClustAP : iconScattAP)
 		},
 		options: {
 			float: 'right'
 		},
 		state: {
-			selected: true
+			selected: clusters
 		}
 	});
 	clustButton.events
 		.add(
 			'select',
 			function () {
-				remoteObjectManager.setUrlTemplate(oldTileUrl);
+				settingsSetBool('3wifi.map.clusters', true);
+				remoteObjectManager.setUrlTemplate(baseTileUrl);
 				remoteObjectManager.reloadData();
 				clustButton.data.set('image', iconClustAP);
 			}
@@ -93,8 +103,8 @@ function initmap()
 		.add(
 			'deselect',
 			function () {
-				oldTileUrl = remoteObjectManager.getUrlTemplate();
-				remoteObjectManager.setUrlTemplate(oldTileUrl + '&scat=1');
+				settingsSetBool('3wifi.map.clusters', false);
+				remoteObjectManager.setUrlTemplate(baseTileUrl + '&scat=1');
 				remoteObjectManager.reloadData();
 				clustButton.data.set('image', iconScattAP);
 			}
