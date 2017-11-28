@@ -269,8 +269,8 @@ function tile_y_to_lat($tile_y, $zoom)
 		$lat_n = $lat_n1;
 		$sin_lat = sin($lat_n);
 		$lat_n1 = asin(1 - (1 + $sin_lat) * pow((1 - $e * $sin_lat) / (1 + $e * $sin_lat), $e) / exp(2 * $y));
-	} while(abs($lat_n1 - $lat_n) > $eps);
-	return rad2deg($lat_n1);
+		$abs = abs($lat_n1 - $lat_n);
+	} while($abs > $eps && !is_nan($abs));
 }
 
 /**
