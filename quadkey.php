@@ -263,6 +263,8 @@ function tile_y_to_lat($tile_y, $zoom)
 	$e = 0.0818191908426; // eccentricity of the Earth
 
 	$y = pi() * (1 - 2 * $tile_y / (1 << $zoom)); //  -pi <= $y <= pi
+	$sign = ($y < 0 ? -1 : 1);
+	$y *= $sign;
 	$lat_n1 = atan(sinh($y));
 	do
 	{
@@ -271,6 +273,7 @@ function tile_y_to_lat($tile_y, $zoom)
 		$lat_n1 = asin(1 - (1 + $sin_lat) * pow((1 - $e * $sin_lat) / (1 + $e * $sin_lat), $e) / exp(2 * $y));
 		$abs = abs($lat_n1 - $lat_n);
 	} while($abs > $eps && !is_nan($abs));
+	return rad2deg($sign * $lat_n1);
 }
 
 /**
