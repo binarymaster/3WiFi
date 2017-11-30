@@ -13,6 +13,11 @@ abstract class WpspinGenerator
 	protected $name = "Noname";
 
 	/**
+	 * @var bool Рассчитывать контрольную сумму пин кодов
+	 */
+	public $use_checksum;
+
+	/**
 	 * Возвращает название алгоритма
 	 * 
 	 * @return string Название алгоритма
@@ -41,8 +46,16 @@ abstract class WpspinGenerator
 	 */
 	public function getPinInt($bssid)
 	{
-		$pin = $this->getBasePin($bssid);
-		return $pin * 10 + $this->calcChecksum($pin);
+		if ($this->use_checksum)
+		{
+			$pin = $this->getBasePin($bssid) % 10000000;
+			$pin = $pin * 10 + $this->calcChecksum($pin);
+		}
+		else
+		{
+			$pin = $this->getBasePin($bssid) % 100000000;
+		}
+		return $pin;
 	}
 
 	/**
@@ -103,11 +116,21 @@ class WpsGen24bit extends WpspinGenerator
 	protected $name = "24-bit PIN";
 
 	/**
+	 * Создаёт экземпляр генератора
+	 * 
+	 * @param type $chk
+	 */
+	public function __construct($chk)
+	{
+		$this->use_checksum = $chk;
+	}
+
+	/**
 	 * {@inheritdoc}
 	 */
 	public function getBasePin($bssid)
 	{
-		$pin = hexdec(substr($bssid, 6, 6)) % 10000000;
+		$pin = hexdec(substr($bssid, 6, 6));
 		return $pin;
 	}
 
@@ -125,11 +148,21 @@ class WpsGen28bit extends WpspinGenerator
 	protected $name = "28-bit PIN";
 
 	/**
+	 * Создаёт экземпляр генератора
+	 * 
+	 * @param type $chk
+	 */
+	public function __construct($chk)
+	{
+		$this->use_checksum = $chk;
+	}
+
+	/**
 	 * {@inheritdoc}
 	 */
 	public function getBasePin($bssid)
 	{
-		$pin = hexdec(substr($bssid, 5, 7)) % 10000000;
+		$pin = hexdec(substr($bssid, 5, 7)) % 100000000;
 		return $pin;
 	}
 
@@ -147,11 +180,21 @@ class WpsGen32bit extends WpspinGenerator
 	protected $name = "32-bit PIN";
 
 	/**
+	 * Создаёт экземпляр генератора
+	 * 
+	 * @param type $chk
+	 */
+	public function __construct($chk)
+	{
+		$this->use_checksum = $chk;
+	}
+
+	/**
 	 * {@inheritdoc}
 	 */
 	public function getBasePin($bssid)
 	{
-		$pin = (hexdec($bssid[4]) * 8435456 + hexdec(substr($bssid, 5, 7)) % 10000000) % 10000000;
+		$pin = (int)bcmod(base_convert(substr($bssid, 4, 8), 16, 10), 100000000);
 		return $pin;
 	}
 
@@ -169,6 +212,16 @@ class WpsGenDlink extends WpspinGenerator
 	 * {@inheritdoc}
 	 */
 	protected $name = "D-Link PIN";
+
+	/**
+	 * Создаёт экземпляр генератора
+	 * 
+	 * @param type $chk
+	 */
+	public function __construct($chk)
+	{
+		$this->use_checksum = $chk;
+	}
 
 	/**
 	 * {@inheritdoc}
@@ -202,6 +255,16 @@ class WpsGenDlink1 extends WpspinGenerator
 	protected $name = "D-Link PIN +1";
 
 	/**
+	 * Создаёт экземпляр генератора
+	 * 
+	 * @param type $chk
+	 */
+	public function __construct($chk)
+	{
+		$this->use_checksum = $chk;
+	}
+
+	/**
 	 * {@inheritdoc}
 	 */
 	public function getBasePin($bssid)
@@ -231,6 +294,16 @@ class WpsGenEasybox extends WpspinGenerator
 	 * {@inheritdoc}
 	 */
 	protected $name = "Vodafone EasyBox PIN";
+
+	/**
+	 * Создаёт экземпляр генератора
+	 * 
+	 * @param type $chk
+	 */
+	public function __construct($chk)
+	{
+		$this->use_checksum = $chk;
+	}
 
 	/**
 	 * {@inheritdoc}
@@ -264,7 +337,7 @@ class WpsGenEasybox extends WpspinGenerator
 		$pin .= dechex($mac_int[3] ^ $sn_int[2]);
 		$pin .= dechex($k1 ^ $sn_int[1]);
 
-		return hexdec($pin) % 10000000;
+		return hexdec($pin);
 	}
 
 }
@@ -281,6 +354,16 @@ class WpsGenAsus extends WpspinGenerator
 	 * {@inheritdoc}
 	 */
 	protected $name = "ASUS PIN";
+
+	/**
+	 * Создаёт экземпляр генератора
+	 * 
+	 * @param type $chk
+	 */
+	public function __construct($chk)
+	{
+		$this->use_checksum = $chk;
+	}
 
 	/**
 	 * {@inheritdoc}
@@ -316,6 +399,16 @@ class WpsGenAirocon extends WpspinGenerator
 	 * {@inheritdoc}
 	 */
 	protected $name = "Airocon Realtek PIN";
+
+	/**
+	 * Создаёт экземпляр генератора
+	 * 
+	 * @param type $chk
+	 */
+	public function __construct($chk)
+	{
+		$this->use_checksum = $chk;
+	}
 
 	/**
 	 * {@inheritdoc}
@@ -356,11 +449,13 @@ class WpsGenLinear extends WpspinGenerator
 	 * 
 	 * @param type $k Отношение приращений BSSID и WPS PIN
 	 * @param type $x0 Значение BSSID, соответствующее нулевому WPS PIN
+	 * @param type $chk
 	 */
-	public function __construct($k, $x0)
+	public function __construct($k, $x0, $chk)
 	{
 		$this->k = $k;
 		$this->x0 = $x0;
+		$this->use_checksum = $chk;
 	}
 
 	/**
@@ -368,12 +463,12 @@ class WpsGenLinear extends WpspinGenerator
 	 */
 	public function getBasePin($bssid)
 	{
-		$bssid = bcadd(bcmul(hexdec(substr($bssid, 0, 6)), 0x1000000), hexdec(substr($bssid, 6, 6)));
+		$bssid = base_convert($bssid, 16, 10);
 		$dif = bcsub($bssid, $this->x0);
-		$pin = bcmod(bcdiv($dif, $this->k), 10000000);
+		$pin = (int)bcmod(bcdiv($dif, $this->k), 100000000);
 		if ($pin < 0)
 		{
-			$pin += 10000000;
+			$pin += 100000000;
 		}
 		return $pin;
 	}
@@ -393,13 +488,15 @@ class WpsGenStatic extends WpspinGenerator
 	private $pin;
 
 	/**
-	 * Создаёт экземпляр генератора 
+	 * Создаёт экземпляр генератора
 	 * 
 	 * @param type $pin
+	 * @param type $chk
 	 */
-	public function __construct($pin)
+	public function __construct($pin, $chk)
 	{
 		$this->pin = $pin;
+		$this->use_checksum = $chk;
 	}
 
 	/**
@@ -412,6 +509,13 @@ class WpsGenStatic extends WpspinGenerator
 
 }
 
+function is_correct_pin($pin)
+{
+	$chk = WpspinGenerator::calcChecksum((int)($pin/10));
+	$chk += (int)($pin/10) * 10;
+	return $pin == $chk;
+}
+
 /**
  * API функция предсказания WPS PIN по BSSID
  */
@@ -419,34 +523,51 @@ function API_pin_search($bssid)
 {
 	$result = array();
 	$algos = array(
-		array('generator' => new WpsGen24bit(), 'score' => 0.0),
-		array('generator' => new WpsGenAsus(), 'score' => 0.0),
-		array('generator' => new WpsGenDlink1(), 'score' => 0.0),
-		array('generator' => new WpsGen32bit(), 'score' => 0.0),
-		array('generator' => new WpsGen28bit(), 'score' => 0.0),
-		array('generator' => new WpsGenAirocon(), 'score' => 0.0),
-		array('generator' => new WpsGenDlink(), 'score' => 0.0),
-		array('generator' => new WpsGenEasybox(), 'score' => 0.0)
+		array('generator' => new WpsGen24bit(true), 'score' => 0.0),
+		array('generator' => new WpsGenAsus(true), 'score' => 0.0),
+		array('generator' => new WpsGenDlink1(true), 'score' => 0.0),
+		array('generator' => new WpsGen32bit(true), 'score' => 0.0),
+		array('generator' => new WpsGen28bit(true), 'score' => 0.0),
+		array('generator' => new WpsGenAirocon(true), 'score' => 0.0),
+		array('generator' => new WpsGenDlink(true), 'score' => 0.0),
+		array('generator' => new WpsGenEasybox(true), 'score' => 0.0),
+
+		array('generator' => new WpsGen24bit(false), 'score' => 0.0),
+		array('generator' => new WpsGenAsus(false), 'score' => 0.0),
+		array('generator' => new WpsGenDlink1(false), 'score' => 0.0),
+		array('generator' => new WpsGen32bit(false), 'score' => 0.0),
+		array('generator' => new WpsGen28bit(false), 'score' => 0.0),
+		array('generator' => new WpsGenAirocon(false), 'score' => 0.0),
+		array('generator' => new WpsGenDlink(false), 'score' => 0.0),
+		array('generator' => new WpsGenEasybox(false), 'score' => 0.0),
 	);
 	$total_score = 0.0;
 	$unkn = array();
+	$fromdb = array();
 	if ($res = QuerySql("SELECT DISTINCT hex(`BSSID`),`WPSPIN` FROM `BASE_TABLE` WHERE `NoBSSID` = 0 AND `BSSID` BETWEEN (0x$bssid & 0xFFFFFF000000) AND (0x$bssid | 0xFFFFFF) ORDER BY ABS(`BSSID` - 0x$bssid) LIMIT 1000"))
 	{
+		$_bss = str_pad($bssid, 12, '0', STR_PAD_LEFT);
 		while ($row = $res->fetch_row())
 		{
 			$pin = $row[1];
 			$bss = str_pad($row[0], 12, '0', STR_PAD_LEFT);
+			if ($bss == $_bss) $fromdb[] = (int)$pin;
+			$cr = is_correct_pin($pin);
 			if ($pin == 1)
 			{
 				$total_score += 1.0 / sqrt(abs(hexdec(substr($bss, 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
 				continue;
 			}
 
+			// check known algorithms
 			$found = false;
 			foreach ($algos as &$algo)
 			{
 				if ($algo['generator']->getPin($bss) == $pin)
 				{
+					// if generator uses checksum, it requires correct pin
+					if ($algo['generator']->use_checksum && !$cr)
+						continue;
 					$plus_score = 1.0 / sqrt(abs(hexdec(substr($bss, 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
 					$total_score += $plus_score;
 					$algo['score'] += $plus_score;
@@ -459,19 +580,26 @@ function API_pin_search($bssid)
 				$unkn_len = count($unkn);
 				if (array_key_exists($pin, $unkn))
 				{
+					// check static pin
 					$plus_score = 1.0 / sqrt(abs(hexdec(substr($unkn[$pin], 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
 					$plus_score += 1.0 / sqrt(abs(hexdec(substr($bss, 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
 					$total_score += $plus_score;
-					$algos[] = array('generator' => new WpsGenStatic((int)($pin/10)), 'score' => $plus_score);
+					$algos[] = array('generator' => new WpsGenStatic((int)($cr ? $pin/10 : $pin), $cr), 'score' => $plus_score);
 					unset($unkn[$pin]);
 				}
 				else if ($unkn_len > 1 && $unkn_len < 11)
 				{
+					// check linear sequences
 					$pins = array_keys($unkn);
 					for ($i = 0; $i < $unkn_len - 1; $i++)
 					{
 						for ($j = $i + 1; $j < $unkn_len; $j++)
 						{
+							// with checksum, only correct pins
+							if (!$cr || !is_correct_pin($pins[$i]) || !is_correct_pin($pins[$j]))
+							{
+								continue;
+							}
 							if ($pins[$i] == $pins[$j] || $pins[$i] == $pin)
 							{
 								continue;
@@ -489,11 +617,44 @@ function API_pin_search($bssid)
 								$plus_score += 1.0 / sqrt(abs(hexdec(substr($unkn[$pins[$j]], 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
 								$total_score += $plus_score;
 								$algos[] = array(
-									'generator' =>  new WpsGenLinear($k, bcsub(hex2dec($bss), bcmul((int)($pin/10), $k))),
+									'generator' => new WpsGenLinear($k, bcsub(hex2dec($bss), bcmul((int)($pin/10), $k)), true),
 									'score' => $plus_score);
 								unset($unkn[$pins[$i]]);
 								unset($unkn[$pins[$j]]);
 								break 2;
+							}
+						}
+					}
+					if (!$found)
+					{
+						// check linear sequences without correct checksum
+						for ($i = 0; $i < $unkn_len - 1; $i++)
+						{
+							for ($j = $i + 1; $j < $unkn_len; $j++)
+							{
+								if ($pins[$i] == $pins[$j] || $pins[$i] == $pin)
+								{
+									continue;
+								}
+								$k = (hexdec(substr($unkn[$pins[$i]], 6, 6)) - hexdec(substr($unkn[$pins[$j]], 6, 6))) / ((int)($pins[$i]) - (int)($pins[$j]));
+								if ($k == 0)
+								{
+									continue;
+								}
+								if ($k == (hexdec(substr($bss, 6, 6)) - hexdec(substr($unkn[$pins[$i]], 6, 6))) / ((int)($pin) - (int)($pins[$i])))
+								{
+									$found = true;
+									$plus_score = 1.0 / sqrt(abs(hexdec(substr($bss, 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
+									$plus_score += 1.0 / sqrt(abs(hexdec(substr($unkn[$pins[$i]], 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
+									$plus_score += 1.0 / sqrt(abs(hexdec(substr($unkn[$pins[$j]], 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
+									$total_score += $plus_score;
+									$algos[] = array(
+										'generator' => new WpsGenLinear($k, bcsub(hex2dec($bss), bcmul((int)($pin), $k)), false),
+										'score' => $plus_score);
+									unset($unkn[$pins[$i]]);
+									unset($unkn[$pins[$j]]);
+									break 2;
+								}
 							}
 						}
 					}
@@ -519,9 +680,10 @@ function API_pin_search($bssid)
 		foreach ($pins as $pin)
 		{
 			$result['scores'][] = array(
-				'name' => 'From DB',
+				'name' => 'Unknown',
 				'value' => pin2str($pin),
-				'score' => 1
+				'score' => 1,
+				'fromdb' => true
 			);
 			unset($unkn[$pin]);
 		}
@@ -536,10 +698,12 @@ function API_pin_search($bssid)
 		{
 			continue;
 		}
+		$pin = $algo['generator']->getPin($bssid);
 		$result['scores'][] = array(
 			'name' => $algo['generator']->getName(),
-			'value' => $algo['generator']->getPin($bssid),
-			'score' => $algo['score'] / $total_score
+			'value' => $pin,
+			'score' => $algo['score'] / $total_score,
+			'fromdb' => in_array((int)$pin, $fromdb, true)
 		);
 	}
 	return $result;

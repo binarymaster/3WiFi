@@ -334,8 +334,8 @@ function detect()
 	$('button').prop('disabled', true);
 	$('#fdata').empty();
 	$('#fhead').empty();
-	$('#fhead').append('<tr><th>%l10n_tbl_algorithm%</th><th>%l10n_tbl_wpspin%</th><th>%l10n_tbl_probability%</th></tr>');
-	$('#fdata').append('<tr><td colspan=3><img src="img/loading.gif"></td></tr>');
+	$('#fhead').append('<tr><th>%l10n_tbl_algorithm%</th><th>%l10n_tbl_wpspin%</th><th>%l10n_tbl_notes%</th><th>%l10n_tbl_probability%</th></tr>');
+	$('#fdata').append('<tr><td colspan=4><img src="img/loading.gif"></td></tr>');
 
 	$.post('3wifi.php?a=wpspin', formdata, function(d)
 	{
@@ -367,7 +367,13 @@ function detect()
 			$('#fdata').empty();
 			for (var i = 0; i < d.scores.length; i++)
 			{
-				$('#fdata').append('<tr><td>'+d.scores[i].name+'</td><td>'+d.scores[i].value+'</td><td style="text-align: left"><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
+				var info = '';
+				var pin = d.scores[i].value;
+				if (d.scores[i].fromdb)
+					info += '<img src="img/ok.png" title="%l10n_wpspin_fromdb%"/>';
+				if (pinChecksum(Math.floor(pin / 10)) != pin)
+					info += ' <img src="img/icon-warning.png" title="%l10n_wpspin_chksum%"/>';
+				$('#fdata').append('<tr><td>'+d.scores[i].name+'</td><td>'+pin+'</td><td>'+info+'</td><td style="text-align: left"><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
 				var perc = $('.perc:last');
 				var wid = 180;
 				perc.css('width', wid + 'px');

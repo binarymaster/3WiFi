@@ -310,6 +310,12 @@ $l10n['wpspin_used_by'] =
 'used by these devices:';
 $l10n['tbl_algorithm'] =
 'Algorithm';
+$l10n['tbl_notes'] =
+'Notes';
+$l10n['wpspin_fromdb'] =
+'AP from database';
+$l10n['wpspin_chksum'] =
+'Non-standart PIN (wrong checksum)';
 $l10n['wpspin_not_found'] =
 'No matched devices and/or algorithms found';
 $l10n['btn_suggest'] =
