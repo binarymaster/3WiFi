@@ -13,6 +13,11 @@ abstract class WpspinGenerator
 	protected $name = "Noname";
 
 	/**
+	 * @var int Относительное смещение BSSID
+	 */
+	protected $offset = 0;
+
+	/**
 	 * @var bool Рассчитывать контрольную сумму пин кодов
 	 */
 	public $use_checksum;
@@ -24,7 +29,9 @@ abstract class WpspinGenerator
 	 */
 	public function getName()
 	{
-		return $this->name;
+		return ($this->offset < 0 ? $this->name .' '. $this->offset :
+			($this->offset > 0 ? $this->name .' +'. $this->offset :
+			$this->name));
 	}
 
 	/**
@@ -35,6 +42,12 @@ abstract class WpspinGenerator
 	 */
 	public function getPin($bssid)
 	{
+		if ($this->offset != 0)
+		{
+			$bssid = base_convert($bssid, 16, 10);
+			$bssid = bcmod(bcadd($bssid, $this->offset), '281474976710656');
+			$bssid = base_convert($bssid, 10, 16);
+		}
 		return pin2str($this->getPinInt($bssid));
 	}
 
@@ -118,10 +131,12 @@ class WpsGen24bit extends WpspinGenerator
 	/**
 	 * Создаёт экземпляр генератора
 	 * 
+	 * @param type $offset
 	 * @param type $chk
 	 */
-	public function __construct($chk)
+	public function __construct($offset, $chk)
 	{
+		$this->offset = $offset;
 		$this->use_checksum = $chk;
 	}
 
@@ -150,10 +165,12 @@ class WpsGen28bit extends WpspinGenerator
 	/**
 	 * Создаёт экземпляр генератора
 	 * 
+	 * @param type $offset
 	 * @param type $chk
 	 */
-	public function __construct($chk)
+	public function __construct($offset, $chk)
 	{
+		$this->offset = $offset;
 		$this->use_checksum = $chk;
 	}
 
@@ -182,10 +199,12 @@ class WpsGen32bit extends WpspinGenerator
 	/**
 	 * Создаёт экземпляр генератора
 	 * 
+	 * @param type $offset
 	 * @param type $chk
 	 */
-	public function __construct($chk)
+	public function __construct($offset, $chk)
 	{
+		$this->offset = $offset;
 		$this->use_checksum = $chk;
 	}
 
@@ -216,10 +235,12 @@ class WpsGenDlink extends WpspinGenerator
 	/**
 	 * Создаёт экземпляр генератора
 	 * 
+	 * @param type $offset
 	 * @param type $chk
 	 */
-	public function __construct($chk)
+	public function __construct($offset, $chk)
 	{
+		$this->offset = $offset;
 		$this->use_checksum = $chk;
 	}
 
@@ -230,47 +251,6 @@ class WpsGenDlink extends WpspinGenerator
 	{
 		$pin = hexdec(substr($bssid, 6, 6));
 		$pin ^= hexdec(str_repeat($bssid[11], 5)) * 16 + 5;
-		$pin ^= 0xFF00;
-		$pin %= 10000000;
-		if ($pin < 1000000)
-		{
-			$pin += ($pin % 9 + 1) * 1000000;
-		}
-		return $pin;
-	}
-
-}
-
-/**
- * Генератор WPS PIN для некоторых моделей D-Link
- * 
- * http://www.devttys0.com/2014/10/reversing-d-links-wps-pin-algorithm/
- */
-class WpsGenDlink1 extends WpspinGenerator
-{
-
-	/**
-	 * {@inheritdoc}
-	 */
-	protected $name = "D-Link PIN +1";
-
-	/**
-	 * Создаёт экземпляр генератора
-	 * 
-	 * @param type $chk
-	 */
-	public function __construct($chk)
-	{
-		$this->use_checksum = $chk;
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getBasePin($bssid)
-	{
-		$pin = hexdec(substr($bssid, 6, 6)) + 1;
-		$pin ^= hexdec(str_repeat(dechex($pin & 0xF), 5)) * 16 + 5;
 		$pin ^= 0xFF00;
 		$pin %= 10000000;
 		if ($pin < 1000000)
@@ -298,10 +278,12 @@ class WpsGenEasybox extends WpspinGenerator
 	/**
 	 * Создаёт экземпляр генератора
 	 * 
+	 * @param type $offset
 	 * @param type $chk
 	 */
-	public function __construct($chk)
+	public function __construct($offset, $chk)
 	{
+		$this->offset = $offset;
 		$this->use_checksum = $chk;
 	}
 
@@ -358,10 +340,12 @@ class WpsGenAsus extends WpspinGenerator
 	/**
 	 * Создаёт экземпляр генератора
 	 * 
+	 * @param type $offset
 	 * @param type $chk
 	 */
-	public function __construct($chk)
+	public function __construct($offset, $chk)
 	{
+		$this->offset = $offset;
 		$this->use_checksum = $chk;
 	}
 
@@ -403,10 +387,12 @@ class WpsGenAirocon extends WpspinGenerator
 	/**
 	 * Создаёт экземпляр генератора
 	 * 
+	 * @param type $offset
 	 * @param type $chk
 	 */
-	public function __construct($chk)
+	public function __construct($offset, $chk)
 	{
+		$this->offset = $offset;
 		$this->use_checksum = $chk;
 	}
 
@@ -519,15 +505,18 @@ function is_correct_pin($pin)
 function WPSInitAlgos($algos)
 {
 	$result = array();
-	foreach ($algos as $algo)
+	for ($i = -5; $i <= 5; $i++)
 	{
-		// with checksum
-		$result[] = array('generator' => new $algo(true), 'score' => 0.0);
-	}
-	foreach ($algos as $algo)
-	{
-		// without checksum
-		$result[] = array('generator' => new $algo(false), 'score' => 0.0);
+		foreach ($algos as $algo)
+		{
+			// with checksum
+			$result[] = array('generator' => new $algo($i, true), 'score' => 0.0);
+		}
+		foreach ($algos as $algo)
+		{
+			// without checksum
+			$result[] = array('generator' => new $algo($i, false), 'score' => 0.0);
+		}
 	}
 	return $result;
 }
@@ -541,11 +530,10 @@ function API_pin_search($bssid)
 	$algos = WPSInitAlgos(array(
 		'WpsGen24bit',
 		'WpsGenAsus',
-		'WpsGenDlink1',
+		'WpsGenDlink',
 		'WpsGen32bit',
 		'WpsGen28bit',
 		'WpsGenAirocon',
-		'WpsGenDlink',
 		'WpsGenEasybox',
 	));
 	$total_score = 0.0;
