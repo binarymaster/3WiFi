@@ -516,31 +516,38 @@ function is_correct_pin($pin)
 	return $pin == $chk;
 }
 
+function WPSInitAlgos($algos)
+{
+	$result = array();
+	foreach ($algos as $algo)
+	{
+		// with checksum
+		$result[] = array('generator' => new $algo(true), 'score' => 0.0);
+	}
+	foreach ($algos as $algo)
+	{
+		// without checksum
+		$result[] = array('generator' => new $algo(false), 'score' => 0.0);
+	}
+	return $result;
+}
+
 /**
  * API функция предсказания WPS PIN по BSSID
  */
 function API_pin_search($bssid)
 {
 	$result = array();
-	$algos = array(
-		array('generator' => new WpsGen24bit(true), 'score' => 0.0),
-		array('generator' => new WpsGenAsus(true), 'score' => 0.0),
-		array('generator' => new WpsGenDlink1(true), 'score' => 0.0),
-		array('generator' => new WpsGen32bit(true), 'score' => 0.0),
-		array('generator' => new WpsGen28bit(true), 'score' => 0.0),
-		array('generator' => new WpsGenAirocon(true), 'score' => 0.0),
-		array('generator' => new WpsGenDlink(true), 'score' => 0.0),
-		array('generator' => new WpsGenEasybox(true), 'score' => 0.0),
-
-		array('generator' => new WpsGen24bit(false), 'score' => 0.0),
-		array('generator' => new WpsGenAsus(false), 'score' => 0.0),
-		array('generator' => new WpsGenDlink1(false), 'score' => 0.0),
-		array('generator' => new WpsGen32bit(false), 'score' => 0.0),
-		array('generator' => new WpsGen28bit(false), 'score' => 0.0),
-		array('generator' => new WpsGenAirocon(false), 'score' => 0.0),
-		array('generator' => new WpsGenDlink(false), 'score' => 0.0),
-		array('generator' => new WpsGenEasybox(false), 'score' => 0.0),
-	);
+	$algos = WPSInitAlgos(array(
+		'WpsGen24bit',
+		'WpsGenAsus',
+		'WpsGenDlink1',
+		'WpsGen32bit',
+		'WpsGen28bit',
+		'WpsGenAirocon',
+		'WpsGenDlink',
+		'WpsGenEasybox',
+	));
 	$total_score = 0.0;
 	$unkn = array();
 	$fromdb = array();
