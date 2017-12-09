@@ -43,7 +43,7 @@ $l10n['err_database'] =
 $l10n['err_loggedin'] =
 'Already logged in';
 $l10n['err_unauthorized'] =
-'Not authorized';
+'You are not authorized';
 $l10n['err_loginfail'] =
 'Wrong login or password';
 $l10n['err_form'] =
@@ -240,6 +240,8 @@ $l10n['btn_find'] =
 'Search';
 $l10n['btn_jump'] =
 'Switch';
+$l10n['msg_unauthorized'] =
+'Please login.';
 
 /* ranges */
 $l10n['title_ranges'] =

@@ -228,14 +228,18 @@ function doReg()
 		}
 	});
 }
-function loginBtn()
+function loginBtn(force)
 {
-	if (ProfileInfo.isUser == 0)
+	if (ProfileInfo.isUser == 0 || force)
 	{
 		showModal('#win_login');
 	} else {
 		doLogout();
 	}
+}
+function loginRequireMsg()
+{
+	return '%l10n_err_unauthorized%. <a href="javascript://" onclick="loginBtn(true)">%l10n_msg_unauthorized%</a>';
 }
 function getCookie(cname)
 {
@@ -362,7 +366,7 @@ function initmenu()
 				<a href="graph"><div class="%chk_grph%"><p>%l10n_menu_dynamic%</p></div></a>
 			</span>
 		</span>
-		<a href="javascript://" onclick="loginBtn()" style="float: right"><div class=menubtn><p>%login_str%</p></div></a>
+		<a href="javascript://" onclick="loginBtn(false)" style="float: right"><div class=menubtn><p>%login_str%</p></div></a>
 		<a href="user"><div class="%chk_user%" style="float: right" id=nickname><p>%nick%</p></div></a>
 	</div>
 </div>

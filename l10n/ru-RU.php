@@ -43,7 +43,7 @@ $l10n['err_database'] =
 $l10n['err_loggedin'] =
 'Вход уже выполнен';
 $l10n['err_unauthorized'] =
-'Не авторизован';
+'Вы не авторизованы';
 $l10n['err_loginfail'] =
 'Неверный логин или пароль';
 $l10n['err_form'] =
@@ -240,6 +240,8 @@ $l10n['btn_find'] =
 'Найти';
 $l10n['btn_jump'] =
 'Перейти';
+$l10n['msg_unauthorized'] =
+'Выполните вход.';
 
 /* ranges */
 $l10n['title_ranges'] =

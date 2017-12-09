@@ -24,7 +24,7 @@ function find()
 		}
 		if (!d.auth)
 		{
-			$('#fdata > tr:first-child > :first-child').text('%l10n_err_unauthorized%.');
+			$('#fdata > tr:first-child > :first-child').html(loginRequireMsg());
 			return;
 		}
 		if(typeof d.error != "undefined")

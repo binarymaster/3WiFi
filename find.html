@@ -194,7 +194,7 @@ function find(page)
 					$('#fdata > tr:first-child > :first-child').text('%l10n_find_not_found%.');
 				}
 			} else {
-				$('#fdata > tr:first-child > :first-child').text('%l10n_err_unauthorized%.');
+				$('#fdata > tr:first-child > :first-child').html(loginRequireMsg());
 			}
 		} else {
 			$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
