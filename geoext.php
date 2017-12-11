@@ -50,13 +50,13 @@ function GeoLocateAP($bssid, $svcs = null)
 function GetFromYandex($bssid)
 {
 	geoDbg("yandex: $bssid");
-	$tries = 3;
+	$tries = 5;
 	$bssid = str_replace(":","",$bssid);
 	$bssid = str_replace("-","",$bssid);
 	while (!($data = cURL_Get("https://mobile.maps.yandex.net/cellid_location/?clid=1866854&lac=-1&cellid=-1&operatorid=null&countrycode=null&signalstrength=-1&wifinetworks=$bssid:0&app")) && ($tries > 0))
 	{
 		$tries--;
-		sleep(2);
+		sleep(3);
 	}
 
 	$result = '';
@@ -155,13 +155,11 @@ function GetFromMicrosoft($bssid)
 function GetFromMylnikov($bssid)
 {
 	geoDbg("mylnikov: $bssid");
-	$tries = 3;
-	$proto = 'https:';
-	while (!($data = cURL_Get("$proto//api.mylnikov.org/wifi/main.py/get?bssid=$bssid", ''/* 127.0.0.1:3128 */)) && ($tries > 0))
+	$tries = 5;
+	while (!($data = cURL_Get("http://api.mylnikov.org/wifi/main.py/get?bssid=$bssid", ''/* 127.0.0.1:3128 */)) && ($tries > 0))
 	{
 		$tries--;
-		$proto = ($tries % 2 == 0 ? 'http:' : 'https:');
-		sleep(2);
+		sleep(5);
 	}
 
 	$result = '';
