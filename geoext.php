@@ -53,7 +53,7 @@ function GetFromYandex($bssid)
 	$tries = 5;
 	$bssid = str_replace(":","",$bssid);
 	$bssid = str_replace("-","",$bssid);
-	while (!($data = cURL_Get("https://mobile.maps.yandex.net/cellid_location/?clid=1866854&lac=-1&cellid=-1&operatorid=null&countrycode=null&signalstrength=-1&wifinetworks=$bssid:0&app")) && ($tries > 0))
+	while (!($data = cURL_Get("http://mobile.maps.yandex.net/cellid_location/?clid=1866854&lac=-1&cellid=-1&operatorid=null&countrycode=null&signalstrength=-1&wifinetworks=$bssid:0&app")) && ($tries > 0))
 	{
 		$tries--;
 		sleep(3);
@@ -200,12 +200,14 @@ function GetFromMylnikovOpen($bssid)
 }
 function cURL_Get($url, $proxy = '', $proxytype = -1, $proxyauth = '')
 {
+	geoDbg("Fetching: $url");
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch, CURLOPT_ENCODING, 'utf-8');
 	curl_setopt($ch, CURLOPT_TIMEOUT, 3);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+	curl_setopt($ch, CURLOPT_FAILONERROR, 1);
 	curl_setopt($ch, CURLOPT_USERAGENT, 'PHP/'.phpversion().' 3WiFi/2.0');
 	if ($proxy != '')
 	{
@@ -215,6 +217,16 @@ function cURL_Get($url, $proxy = '', $proxytype = -1, $proxyauth = '')
 	}
 	curl_setopt($ch, CURLOPT_URL, $url);
 	$data = curl_exec($ch);
+	if (strpos($url, 'mobile.maps.yandex.net') !== false
+		&& curl_getinfo($ch, CURLINFO_HTTP_CODE) == 404)
+	{
+		// workaround for Yandex
+		$data = '<error code="6">Not found</error>';
+	}
+	if ($data)
+		geoDbg("Success: $url");
+	else
+		geoDbg("Error: $url\r\n" . curl_getinfo($ch, CURLINFO_HTTP_CODE).' / '.curl_errno($ch).' ('.curl_error($ch).')');
 	curl_close($ch);
 	return $data;
 }
