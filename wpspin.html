@@ -773,6 +773,8 @@ function initpage()
 	algos.push({id: "pinBrcm4", name: "Broadcom 4", mode: ALGO_STATIC, func: function (mac) {return 6232714;}});
 	algos.push({id: "pinBrcm5", name: "Broadcom 5", mode: ALGO_STATIC, func: function (mac) {return 1086411;}});
 	algos.push({id: "pinBrcm6", name: "Broadcom 6", mode: ALGO_STATIC, func: function (mac) {return 3195719;}});
+	algos.push({id: "pinAirc1", name: "Airocon 1", mode: ALGO_STATIC, func: function (mac) {return 3043203;}});
+	algos.push({id: "pinAirc2", name: "Airocon 2", mode: ALGO_STATIC, func: function (mac) {return 7141225;}});
 	algos.push({id: "pinDSL2740R", name: "DSL-2740R", mode: ALGO_STATIC, func: function (mac) {return 6817554;}});
 	algos.push({id: "pinRealtek", name: "Realtek", mode: ALGO_STATIC, func: function (mac) {return 9566146;}});
 	algos.push({id: "pinUpvel", name: "Upvel", mode: ALGO_STATIC, func: function (mac) {return 2085483;}});
@@ -1318,13 +1320,19 @@ Airocon Realtek RTL867x
   08:10:77:xx:xx:xx
   08:10:78:xx:xx:xx
   08:10:79:xx:xx:xx
+  08:3E:5D:xx:xx:xx
   10:FE:ED:3C:xx:xx
+  18:1E:78:xx:xx:xx
+  1C:44:19:xx:xx:xx
   24:20:C7:xx:xx:xx
   24:7F:20:xx:xx:xx
   2C:AB:25:xx:xx:xx
   30:85:A9:8C:xx:xx
   3C:1E:04:xx:xx:xx
+  40:F2:01:xx:xx:xx
+  44:E9:DD:xx:xx:xx
   48:EE:0C:xx:xx:xx
+  54:64:D9:xx:xx:xx
   54:B8:0A:xx:xx:xx
   58:7B:E9:06:xx:xx
   60:D1:AA:21:xx:xx
@@ -1336,25 +1344,33 @@ Airocon Realtek RTL867x
   78:D9:9F:Dx:xx:xx
   7C:26:64:xx:xx:xx
   80:3F:5D:F6:xx:xx
+  84:A4:23:xx:xx:xx
   88:A6:C6:xx:xx:xx
+  8C:10:D4:xx:xx:xx
   8C:88:2B:00:xx:xx
   90:4D:4A:xx:xx:xx
   90:72:82:xx:xx:xx
   90:F6:52:90:xx:xx
   94:FB:B2:xx:xx:xx
+  A0:1B:29:xx:xx:xx
   A0:F3:C1:Ex:xx:xx
   A8:F7:E0:0x:xx:xx
   AC:A2:13:xx:xx:xx
   B8:55:10:xx:xx:xx
+  B8:EE:0E:xx:xx:xx
   BC:34:00:xx:xx:xx
   BC:96:80:xx:xx:xx
   C8:91:F9:xx:xx:xx
   D0:0E:D9:0x:xx:xx
+  D0:84:B0:xx:xx:xx
   D8:FE:E3:xx:xx:xx
+  E4:BE:ED:xx:xx:xx
   E8:94:F6:F6:xx:xx
   EC:1A:59:71:xx:xx
-  F4:28:53:29:xx:xx
+  EC:4C:4D:xx:xx:xx
+  F4:28:53:xx:xx:xx
   F4:3E:61:xx:xx:xx
+  F4:6B:EF:xx:xx:xx
   F8:AB:05:xx:xx:xx
   FC:8B:97:xx:xx:xx
 D-Link DIR-600
@@ -1494,6 +1510,10 @@ Cisco EPC2325
   70:71:BC:xx:xx:xx
   E0:69:95:xx:xx:xx
   E0:CB:4E:xx:xx:xx
+Huawei Technologies HG8245T
+  70:54:F5:xx:xx:xx
+  %l10n_wpspin_wsc%
+    Atheros AP
 
 %l10n_wpspin_tech%
 Pin = 1234567</textarea>
@@ -1646,6 +1666,24 @@ Sagemcom F@ST2804V7
 
 %l10n_wpspin_tech%
 Pin = 3195719</textarea>
+
+<textarea id=pinAirc1>Airocon F@st 1744, v2
+  18:1E:78:xx:xx:xx
+  40:F2:01:xx:xx:xx
+  44:E9:DD:xx:xx:xx
+  D0:84:B0:xx:xx:xx
+
+%l10n_wpspin_tech%
+Pin = 3043203</textarea>
+
+<textarea id=pinAirc2>Airocon F@st 1744, v2.2
+  84:A4:23:xx:xx:xx
+  8C:10:D4:xx:xx:xx
+Airocon F@st 1744, v4
+  88:A6:C6:xx:xx:xx
+
+%l10n_wpspin_tech%
+Pin = 7141225</textarea>
 
 <textarea id=pinDSL2740R>D-Link DSL-2740R
   00:26:5A:xx:xx:xx
