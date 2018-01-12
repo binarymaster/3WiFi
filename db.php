@@ -405,6 +405,11 @@ function db_add_ap($row, $cmtid, $uid)
 		{ return 3; } // Недостаточно полезных данных для добавления
 		else { return 1; } // Вообще не содержит данных
 	}
+	$emptydup = false;
+	if (empty($key))
+		$emptydup = db_ap_checkempty($NoBSSID, $bssid, $essid, $sec, $wps);
+	if ($emptydup)
+		return 4; // Точка с непустым ключом уже есть в базе
 	if ($checkexist)
 		if (db_ap_exist($NoBSSID, $bssid, $essid, $key))
 		{
@@ -481,6 +486,22 @@ function db_ap_exist($NoBSSID, $bssid, $essid, $key)
 	$key = $db->real_escape_string($key);
 	// Проверяем, есть ли эта точка в базе (по BSSID/ESSID/WiFiKey)
 	if ($res = QuerySql("SELECT `id` FROM BASE_TABLE WHERE `NoBSSID`=$NoBSSID AND `BSSID`=$bssid AND `ESSID`='$essid' AND `WiFiKey`='$key' LIMIT 1"))
+	{
+		$result = $res->num_rows;
+		$res->close();
+	}
+	return $result > 0;
+}
+
+function db_ap_checkempty($NoBSSID, $bssid, $essid, $sec, $wps)
+{
+	global $db;
+	$result = 0;
+	$essid = $db->real_escape_string($essid);
+	$sec = str2sec($sec);
+	$wps = (($wps == '') ? 1 : (int)$wps);
+	// Проверяем, есть ли эта точка в базе (с непустым ключом)
+	if ($res = QuerySql("SELECT `id` FROM BASE_TABLE WHERE `NoBSSID`=$NoBSSID AND `BSSID`=$bssid AND `ESSID`='$essid' AND `Security`=$sec AND `WiFiKey`!='' AND `WPSPIN`=$wps LIMIT 1"))
 	{
 		$result = $res->num_rows;
 		$res->close();
