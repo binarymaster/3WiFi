@@ -31,7 +31,7 @@ function initpage()
 	sel.val(theme);
 	sel.change(function()
 	{
-		document.cookie = 'theme=' + this.value;
+		document.cookie = 'theme=' + this.value + '; expires=Tue, 19 Jan 2038 03:14:07 GMT';
 		location.reload(true);
 	});
 	if (ProfileInfo.Level == 3) $('#tab2b').show();
