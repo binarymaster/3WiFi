@@ -81,7 +81,9 @@ CREATE TABLE `tasks` (
 	`accepted` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	`onmap` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 	`warns` TEXT NOT NULL,
-	PRIMARY KEY (`tid`)
+	PRIMARY KEY (`tid`),
+	INDEX `task_state` (`tstate`),
+	INDEX `created_time` (`created`)
 ) COLLATE='utf8_general_ci' ENGINE=InnoDB;
 
 -- Дамп структуры таблицы 3wifi.ranges
