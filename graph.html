@@ -12,7 +12,7 @@ function showLoads()
 	recheckCoordsLock();
 	$.get('3wifi.php?a=loads', function(d)
 	{
-		var lo = 0, hi = 0, dt = 0;
+		var lo = 0, hi = 0, dt = 0, days = [];
 		if (!d.result)
 		{
 			$('#stat').text(errorStr(d.error));
@@ -24,7 +24,8 @@ function showLoads()
 			dt = d.data[i][0].split('.');
 			if (lo == 0) lo = dt[0] + '.' + dt[1];
 			hi = dt[0] + '.' + dt[1];
-			if (d.data.length-i < 5) dt[2] += ' '; // dirty hack to prevent graph overlapping
+			if (days.indexOf(dt[2]) > -1) dt[2] += ' '; // hack to prevent graph overlapping
+			days.push(dt[2]);
 			d.data[i][0] = dt[2];
 		}
 		d.label = (lo == hi ? lo : lo + '-' + hi);
