@@ -32,7 +32,7 @@ define('TOP_NAME', 30);
 define('TOP_BSSID', 30);
 define('TOP_ESSID', 30);
 define('TOP_SECURITY', 30);
-define('TOP_WIFI_KEY', 30);
+define('TOP_WIFI_KEY', 100);
 define('TOP_WPS_PIN', 30);
 define('TOP_DNS', 30);
 define('TOP_SSID', 10);
