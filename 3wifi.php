@@ -71,7 +71,7 @@ switch ($action)
 	$json['data']['type'] = 'FeatureCollection';
 	$json['data']['features'] = array();
 	$bssid = '';
-	$get_info_stmt = $db->prepare('SELECT time, ESSID, WiFiKey FROM ' . BASE_TABLE . ' WHERE `BSSID`=?');
+	$get_info_stmt = $db->prepare('SELECT time, ESSID, WiFiKey FROM ' . BASE_TABLE . ' WHERE `BSSID`=? GROUP BY BINARY ESSID, BINARY WiFiKey');
 	$get_info_stmt->bind_param('s', $bssid);
 	include_once loadLanguage();
 	foreach ($res as $quadkey => $cluster)
