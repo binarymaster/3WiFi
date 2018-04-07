@@ -173,7 +173,7 @@ function getCountStats($db, $col, $top, $useloc = false, $where = array(), $post
 	$result['top'] = $top;
 	$where[] = "IFNULL(`$col`, '') != ''";
 	$where = implode(' AND ', $where);
-	$sql = "SELECT COUNT(DISTINCT `$col`) FROM BASE_TABLE ";
+	$sql = "SELECT COUNT(DISTINCT BINARY `$col`) FROM BASE_TABLE ";
 	if ($useloc)
 		$sql .= "JOIN radius_ids USING(id) ";
 	$sql .= "WHERE $where";
@@ -185,10 +185,10 @@ function getCountStats($db, $col, $top, $useloc = false, $where = array(), $post
 	}
 	else
 		return false;
-	$sql = "SELECT `$col`, COUNT($col) FROM BASE_TABLE ";
+	$sql = "SELECT BINARY `$col`, COUNT(BINARY $col) FROM BASE_TABLE ";
 	if ($useloc)
 		$sql .= "JOIN radius_ids USING(id) ";
-	$sql .= "WHERE $where GROUP BY `$col` HAVING COUNT($col) > 1 ORDER BY COUNT($col) DESC LIMIT $top";
+	$sql .= "WHERE $where GROUP BY BINARY `$col` HAVING COUNT(BINARY $col) > 1 ORDER BY COUNT(BINARY $col) DESC LIMIT $top";
 	if ($res = QuerySql($sql))
 	{
 		$result['data'] = array();
@@ -230,7 +230,7 @@ function getMultiStats($db, $cols, $top, $useloc = false, $where = array(), $pos
 		$from[] = $sql;
 	}
 	$from = implode(' UNION ALL ', $from);
-	if ($res = QuerySql("SELECT COUNT(DISTINCT `{$cols[0]}`) FROM ($from) TmpTable"))
+	if ($res = QuerySql("SELECT COUNT(DISTINCT BINARY `{$cols[0]}`) FROM ($from) TmpTable"))
 	{
 		$row = $res->fetch_row();
 		$result['total'] = (int)$row[0];
@@ -238,7 +238,7 @@ function getMultiStats($db, $cols, $top, $useloc = false, $where = array(), $pos
 	}
 	else
 		return false;
-	if ($res = QuerySql("SELECT `{$cols[0]}`, COUNT({$cols[0]}) FROM ($from) TmpTable GROUP BY `{$cols[0]}` HAVING COUNT({$cols[0]}) > 1 ORDER BY COUNT({$cols[0]}) DESC LIMIT $top"))
+	if ($res = QuerySql("SELECT BINARY `{$cols[0]}`, COUNT(BINARY {$cols[0]}) FROM ($from) TmpTable GROUP BY BINARY `{$cols[0]}` HAVING COUNT(BINARY {$cols[0]}) > 1 ORDER BY COUNT(BINARY {$cols[0]}) DESC LIMIT $top"))
 	{
 		$result['data'] = array();
 		while ($row = $res->fetch_row())
