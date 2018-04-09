@@ -107,7 +107,7 @@ function latlon_to_quadkey($latitude, $longitude, $zoom)
  * @param int $tile_x2 X coordinate of the bottom right tile
  * @param int $tile_y2 Y coordinate of the bottom right tile
  * @param int $zoom Level of detail
- * @return array Rerutn array of quadkeys.
+ * @return array Return array of quadkeys.
  */
 function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
 {
@@ -151,7 +151,7 @@ function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
  * @param int $tile_y2 Y coordinate of the bottom right tile
  * @param int $zoom Level of detail
  * @param bool $scatter Don't clusterize on large zoom
- * @return array Rerutn array of clusters: [quadkey => cluster], where cluster
+ * @return array Return array of clusters: [quadkey => cluster], where cluster
  * is array ['count' => (int), 'lat' => (float), 'lon' => (float)/, bssids => []/]
  */
 function get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom, $scatter)
@@ -184,7 +184,7 @@ function get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom, $scatt
  * @param string $quadkey QuadKey (as binary string) of the tile to search within.
  * @param int $group_level Will group all points in tiles of specified zoom level.
  * @param boolean $fetch_all Retrieve info about all points in clusters.
- * @return array Rerutn array of clusters: [quadkey => cluster], where cluster
+ * @return array Return array of clusters: [quadkey => cluster], where cluster
  * is array ['count' => (int), 'lat' => (float), 'lon' => (float)/, bssids => []/]
  */
 function find_clusters_on_quadkey($db, $quadkey, $group_level, $fetch_all=false)
