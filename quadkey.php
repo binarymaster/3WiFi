@@ -107,9 +107,10 @@ function latlon_to_quadkey($latitude, $longitude, $zoom)
  * @param int $tile_x2 X coordinate of the bottom right tile
  * @param int $tile_y2 Y coordinate of the bottom right tile
  * @param int $zoom Level of detail
+ * @param bool $group Group subsequent quadkeys
  * @return array Return array of quadkeys.
  */
-function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
+function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom, $group)
 {
 	$quadkeys = array();
 	for ($j = $tile_y1; $j <= $tile_y2; $j++)
@@ -123,7 +124,7 @@ function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
 	// group subsequent quadkeys
 	sort($quadkeys, SORT_STRING);
 	$done = false;
-	while (!$done)
+	while (!$done && $group)
 	{
 		$done = true;
 		for ($i = 0; $i < count($quadkeys) - 1; $i++)
@@ -156,7 +157,7 @@ function get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom)
  */
 function get_clusters($db, $tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom, $scatter)
 {
-	$quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom);
+	$quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, $zoom, true);
 
 	$clusters = array();
 	if ($scatter && $zoom >= MAX_YANDEX_ZOOM - 1)
@@ -351,7 +352,7 @@ function query_radius_ids($db, $lat, $lon, $radius)
 	$tile_y1 = lat_to_tile_y($lat2, 7);
 	$tile_x2 = lon_to_tile_x($lon2, 7);
 	$tile_y2 = lat_to_tile_y($lat1, 7);
-	$quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, 7);
+	$quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, 7, false);
 	$quadkeys = '(' . implode(',', array_map(function($x){return base_convert($x, 2, 10);}, $quadkeys)) . ')';
 
 	$res = QuerySql(
