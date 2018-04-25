@@ -776,7 +776,8 @@ function initpage()
 	algos.push({id: "pinAirc1", name: "Airocon 1", mode: ALGO_STATIC, func: function (mac) {return 3043203;}});
 	algos.push({id: "pinAirc2", name: "Airocon 2", mode: ALGO_STATIC, func: function (mac) {return 7141225;}});
 	algos.push({id: "pinDSL2740R", name: "DSL-2740R", mode: ALGO_STATIC, func: function (mac) {return 6817554;}});
-	algos.push({id: "pinRealtek", name: "Realtek", mode: ALGO_STATIC, func: function (mac) {return 9566146;}});
+	algos.push({id: "pinRealtek1", name: "Realtek 1", mode: ALGO_STATIC, func: function (mac) {return 9566146;}});
+	algos.push({id: "pinRealtek2", name: "Realtek 2", mode: ALGO_STATIC, func: function (mac) {return 9571911;}});
 	algos.push({id: "pinUpvel", name: "Upvel", mode: ALGO_STATIC, func: function (mac) {return 2085483;}});
 	algos.push({id: "pinUR814AC", name: "UR-814AC", mode: ALGO_STATIC, func: function (mac) {return 4397768;}});
 	algos.push({id: "pinUR825AC", name: "UR-825AC", mode: ALGO_STATIC, func: function (mac) {return 0529417;}});
@@ -1706,7 +1707,7 @@ Pin = 7141225</textarea>
 %l10n_wpspin_tech%
 Pin = 6817554</textarea>
 
-<textarea id=pinRealtek>Realtek firmwares
+<textarea id=pinRealtek1>Realtek firmwares
 TRENDnet TEW-432BRP (Realtek)
 TRENDnet TEW-432BRP/C (Realtek)
   00:14:D1:xx:xx:xx
@@ -1717,6 +1718,15 @@ Intellinet 503693 (Realtek)
 
 %l10n_wpspin_tech%
 Pin = 9566146</textarea>
+
+<textarea id=pinRealtek2>Netis WF2780
+  00:72:63:xx:xx:xx
+  E4:BE:ED:xx:xx:xx
+  %l10n_wpspin_wsc%
+    RTK_AP
+
+%l10n_wpspin_tech%
+Pin = 9571911</textarea>
 
 <textarea id=pinUpvel>Upvel (%l10n_wpspin_some_fw%)
 Upvel UR-315BN
