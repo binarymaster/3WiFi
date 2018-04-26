@@ -36,6 +36,44 @@ function genPin(mac, sn, i)
 {
 	return (algos[i].mode == ALGO_MACSN ? algos[i].func(mac, sn) : algos[i].func(mac));
 }
+function pinSuggestAPI(getAll, bssid, sn)
+{
+	var result = [];
+	var mac = bssid.replace(/:/g, '').replace(/-/g, '').replace(/\./g, '').replace(/ /g, '');
+	mac = parseInt(mac, 16);
+	if (isNaN(mac) || mac > 0xFFFFFFFFFFFF) return result;
+
+	for (var i = 0; i < algos.length; i++)
+	{
+		var match = getAll;
+
+		if (!getAll)
+		{
+			var info = $('#' + algos[i].id).val().split("\n");
+			for (var k = 0; k < info.length; k++)
+			{
+				if (info[k].indexOf('  ') == 0 && info[k].lastIndexOf(':xx') == 16)
+				{
+					info[k] = info[k].substr(2);
+					info[k] = info[k].substr(0, info[k].indexOf('x'));
+					match = bssid.indexOf(info[k]) == 0;
+					if (match) break;
+				}
+			}
+		}
+		if (match)
+		{
+			var pin = genPin(mac, sn, i);
+			if (typeof pin != 'string')
+			{
+				pin = pinChecksum(pin);
+				pin = zeroFill(pin.toString(10), 8);
+			}
+			result.push({pin: pin, algo: i});
+		}
+	}
+	return result;
+}
 function pinSuggest()
 {
 	$('#result').empty();
@@ -55,40 +93,22 @@ function pinSuggest()
 		mt = insert(mt, ':', 4);
 		mt = insert(mt, ':', 2);
 		$('#suggpin').text("%l10n_wpspin_suggested% "+mt+"\n\n");
-		var sugg = false;
-		for (var i = 0; i < algos.length; i++)
+		var sugg = pinSuggestAPI(false, mt, z[1]);
+		for (var i = 0; i < sugg.length; i++)
 		{
-			var info = $('#' + algos[i].id).val().split("\n");
-			for (var k = 0; k < info.length; k++)
+			var pin = sugg[i].pin;
+			if (pin == '')
+				pin = '<empty>';
+			pin = pin.padEnd(8);
+
+			if (algos[sugg[i].algo].mode == ALGO_STATIC)
 			{
-				if (info[k].indexOf('  ') == 0 && info[k].lastIndexOf(':xx') == 16)
-				{
-					info[k] = info[k].substr(2);
-					info[k] = info[k].substr(0, info[k].indexOf('x'));
-					if (mt.indexOf(info[k]) == 0)
-					{
-						sugg = true;
-						var pin = genPin(m, z[1], i);
-						if (typeof pin == 'string')
-						{
-							if (pin == '')
-								pin = '<empty>';
-							pin = pin.padEnd(8);
-						} else {
-							pin = pinChecksum(pin);
-							pin = zeroFill(pin.toString(10), 8);
-						}
-						if (algos[i].mode == ALGO_STATIC)
-						{
-							$('#suggpin').append(encodeHTML(pin, true) + ' | %l10n_wpspin_static% - ' + algos[i].name + "\n");
-						} else {
-							$('#suggpin').append(encodeHTML(pin, true) + ' | ' + algos[i].name + "\n");
-						}
-					}
-				}
+				$('#suggpin').append(encodeHTML(pin, true) + ' | %l10n_wpspin_static% - ' + algos[sugg[i].algo].name + "\n");
+			} else {
+				$('#suggpin').append(encodeHTML(pin, true) + ' | ' + algos[sugg[i].algo].name + "\n");
 			}
 		}
-		if (sugg) $('#result').append(encodeHTML($('#suggpin').val()) + "\n");
+		if (sugg.length > 0) $('#result').append(encodeHTML($('#suggpin').val()) + "\n");
 	}
 	$('#algosel').val('algonone');
 }
@@ -105,23 +125,19 @@ function getAll()
 	if (isNaN(m) || m > 0xFFFFFFFFFFFF)
 		return alert('%l10n_wpspin_bssid_wrong%.');
 	$('#result').text("%l10n_wpspin_all_pins% "+bss+"\n\n");
-	for (var i = 0; i < algos.length; i++)
+	var res = pinSuggestAPI(true, bss, z[1]);
+	for (var i = 0; i < res.length; i++)
 	{
-		var pin = genPin(m, z[1], i);
-		if (typeof pin == 'string')
+		var pin = res[i].pin;
+		if (pin == '')
+			pin = '<empty>';
+		pin = pin.padEnd(8);
+
+		if (algos[res[i].algo].mode == ALGO_STATIC)
 		{
-			if (pin == '')
-				pin = '<empty>';
-			pin = pin.padEnd(8);
+			$('#result').append(encodeHTML(pin, true) + ' | %l10n_wpspin_static% - ' + algos[res[i].algo].name + "\n");
 		} else {
-			pin = pinChecksum(pin);
-			pin = zeroFill(pin.toString(10), 8);
-		}
-		if (algos[i].mode == ALGO_STATIC)
-		{
-			$('#result').append(encodeHTML(pin, true) + ' | %l10n_wpspin_static% - ' + algos[i].name + "\n");
-		} else {
-			$('#result').append(encodeHTML(pin, true) + ' | ' + algos[i].name + "\n");
+			$('#result').append(encodeHTML(pin, true) + ' | ' + algos[res[i].algo].name + "\n");
 		}
 	}
 	$('#algosel').val('algonone');
