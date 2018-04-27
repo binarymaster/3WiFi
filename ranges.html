@@ -51,6 +51,28 @@ function find()
 		$('button').prop('disabled', false);
 	});
 }
+function fixVal(id, decimals)
+{
+	var v = $('input[name='+id+']').val();
+	v = v.replace('.', ',');
+	v = v.split(',');
+	if (v.length >= 2) v[1] = v[1].substr(0, decimals);
+	v = v.join(',');
+	$('input[name='+id+']').val(v);
+	if ($('input[name='+id+']').val() == "")
+	{
+		v = v.replace(',', '.');
+		$('input[name='+id+']').val(v);
+	}
+}
+function validateForm()
+{
+	// hacks for IE
+	fixVal('latitude', 8);
+	fixVal('longitude', 8);
+	fixVal('radius', 1);
+	return true;
+}
 function rangesText()
 {
 	var data = $('#fdata > tr > :first-child');
@@ -89,7 +111,7 @@ function initpage()
 		<tr><td>%l10n_str_radius%</td><td><input name="radius" type="number" min="0" max="25" step="0.1" value="%var_rad%" /></td><td>%l10n_ranges_radius_max%</td></tr>
 	</tbody>
 	<tbody>
-		<tr><td><input type=submit value="%l10n_btn_find%" /> <button onclick="listRanges(); return false">%l10n_btn_getlist%</button></td><td></td></tr>
+		<tr><td><input type=submit onclick="validateForm()" value="%l10n_btn_find%" /> <button onclick="listRanges(); return false">%l10n_btn_getlist%</button></td><td></td></tr>
 	</tbody>
 </table>
 </form>
