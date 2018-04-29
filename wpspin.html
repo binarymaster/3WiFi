@@ -49,7 +49,7 @@ function pinSuggestAPI(getAll, bssid, sn)
 
 		if (!getAll)
 		{
-			var info = $('#' + algos[i].id).val().split("\n");
+			var info = document.getElementById(algos[i].id).value.split("\n");
 			for (var k = 0; k < info.length; k++)
 			{
 				if (info[k].indexOf('  ') == 0 && info[k].lastIndexOf(':xx') == 16)
@@ -615,7 +615,7 @@ function intersect_pairs(pairs)
 	}
 	return c0;
 }
-function initpage()
+function initAlgos()
 {
 	ALGO_MAC = 0;
 	ALGO_MACSN = 1;
@@ -802,6 +802,10 @@ function initpage()
 	algos.push({id: "pinThomson", name: "Thomson", mode: ALGO_STATIC, func: function (mac) {return 6795814;}});
 	algos.push({id: "pinHG532x", name: "HG532x", mode: ALGO_STATIC, func: function (mac) {return 3425928;}});
 	algos.push({id: "pinONO", name: "CBN ONO", mode: ALGO_STATIC, func: function (mac) {return 9575521;}});
+}
+function initpage()
+{
+	initAlgos();
 	for (var i = 0; i < algos.length; i++)
 	{
 		if (algos[i].mode == ALGO_STATIC)
