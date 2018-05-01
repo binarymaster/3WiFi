@@ -101,8 +101,11 @@ switch ($argv[1])
 			}
 			logt("Status: $cntp processed, $cnta added (Done!)");
 			$warns = array();
-			foreach ($warn as $line => $wid)
-				$warns[] = implode('|', array($line, $wid));
+			if (count($warn) < 200000) // sanity check
+			{
+				foreach ($warn as $line => $wid)
+					$warns[] = implode('|', array($line, $wid));
+			}
 			$warns = implode(',', $warns);
 
 			logt('Removing temporary file...');
