@@ -227,3 +227,11 @@ INSERT INTO `users` SET
 	`level`=3,
 	`ip_hash`='',
 	`invites`=65535;
+
+-- Дамп структуры для таблицы 3wifi.extinfo
+CREATE TABLE `extinfo` (
+	`id` INT(11) NOT NULL,
+	`data` VARCHAR(255) NOT NULL,
+	PRIMARY KEY (`id`),
+	INDEX `data_index` (`data`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

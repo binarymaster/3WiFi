@@ -456,6 +456,7 @@ function db_add_ap($row, $cmtid, $uid)
 	}
 	for ($i = 0; $i <= 3; $i++)
 		if (!isset($DNS[$i])) $DNS[$i] = 'NULL';
+	$data = trim(preg_replace('/\s+/', ' ', $row[21])); // Comment
 	QuerySql("INSERT INTO BASE_TABLE (`cmtid`,`IP`,`Port`,`Authorization`,`name`,`RadioOff`,`Hidden`,`NoBSSID`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`LANIP`,`LANMask`,`WANIP`,`WANMask`,`WANGateway`,`DNS1`,`DNS2`,`DNS3`)
 			VALUES ($cmtid, $addr, $port, $auth, $name, $radio, $hide, $NoBSSID, $bssid, $essid, $sec, $key, $wps, $lanip, $lanmsk, $wanip, $wanmsk, $gate, $DNS[0], $DNS[1], $DNS[2])
 			ON DUPLICATE KEY UPDATE
@@ -474,6 +475,17 @@ function db_add_ap($row, $cmtid, $uid)
 		$creator = ($row[0] > 0 ? 0 : 1);
 		// Привязываем загруженную точку к аккаунту
 		$db->query("INSERT IGNORE INTO uploads (uid, id, creator) VALUES ($uid, $id, $creator)");
+	}
+	if (!empty($data))
+	{
+		// Собираем доп. информацию о точке (может быть серийник и что-либо ещё)
+		$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND ESSID=$essid AND Security=$sec AND WiFiKey=$key AND WPSPIN=$wps");
+		$row = $res->fetch_row();
+		$res->close();
+		$id = (int)$row[0];
+		// Добавляем информацию
+		$data = '\''.$db->real_escape_string($data).'\'';
+		$db->query("INSERT INTO extinfo (`id`, `data`) VALUES ($id, $data) ON DUPLICATE KEY UPDATE `data` = $data");
 	}
 	return 0;
 }
