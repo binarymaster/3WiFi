@@ -61,6 +61,32 @@ function pin2str($pin)
 {
 	return ($pin == 1 ? '' : str_pad($pin, 8, '0', STR_PAD_LEFT));
 }
+function parseDelimStr($str)
+{
+	$delim = ', ';
+	if (strpos($str, '; ') !== false)
+		$delim = '; ';
+	$ex = explode($delim, $str);
+	$ret = array();
+	foreach ($ex as $part)
+	{
+		$n = explode(': ', $part);
+		foreach ($n as $s)
+			$ret[] = $s;
+	}
+	return $ret;
+}
+function getDelimStr($name, $arr)
+{
+	for ($i = 0; $i < (count($arr) >> 1); $i++)
+	{
+		if ($arr[$i << 1] == $name)
+		{
+			return $arr[($i << 1) + 1];
+		}
+	}
+	return false;
+}
 
 // IP block
 function _long2ip($arg)

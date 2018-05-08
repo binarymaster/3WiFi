@@ -457,6 +457,8 @@ function db_add_ap($row, $cmtid, $uid)
 	for ($i = 0; $i <= 3; $i++)
 		if (!isset($DNS[$i])) $DNS[$i] = 'NULL';
 	$data = trim(preg_replace('/\s+/', ' ', $row[21])); // Comment
+	if ($data == "HNAP bypass auth")
+		$data = '';
 	QuerySql("INSERT INTO BASE_TABLE (`cmtid`,`IP`,`Port`,`Authorization`,`name`,`RadioOff`,`Hidden`,`NoBSSID`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`LANIP`,`LANMask`,`WANIP`,`WANMask`,`WANGateway`,`DNS1`,`DNS2`,`DNS3`)
 			VALUES ($cmtid, $addr, $port, $auth, $name, $radio, $hide, $NoBSSID, $bssid, $essid, $sec, $key, $wps, $lanip, $lanmsk, $wanip, $wanmsk, $gate, $DNS[0], $DNS[1], $DNS[2])
 			ON DUPLICATE KEY UPDATE
@@ -484,8 +486,30 @@ function db_add_ap($row, $cmtid, $uid)
 		$res->close();
 		$id = (int)$row[0];
 		// Добавляем информацию
+		$dt = parseDelimStr($data);
 		$data = '\''.$db->real_escape_string($data).'\'';
 		$db->query("INSERT INTO extinfo (`id`, `data`) VALUES ($id, $data) ON DUPLICATE KEY UPDATE `data` = $data");
+
+		$sn = getDelimStr('Serial', $dt);
+		if (!$sn)
+			$sn = getDelimStr('SN', $dt);
+		if ($sn !== false)
+		{
+			$sn = '\''.$db->real_escape_string($sn).'\'';
+			$db->query("UPDATE extinfo SET `sn1` = $sn WHERE `id` = $id");
+		}
+		$sn = getDelimStr('PON SN', $dt);
+		if ($sn !== false)
+		{
+			$sn = '\''.$db->real_escape_string($sn).'\'';
+			$db->query("UPDATE extinfo SET `sn2` = $sn WHERE `id` = $id");
+		}
+		$mac = getDelimStr('Cable MAC', $dt);
+		if ($mac !== false && ismac($mac))
+		{
+			$mac = mac2dec($mac);
+			$db->query("UPDATE extinfo SET `cable_mac` = $mac WHERE `id` = $id");
+		}
 	}
 	return 0;
 }
