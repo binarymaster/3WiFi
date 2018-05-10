@@ -466,7 +466,7 @@ function db_add_ap($row, $cmtid, $uid)
 	if (!is_null($uid))
 	{
 		// Берём id точки из таблицы base в любом случае (могут быть расхождения с mem_base)
-		$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND ESSID=$essid AND Security=$sec AND WiFiKey=$key AND WPSPIN=$wps");
+		$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND ESSID=$essid AND WiFiKey=$key AND WPSPIN=$wps");
 		$row = $res->fetch_row();
 		$res->close();
 		$id = (int)$row[0];
@@ -481,7 +481,7 @@ function db_add_ap($row, $cmtid, $uid)
 	if (!empty($data))
 	{
 		// Собираем доп. информацию о точке (может быть серийник и что-либо ещё)
-		$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND ESSID=$essid AND Security=$sec AND WiFiKey=$key AND WPSPIN=$wps");
+		$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND ESSID=$essid AND WiFiKey=$key AND WPSPIN=$wps");
 		$row = $res->fetch_row();
 		$res->close();
 		$id = (int)$row[0];
