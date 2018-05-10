@@ -106,8 +106,8 @@ function FixSql($sql)
 	$sql = str_replace("\t", '', $sql);
 	$sql = str_replace("\n", '', $sql);
 	$sql = str_replace("\r", '', $sql);
-	$sql = preg_replace("/( ){2,}/", ' ', $sql);
-	$sql = preg_replace("/%{2,}/", '%', $sql); // %%... => %
+	//$sql = preg_replace("/( ){2,}/", ' ', $sql);
+	//$sql = preg_replace("/%{2,}/", '%', $sql); // %%... => %
 
 	// Sql fixes
 	$sql = preg_replace("/AND (\"|'|`)[A-z]* LIKE (\"|')%(\"|') /", '', $sql);
