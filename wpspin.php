@@ -47,6 +47,7 @@ abstract class WpspinGenerator
 			$bssid = base_convert($bssid, 16, 10);
 			$bssid = bcmod(bcadd($bssid, $this->offset), '281474976710656');
 			$bssid = base_convert($bssid, 10, 16);
+			$bssid = str_pad($bssid, 12, '0', STR_PAD_LEFT);
 		}
 		return pin2str($this->getPinInt($bssid));
 	}
