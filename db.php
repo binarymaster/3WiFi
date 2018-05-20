@@ -457,7 +457,7 @@ function db_add_ap($row, $cmtid, $uid)
 	for ($i = 0; $i <= 3; $i++)
 		if (!isset($DNS[$i])) $DNS[$i] = 'NULL';
 	$data = trim(preg_replace('/\s+/', ' ', $row[21])); // Comment
-	if ($data == "HNAP bypass auth")
+	if ($data == "HNAP bypass auth" || strpos($data, "WPS Algorithms: ") === 0)
 		$data = '';
 	QuerySql("INSERT INTO BASE_TABLE (`cmtid`,`IP`,`Port`,`Authorization`,`name`,`RadioOff`,`Hidden`,`NoBSSID`,`BSSID`,`ESSID`,`Security`,`WiFiKey`,`WPSPIN`,`LANIP`,`LANMask`,`WANIP`,`WANMask`,`WANGateway`,`DNS1`,`DNS2`,`DNS3`)
 			VALUES ($cmtid, $addr, $port, $auth, $name, $radio, $hide, $NoBSSID, $bssid, $essid, $sec, $key, $wps, $lanip, $lanmsk, $wanip, $wanmsk, $gate, $DNS[0], $DNS[1], $DNS[2])
