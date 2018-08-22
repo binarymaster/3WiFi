@@ -130,15 +130,15 @@ function setFloat($in, $out)
 }
 
 $uselocation = array();
-parse_str($_COOKIE['uselocation'], &$uselocation);
+parse_str($_COOKIE['uselocation'], $$uselocation);
 
-setFloat($uselocation['lat'], &$lat);
-setFloat($uselocation['lon'], &$lon);
-setFloat($uselocation['rad'], &$rad);
+setFloat($uselocation['lat'], $$lat);
+setFloat($uselocation['lon'], $$lon);
+setFloat($uselocation['rad'], $$rad);
 
-setFloat($_GET['lat'], &$lat);
-setFloat($_GET['lon'], &$lon);
-setFloat($_GET['rad'], &$rad);
+setFloat($_GET['lat'], $$lat);
+setFloat($_GET['lon'], $$lon);
+setFloat($_GET['rad'], $$rad);
 
 include_once loadLanguage();
 

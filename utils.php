@@ -454,7 +454,7 @@ function useLocationAllowed($query)
 	global $UserManager, $db;
 
 	$uselocation = array();
-	parse_str($query, &$uselocation);
+	parse_str($query, $$uselocation);
 	if ($UserManager->Level < 1)
 		return false;
 	if (!isset($uselocation['lat']) || empty($uselocation['lat']))
