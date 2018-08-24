@@ -120,7 +120,7 @@ $lat = DEFAULT_LAT;
 $lon = DEFAULT_LON;
 $rad = DEFAULT_RAD;
 
-function setFloat($in, $out)
+function setFloat($in, &$out)
 {
 	if (isset($in))
 	{
