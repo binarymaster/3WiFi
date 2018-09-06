@@ -90,6 +90,21 @@ function preparePage(&$content)
 		$content = str_replace("%l10n_$key%", $value, $content);
 	}
 }
+function getNews()
+{
+	$project_news = json_decode(file_get_contents('project_news.json'), true);
+	$service_news = json_decode(file_get_contents('service_news.json'), true);
+	$news = array_merge_recursive($service_news, $project_news);
+	krsort($news);
+	$out = "<ul>\r\n";
+	foreach ($news as $date => $list)
+	{
+		$a = array_merge(array("<b>$date</b>"), $list);
+		$out .= '<li>' . implode("<br>\r\n", $a) . "</li>\r\n";
+	}
+	$out .= '</ul>';
+	return $out;
+}
 
 if (isset($_GET['redir']) && $_GET['redir'] != '')
 {
@@ -200,6 +215,10 @@ $content = str_replace('%content%', $content, file_get_contents('index.html'));
 $content = str_replace('%title%', $title, $content);
 $content = str_replace('%head%', $head, $content);
 $content = str_replace('%page%', $page, $content);
+if (strpos($content, '%news%') !== false)
+{
+	$content = str_replace('%news%', getNews(), $content);
+}
 
 preparePage($content);
 
