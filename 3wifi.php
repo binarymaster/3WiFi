@@ -127,7 +127,11 @@ switch ($action)
 					$xessid = str_replace(' ', '&nbsp;', htmlspecialchars($essid));
 					$xwifikey = str_replace(' ', '&nbsp;', htmlspecialchars($key));
 
-					if ($UserManager->Level >= 0) $aphint[] = $time;
+					if ($UserManager->Level >= 0)
+					{
+						$aphint[] = $time;
+						$xbssid .= ' <a href="find?bssid='.$xbssid.'"><img src="img/search.png"></a>';
+					}
 					$aphint[] = $xbssid;
 					$aphint[] = $xessid;
 					if ($UserManager->Level >= 0) $aphint[] = $xwifikey;
