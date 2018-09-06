@@ -17,6 +17,8 @@ function initmap()
 
 	var showaps = settingsGetBool('3wifi.map.showaps', true);
 	var clusters = settingsGetBool('3wifi.map.clusters', true);
+	var mob = isMobile();
+	if (mob) myTileUrl += '&mobile=1';
 	if (!clusters) myTileUrl += '&scat=1';
 
 	remoteObjectManager = new ymaps.RemoteObjectManager(myTileUrl,
@@ -24,16 +26,16 @@ function initmap()
 		splitRequests: false,
 		// Опции кластеров задаются с префиксом cluster.
 		clusterHasBalloon: false,
-		clusterHasHint: true,
+		clusterHasHint: !mob,
 		// Опции объектов задаются с префиксом geoObject
-		geoObjectOpenBalloonOnClick: false
+		geoObjectOpenBalloonOnClick: mob
 	});
 
-	userLocations = new ymaps.RemoteObjectManager('user.php?a=mylocmap&bbox=%b',
+	userLocations = new ymaps.RemoteObjectManager('user.php?a=mylocmap&bbox=%b' + (mob ? '&mobile=1' : ''),
 	{	// Разбивать запросы по тайлам
 		splitRequests: false,
 		// Опции объектов задаются с префиксом geoObject
-		geoObjectOpenBalloonOnClick: false
+		geoObjectOpenBalloonOnClick: mob
 	});
 
 	if (ProfileInfo.Level >= 1)

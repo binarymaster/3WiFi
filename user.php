@@ -592,6 +592,7 @@ switch($action)
 	$lat2 = (float)$bbox[2];
 	$lon2 = (float)$bbox[3];
 	$callback = $_GET['callback'];
+	$mob = (isset($_GET['mobile']) ? (bool)$_GET['mobile'] : false);
 	$uid = $UserManager->uID;
 	if (!$res = QuerySql("SELECT latitude,longitude,comment FROM locations WHERE uid=$uid AND latitude BETWEEN $lat1 AND $lat2 AND longitude BETWEEN $lon1 AND $lon2"))
 	{
@@ -606,12 +607,13 @@ switch($action)
 	$loc['type'] = 'Feature';
 	$loc['options']['iconColor'] = '#00D000';
 	$loc['geometry']['type'] = 'Point';
+	$propContent = ($mob ? 'balloonContent' : 'hintContent');
 	while ($row = $res->fetch_row())
 	{
 		$loc['geometry']['coordinates'][0] = (float)$row[0];
 		$loc['geometry']['coordinates'][1] = (float)$row[1];
 		$loc['id'] = 'loc'.substr(md5($row[0].$row[1]), 0, 4);
-		$loc['properties']['hintContent'] = '<b>Локация:</b><br>'.htmlspecialchars($row[2]);
+		$loc['properties'][$propContent] = '<b>Локация:</b><br>'.htmlspecialchars($row[2]);
 		$json['data']['features'][] = $loc;
 	}
 	$res->close();

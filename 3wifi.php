@@ -54,6 +54,7 @@ switch ($action)
 	$callback = $_GET['callback'];
 	$clat = (float)$_GET['clat'];
 	$clon = (float)$_GET['clon'];
+	$mob = (isset($_GET['mobile']) ? (bool)$_GET['mobile'] : false);
 	$scat = (isset($_GET['scat']) ? (bool)$_GET['scat'] : false);
 
 	if (!db_connect())
@@ -108,7 +109,8 @@ switch ($action)
 			$ap['options']['iconColor'] = '#FF1E1E';
 		}
 
-		$ap['properties']['hintContent'] = '';
+		$propContent = ($mob ? 'balloonContent' : 'hintContent');
+		$ap['properties'][$propContent] = '';
 		if (!empty($cluster['bssids']))
 		{
 			$hints = array();
@@ -138,7 +140,7 @@ switch ($action)
 					$hints[] = implode('<br>', $aphint);
 				}
 			}
-			$ap['properties']['hintContent'] = implode('<hr>', $hints);
+			$ap['properties'][$propContent] = implode('<hr>', $hints);
 		}
 		$json['data']['features'][] = $ap;
 	}
