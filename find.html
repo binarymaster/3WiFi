@@ -286,6 +286,22 @@ function initpage()
 	$('input[type=text]').blur(function(e) {
 		lastInp = e.currentTarget;
 	});
+	var bssid = getQueryStringValue('bssid');
+	var essid = getQueryStringValue('essid');
+	var key = getQueryStringValue('key');
+	var wps = getQueryStringValue('pin');
+	var sens = getQueryStringValue('s');
+	var page = getQueryStringValue('p');
+	if (ProfileInfo.Level >= 0 && (bssid != '' || essid != '' || key != '' || wps != ''))
+	{
+		if (bssid != '') $('input[name=bssid]').val(bssid);
+		if (essid != '') $('input[name=essid]').val(essid);
+		if (key != '') $('input[name=key]').val(key);
+		if (wps != '') $('input[name=wps]').val(wps);
+		if (sens == '1') $('input[name=sens]').prop('checked', true);
+		if (page == '') page = '1';
+		find(parseInt(page));
+	}
 }
 </script>
 </head>
