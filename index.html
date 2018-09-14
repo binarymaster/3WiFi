@@ -265,8 +265,13 @@ function delCookie(name)
 	document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
 function getQueryStringValue(key)
-{  
-	return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+{
+	var k = encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&");
+
+	if (window.location.search.search("[\?&]" + k + "=") == -1)
+		return null;
+
+	return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + k + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
 }
 function settingsGetBool(name, def)
 {

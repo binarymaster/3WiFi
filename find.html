@@ -80,6 +80,67 @@ function buildPages(count, current)
 	}
 	return result;
 }
+function searchGetField(e)
+{
+	return $(e[ProfileInfo.Level < 2 ? 0 : 1]);
+}
+function searchQuery()
+{
+	var bssid = getQueryStringValue('bssid');
+	var essid = getQueryStringValue('essid');
+	var key = getQueryStringValue('key');
+	var wps = getQueryStringValue('pin');
+	var cmt = getQueryStringValue('cmt');
+	var ip = getQueryStringValue('ip');
+	var auth = getQueryStringValue('auth');
+	var dev = getQueryStringValue('dev');
+
+	var usr_query = (bssid != null || essid != null || key != null || wps != null) && ProfileInfo.Level >= 0;
+	var adm_query = (cmt != null || ip != null || auth != null || dev != null || usr_query) && ProfileInfo.Level >= 2;
+
+	var sens = getQueryStringValue('s');
+	var page = getQueryStringValue('p');
+
+	if (usr_query || adm_query)
+	{
+		searchGetField($('input[name=bssid]')).val(bssid != null ? bssid : def_bssid);
+		searchGetField($('input[name=essid]')).val(essid != null ? essid : def_essid);
+		searchGetField($('input[name=key]')).val(key != null ? key : def_key);
+		searchGetField($('input[name=wps]')).val(wps != null ? wps : def_wps);
+		$('input[name=comment]').val(cmt != null ? cmt : def_cmt);
+		$('input[name=ipaddr]').val(ip != null ? ip : def_ip);
+		$('input[name=auth]').val(auth != null ? auth : def_auth);
+		$('input[name=name]').val(dev != null ? dev : def_dev);
+
+		searchGetField($('input[name=sens]')).prop('checked', sens == '1');
+		if (page == null) page = '1';
+		find(parseInt(page));
+	}
+}
+function searchGetQuery(page)
+{
+	var url = [], val;
+	val = searchGetField($('input[name=bssid]')).val(); if (val != def_bssid) url.push('bssid=' + encodeURIComponent(val));
+	val = searchGetField($('input[name=essid]')).val(); if (val != def_essid) url.push('essid=' + encodeURIComponent(val));
+	val = searchGetField($('input[name=key]')).val(); if (val != def_key) url.push('key=' + encodeURIComponent(val));
+	val = searchGetField($('input[name=wps]')).val(); if (val != def_wps) url.push('pin=' + encodeURIComponent(val));
+	val = $('input[name=comment]').val(); if (val != def_cmt) url.push('cmt=' + encodeURIComponent(val));
+	val = $('input[name=ipaddr]').val(); if (val != def_ip) url.push('ip=' + encodeURIComponent(val));
+	val = $('input[name=auth]').val(); if (val != def_auth) url.push('auth=' + encodeURIComponent(val));
+	val = $('input[name=name]').val(); if (val != def_dev) url.push('dev=' + encodeURIComponent(val));
+	if (searchGetField($('input[name=sens]')).prop('checked')) url.push('s=1');
+	if (page > 1) url.push('p=' + page);
+	return url.join('&');
+}
+function searchPushHistory(page)
+{
+	var url = searchGetQuery(page);
+	if (url == "") return;
+
+	url = window.location.pathname + '?' + url;
+	if (typeof window.history != "object") return;
+	history.pushState(null, null, url);
+}
 function switchPage(num)
 {
 	if (num < 1 || num > cnt_pages || num == cur_page) return;
@@ -91,6 +152,7 @@ function switchPage(num)
 	$('input[type=number]').val(num);
 	$('#page_seeker').css('display', (pages == '' ? 'none' : 'inherit'));
 
+	searchPushHistory(num);
 	find(num);
 }
 function find(page)
@@ -286,28 +348,22 @@ function initpage()
 	$('input[type=text]').blur(function(e) {
 		lastInp = e.currentTarget;
 	});
-	var bssid = getQueryStringValue('bssid');
-	var essid = getQueryStringValue('essid');
-	var key = getQueryStringValue('key');
-	var wps = getQueryStringValue('pin');
-	var sens = getQueryStringValue('s');
-	var page = getQueryStringValue('p');
-	if (ProfileInfo.Level >= 0 && (bssid != '' || essid != '' || key != '' || wps != ''))
-	{
-		if (bssid != '') $('input[name=bssid]').val(bssid);
-		if (essid != '') $('input[name=essid]').val(essid);
-		if (key != '') $('input[name=key]').val(key);
-		if (wps != '') $('input[name=wps]').val(wps);
-		if (sens == '1') $('input[name=sens]').prop('checked', true);
-		if (page == '') page = '1';
-		find(parseInt(page));
-	}
+	def_bssid = searchGetField($('input[name=bssid]')).val();
+	def_essid = searchGetField($('input[name=essid]')).val();
+	def_key = searchGetField($('input[name=key]')).val();
+	def_wps = searchGetField($('input[name=wps]')).val();
+	def_cmt = $('input[name=comment]').val();
+	def_ip = $('input[name=ipaddr]').val();
+	def_auth = $('input[name=auth]').val();
+	def_dev = $('input[name=name]').val();
+	searchQuery();
+	$(window).on('popstate', searchQuery);
 }
 </script>
 </head>
 
 <body>
-<form enctype="multipart/form-data" method="POST" onsubmit="find(1); return false">
+<form enctype="multipart/form-data" method="POST" onsubmit="searchPushHistory(1); find(1); return false">
 <table id=fuserform style="display:none">
 <tbody>
 <tr><td>%l10n_str_bssid%</td><td><input name="bssid" type="text" value="" /></td><td colspan=2 style="font-weight: bold">(&nbsp;* - %l10n_find_wildcard%&nbsp;)</td></tr>
@@ -320,7 +376,7 @@ function initpage()
 </table>
 </form>
 
-<form enctype="multipart/form-data" method="POST" onsubmit="find(1); return false">
+<form enctype="multipart/form-data" method="POST" onsubmit="searchPushHistory(1); find(1); return false">
 <table id=fadminform style="display:none">
 <tbody>
 <tr><td>%l10n_str_comment%</td><td><input name="comment" type="text" value="*" /></td><td>%l10n_str_dev%</td><td><input name="name" type="text" value="◯" /></td><td style="font-weight: bold">(&nbsp;* - %l10n_find_wildcard_info%&nbsp;)</td></tr>
