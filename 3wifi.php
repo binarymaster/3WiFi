@@ -180,12 +180,15 @@ switch ($action)
 	}
 	function GenerateFindQuery($cmtid, $ipaddr, $BSSID, $ESSID, $Auth, $Name, $Key, $WPS, $sens, $UseLocation, $Page, $Limit)
 	{
-		if(!isset($_SESSION['Search'])) $_SESSION['Search'] = array();
-		if(!isset($_SESSION['Search']['ArgsHash'])) $_SESSION['Search']['ArgsHash'] = '';
-		if(!isset($_SESSION['Search']['LastRowsNum'])) $_SESSION['Search']['LastRowsNum'] = -1;
-		if(!isset($_SESSION['Search']['LastId'])) $_SESSION['Search']['FirstId'] = -1;
-		if(!isset($_SESSION['Search']['LastId'])) $_SESSION['Search']['LastId'] = -1;
-		if(!isset($_SESSION['Search']['LastPage'])) $_SESSION['Search']['LastPage'] = 1;
+		if (TRY_USE_MEMORY_TABLES)
+		{
+			if (!isset($_SESSION['Search'])) $_SESSION['Search'] = array();
+			if (!isset($_SESSION['Search']['ArgsHash'])) $_SESSION['Search']['ArgsHash'] = '';
+			if (!isset($_SESSION['Search']['LastRowsNum'])) $_SESSION['Search']['LastRowsNum'] = -1;
+			if (!isset($_SESSION['Search']['LastId'])) $_SESSION['Search']['FirstId'] = -1;
+			if (!isset($_SESSION['Search']['LastId'])) $_SESSION['Search']['LastId'] = -1;
+			if (!isset($_SESSION['Search']['LastPage'])) $_SESSION['Search']['LastPage'] = 1;
+		}
 
 		$isLimitedRequest = false;
 		$DiffPage = 0;
@@ -208,7 +211,7 @@ switch ($action)
 		global $UserManager;
 		$uid = $UserManager->uID;
 
-		if((!$UseLocation) && ($UserManager->Level < 2) && ($DataCount < 6))
+		if ((!$UseLocation) && ($UserManager->Level < 2) && ($DataCount < 6))
 		{
 			$isLimitedRequest = true;
 		}
@@ -216,7 +219,7 @@ switch ($action)
 		$binary = ($sens ? 'BINARY' : '');
 		$joinloc = ($UseLocation ? 'JOIN radius_ids RI ON B.id = RI.id' : '');
 
-		if($Page == 1) 
+		if (TRY_USE_MEMORY_TABLES && $Page == 1) 
 		{
 			$_SESSION['Search']['FirstId'] = -1;
 			$_SESSION['Search']['LastId'] = -1;
@@ -290,53 +293,66 @@ switch ($action)
 			else $sql .= (empty($WPS) ? ' AND `WPSPIN` = 1' : ' AND `WPSPIN` = \''.$WPS.'\'');
 		}
 
-		if($_SESSION['Search']['ArgsHash'] == md5($cmtid.$ipaddr.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS.$binary.$joinloc))
+		if (TRY_USE_MEMORY_TABLES)
 		{
-			$sql = str_replace('SQL_CALC_FOUND_ROWS', '', $sql);
-		}
-		else
-		{
-			$_SESSION['Search']['LastRowsNum'] = -1;
-			$_SESSION['Search']['FirstId'] = -1;
-			$_SESSION['Search']['LastId'] = -1;
-			$_SESSION['Search']['LastPage'] = 1;
-		}
-
-		$Sign = '<';
-		$DiffPage = ((int)$Page-$_SESSION['Search']['LastPage']);
-
-		if($isLimitedRequest || $_SESSION['Search']['LastId'] == -1 || $_SESSION['Search']['FirstId'] == -1) 
-		{
-			$NextPageStartId = 4294967295;
-		}
-		else
-		{
-			if($DiffPage < 0)
+			if ($_SESSION['Search']['ArgsHash'] == md5($cmtid.$ipaddr.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS.$binary.$joinloc))
 			{
-				$Sign = '>';
-				$NextPageStartId = (int)$_SESSION['Search']['FirstId'];
+				$sql = str_replace('SQL_CALC_FOUND_ROWS', '', $sql);
 			}
 			else
 			{
-				$NextPageStartId = (int)$_SESSION['Search']['LastId'];
+				$_SESSION['Search']['LastRowsNum'] = -1;
+				$_SESSION['Search']['FirstId'] = -1;
+				$_SESSION['Search']['LastId'] = -1;
+				$_SESSION['Search']['LastPage'] = 1;
+			}
+
+			$Sign = '<';
+			$DiffPage = ((int)$Page-$_SESSION['Search']['LastPage']);
+
+			if ($isLimitedRequest || $_SESSION['Search']['LastId'] == -1 || $_SESSION['Search']['FirstId'] == -1) 
+			{
+				$NextPageStartId = 4294967295;
+			}
+			else
+			{
+				if ($DiffPage < 0)
+				{
+					$Sign = '>';
+					$NextPageStartId = (int)$_SESSION['Search']['FirstId'];
+				}
+				else
+				{
+					$NextPageStartId = (int)$_SESSION['Search']['LastId'];
+				}
+			}
+
+			$DiffPage = abs($DiffPage);
+			if ($DiffPage > 0) $DiffPage--;
+
+			if ($isLimitedRequest)
+			{
+				$DiffPage = 0;
+			}
+
+			$sql .= ' AND B.`id` '.$Sign.' '.$NextPageStartId;
+			$sql .= ' LIMIT '.($DiffPage * $Limit).', '.$Limit;
+
+			$_SESSION['Search']['ArgsHash'] = md5($cmtid.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS.$binary);
+			$_SESSION['Search']['LastPage'] = $Page;
+		}
+		else
+		{
+			$sql .= ' ORDER BY `time` DESC';
+			if ($isLimitedRequest)
+			{
+				$sql .= ' LIMIT '.$Limit;
+			}
+			else
+			{
+				$sql .= ' LIMIT '.(($Page - 1) * $Limit).', '.$Limit;
 			}
 		}
-
-		$DiffPage = abs($DiffPage);
-		if($DiffPage > 0) $DiffPage--;
-
-		if($isLimitedRequest)
-		{
-			$DiffPage = 0;
-		}
-
-		$sql .= ' AND B.`id` '.$Sign.' '.$NextPageStartId;
-		if (!TRY_USE_MEMORY_TABLES)
-			$sql .= ' ORDER BY `time` DESC';
-		$sql .= ' LIMIT '.($DiffPage * 100).', '.$Limit;
-
-		$_SESSION['Search']['ArgsHash'] = md5($cmtid.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS.$binary);
-		$_SESSION['Search']['LastPage'] = $Page;
 
 		return $sql;
 	}
@@ -409,15 +425,28 @@ switch ($action)
 	$sql = GenerateFindQuery($cmtid, $ipaddr, $bssid, $essid, $auth, $name, $key, $wps, $sens, $useloc, $cur_page, $per_page);
 	if ($res = QuerySql($sql))
 	{
-		if($_SESSION['Search']['LastRowsNum'] == -1)
+		if (TRY_USE_MEMORY_TABLES)
+		{
+			if ($_SESSION['Search']['LastRowsNum'] == -1)
+			{
+				$res_rows = QuerySql('SELECT FOUND_ROWS()');
+				$t = $res_rows->fetch_row();
+				$_SESSION['Search']['LastRowsNum'] = (int)$t[0];
+			}
+			if (isset($_SESSION['Search']['LastRowsNum']))
+			{
+				$rows = (int)$_SESSION['Search']['LastRowsNum'];
+				$pages = ceil($rows / $per_page);
+				$json['found'] = $rows;
+				$json['page']['current'] = $cur_page;
+				$json['page']['count'] = $pages;
+			}
+		}
+		else
 		{
 			$res_rows = QuerySql('SELECT FOUND_ROWS()');
-			$t = $res_rows->fetch_row();
-			$_SESSION['Search']['LastRowsNum'] = (int)$t[0];
-		}
-		if(isset($_SESSION['Search']['LastRowsNum']))
-		{
-			$rows = (int)$_SESSION['Search']['LastRowsNum'];
+			$rows = $res_rows->fetch_row();
+			$rows = (int)$rows[0];
 			$pages = ceil($rows / $per_page);
 			$json['found'] = $rows;
 			$json['page']['current'] = $cur_page;
@@ -495,8 +524,11 @@ switch ($action)
 		}
 		$res->close();
 
-		$_SESSION['Search']['FirstId'] = $FirstId;
-		$_SESSION['Search']['LastId'] = $LastId;
+		if (TRY_USE_MEMORY_TABLES)
+		{
+			$_SESSION['Search']['FirstId'] = $FirstId;
+			$_SESSION['Search']['LastId'] = $LastId;
+		}
 	}
 	$db->close();
 	break;
