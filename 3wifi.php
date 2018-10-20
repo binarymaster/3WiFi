@@ -242,10 +242,40 @@ switch ($action)
 		{
 			$sql .= ' AND (`cmtid` '.($cmtid == 0 ? 'IS NULL)' : "= $cmtid)");
 		}
-		$ipaddr = ip2long($ipaddr) !== false ? ip2long($ipaddr) : '';
-		if ($ipaddr != '')
+		$ipaddr = explode('/', $ipaddr);
+		$range = 32;
+		if (isset($ipaddr[1]))
 		{
-			$sql .= " AND `IP` = $ipaddr";
+			$range = (int)$ipaddr[1];
+		}
+		else
+		{
+			$ipaddr = explode('-', $ipaddr[0]);
+			if (isset($ipaddr[1]))
+			{
+				$ipmax = _ip2long($ipaddr[1]) !== false ? _ip2long($ipaddr[1]) : '';
+			}
+		}
+		$ipaddr = $ipaddr[0];
+		$ipaddr = _ip2long($ipaddr) !== false ? _ip2long($ipaddr) : '';
+		if ($ipaddr != '' && $range > 0)
+		{
+			if (!isset($ipmax) && $range < 32)
+			{
+				$range = 32 - $range;
+				$ipmax = $ipaddr;
+				$ipmax |= (1 << $range) - 1;
+				$ipaddr = $ipmax;
+				$ipaddr -= (1 << $range) - 1;
+			}
+			if (isset($ipmax) && !empty($ipmax))
+			{
+				$sql .= " AND `IP` BETWEEN $ipaddr AND $ipmax";
+			}
+			else
+			{
+				$sql .= " AND `IP` = $ipaddr";
+			}
 		}
 		if (str_replace('*', '', $BSSID) != '')
 		{
