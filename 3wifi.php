@@ -253,11 +253,11 @@ switch ($action)
 			$ipaddr = explode('-', $ipaddr[0]);
 			if (isset($ipaddr[1]))
 			{
-				$ipmax = _ip2long($ipaddr[1]) !== false ? _ip2long($ipaddr[1]) : '';
+				$ipmax = _ip2long($ipaddr[1]) !== 'NULL' ? _ip2long($ipaddr[1]) : '';
 			}
 		}
 		$ipaddr = $ipaddr[0];
-		$ipaddr = _ip2long($ipaddr) !== false ? _ip2long($ipaddr) : '';
+		$ipaddr = _ip2long($ipaddr) !== 'NULL' ? _ip2long($ipaddr) : '';
 		if ($ipaddr != '' && $range > 0)
 		{
 			if (!isset($ipmax) && $range < 32)
