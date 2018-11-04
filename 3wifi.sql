@@ -45,8 +45,9 @@ CREATE TABLE `geo` (
 	`longitude` FLOAT(12,8) NULL DEFAULT NULL,
 	`quadkey` BIGINT(20) UNSIGNED NULL DEFAULT NULL,
 	PRIMARY KEY (`BSSID`),
-	INDEX `quadkey` (`quadkey`)
-) COLLATE='utf8_general_ci' ENGINE=MyISAM ROW_FORMAT=FIXED;
+	INDEX `quadkey` (`quadkey`),
+	INDEX `latitude` (`latitude`)
+) COLLATE='utf8_general_ci' ENGINE=InnoDB ROW_FORMAT=FIXED;
 
 -- Дамп структуры для таблицы 3wifi.invites
 CREATE TABLE IF NOT EXISTS `invites` (
@@ -145,7 +146,8 @@ CREATE TABLE `mem_geo` (
 	`longitude` FLOAT(12,8) NULL DEFAULT NULL,
 	`quadkey` BIGINT(20) UNSIGNED NULL DEFAULT NULL,
 	PRIMARY KEY (`BSSID`),
-	INDEX `quadkey` (`quadkey`)
+	INDEX `quadkey` (`quadkey`),
+	INDEX `latitude` (`latitude`)
 ) COLLATE='utf8_general_ci' ENGINE=MEMORY ROW_FORMAT=FIXED;
 
 -- Дамп структуры для таблицы 3wifi.users
