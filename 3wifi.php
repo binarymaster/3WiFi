@@ -305,7 +305,7 @@ switch ($action)
 		if (FilterWildcards($Auth, $Wildcards, false) != '' || empty($Auth))
 		{
 			if (HasWildcards($Auth, $Wildcards)) $sql .= ' AND '.$binary.' `Authorization` LIKE \''.UniStrWildcard($Auth, $Wildcards).'\'';
-			else $sql .= ' AND '.$binary.' `Authorization` = \''.$Auth.'\'';
+			else $sql .= ' AND '.(empty($Auth) ? '`Authorization` IS NULL' : $binary.' `Authorization` = \''.$Auth.'\'');
 		}
 		if (FilterWildcards($Name, $Wildcards, false) != '' || empty($Name))
 		{
