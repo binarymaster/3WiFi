@@ -22,6 +22,25 @@ function my_gzdecode($data)
 	unlink($g);
 	return $d;
 }
+function handleGeoErrors($prov, $bssid, $lat, $lon)
+{
+	if ($lat == 0 && $lon == 0)
+	{
+		geoDbg("[-] $prov / $bssid : Zero spot rejected\r\n");
+		return false;
+	}
+	if ($lat == 12.3456 && $lon == -7.891)
+	{
+		geoDbg("[-] $prov / $bssid : 12.3456 rejected\r\n");
+		return false;
+	}
+	if (($lat >= 56.864 && $lat <= 56.865) && ($lon >= 60.610 && $lon <= 60.612))
+	{
+		geoDbg("[-] $prov / $bssid : Ekaterinburg fake spot rejected\r\n");
+		return false;
+	}
+	return true;
+}
 function GetGeolocationServices()
 {
 	return array(
@@ -66,7 +85,10 @@ function GetFromYandex($bssid)
 	$longitude = getStringBetween($data, ' longitude="', '"');
 	if ($latitude != '' && $longitude != '')
 	{
-		$result = $latitude.';'.$longitude.';yandex';
+		if (handleGeoErrors('yandex', $bssid, (float)$latitude, (float)$longitude))
+		{
+			$result = $latitude.';'.$longitude.';yandex';
+		}
 	}
 	return $result;
 }
@@ -88,7 +110,7 @@ function GetFromAlterGeo($bssid)
 	if (!$json) return $result;
 	if ($json->status == 'OK')
 	{
-		if ($json->accuracy < 50000)
+		if ($json->accuracy < 50000 && handleGeoErrors('altergeo', $bssid, $json->location->lat, $json->location->lng))
 		{
 			$latitude = $json->location->lat;
 			$longitude = $json->location->lng;
@@ -145,7 +167,7 @@ function GetFromMicrosoft($bssid)
 	{
 		$geo = $xml->GetLocationUsingFingerprintResult->LocationResult->ResolvedPosition->attributes();
 		$result = $geo->Latitude.';'.$geo->Longitude.';microsoft';
-		if ($geo->Latitude == 12.3456 && $geo->Longitude == -7.891)
+		if (!handleGeoErrors('microsoft', $bssid, $geo->Latitude, $geo->Longitude))
 		{
 			$result = '';
 		}
@@ -167,7 +189,7 @@ function GetFromMylnikov($bssid)
 	$json = json_decode($data);
 	if (!$json) return $result;
 	geoDebug('mylnikov', $bssid, $data);
-	if ($json->result == 200)
+	if ($json->result == 200 && handleGeoErrors('mylnikov', $bssid, $json->data->lat, $json->data->lon))
 	{
 		$latitude = $json->data->lat;
 		$longitude = $json->data->lon;
@@ -190,7 +212,7 @@ function GetFromMylnikovOpen($bssid)
 	$json = json_decode($data);
 	if (!$json) return $result;
 	geoDebug('mylnikov_open', $bssid, $data);
-	if ($json->result == 200)
+	if ($json->result == 200 && handleGeoErrors('mylnikov_open', $bssid, $json->data->lat, $json->data->lon))
 	{
 		$latitude = $json->data->lat;
 		$longitude = $json->data->lon;
