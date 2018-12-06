@@ -225,7 +225,7 @@ switch ($action)
 			$_SESSION['Search']['LastId'] = -1;
 		}
 
-		$sql = 'SELECT SQL_CALC_FOUND_ROWS 
+		$sql = 'SELECT '.($isLimitedRequest ? '' : 'SQL_CALC_FOUND_ROWS ').'
 				B.`id`,`time`,
 				`cmtid`,`cmtval`,
 				`IP`,`Port`,`Authorization`,`name`,
