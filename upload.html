@@ -8,7 +8,7 @@ function selectComm(e)
 	$('input[type=text]').val($(el).text());
 	$('.hint').hide();
 }
-function showHint()
+function showHintExec()
 {
 	var query = 'a=commhint';
 	query += '&comm=' + encodeURIComponent($('input[type=text]').val());
@@ -32,6 +32,17 @@ function showHint()
 		else
 			$('.hint').hide();
 	});
+}
+function showHint()
+{
+	if (hintTimeout != null)
+		clearTimeout(hintTimeout);
+	if ($('input[type=text]').val() == '')
+	{
+		$('.hint').hide();
+		return;
+	}
+	hintTimeout = setTimeout(showHintExec, 500);
 }
 function filePart(file, from, len)
 {
@@ -403,6 +414,7 @@ function initpage()
 	} else {
 		$('#formtable').html("%l10n_msg_upload_fileapi%");
 	}
+	hintTimeout = null;
 }
 </script>
 </head>
