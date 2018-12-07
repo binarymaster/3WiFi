@@ -31,7 +31,7 @@ function detect()
 			$('#fdata').empty();
 			for (var i = 0; i < d.scores.length; i++)
 			{
-				$('#fdata').append('<tr><td>'+d.scores[i].name+'</td><td style="text-align: left"><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
+				$('#fdata').append('<tr><td>'+encodeHTML(d.scores[i].name, true)+'</td><td style="text-align: left"><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
 				var perc = $('.perc:last');
 				var wid = 180;
 				perc.css('width', wid + 'px');
