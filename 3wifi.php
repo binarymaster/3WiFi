@@ -1588,7 +1588,7 @@ switch ($action)
 		$json['error'] = 'loginfail';
 		break;
 	}
-	if ($UserManager->ApiAccess != 'read')
+	if ($UserManager->Level < 0 || $UserManager->ApiAccess != 'read')
 	{
 		$json['error'] = 'lowlevel';
 		break;
@@ -1742,7 +1742,7 @@ switch ($action)
 		$json['error'] = 'loginfail';
 		break;
 	}
-	if ($UserManager->ApiAccess != 'read')
+	if ($UserManager->Level < 0 || $UserManager->ApiAccess != 'read')
 	{
 		$json['error'] = 'lowlevel';
 		break;
@@ -1819,7 +1819,7 @@ switch ($action)
 		$json['error'] = 'loginfail';
 		break;
 	}
-	if ($UserManager->ApiAccess != 'read')
+	if ($UserManager->Level < 0 || $UserManager->ApiAccess != 'read')
 	{
 		$json['error'] = 'lowlevel';
 		break;
