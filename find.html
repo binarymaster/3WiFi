@@ -174,17 +174,23 @@ function find(page)
 		{
 			if (d.auth)
 			{
-				var res = '%l10n_find_results% '+ d.found +' ('+ d.time.toFixed(2) +' %l10n_find_secs%)';
-				$('#found'+level).text(res);
+				if (d.found != null)
+				{
+					var res = '%l10n_find_results% '+ d.found +' ('+ d.time.toFixed(2) +' %l10n_find_secs%)';
+					$('#found'+level).text(res);
+				}
 
-				cur_page = d.page.current;
-				cnt_pages = d.page.count;
-				var pages = buildPages(cnt_pages, cur_page);
-				$('#pages_t').html(pages);
-				$('#pages_b').html(pages);
-				$('input[type=number]').attr('max', cnt_pages);
-				$('input[type=number]').val(cur_page);				
-				$('#page_seeker').css('display', (pages == '' ? 'none' : 'inherit'));
+				if (d.page != null)
+				{
+					cur_page = d.page.current;
+					cnt_pages = d.page.count;
+					var pages = buildPages(cnt_pages, cur_page);
+					$('#pages_t').html(pages);
+					$('#pages_b').html(pages);
+					$('input[type=number]').attr('max', cnt_pages);
+					$('input[type=number]').val(cur_page);				
+					$('#page_seeker').css('display', (pages == '' ? 'none' : 'inherit'));
+				}
 
 				if (d.data.length > 0)
 				{

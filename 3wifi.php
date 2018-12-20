@@ -398,7 +398,7 @@ switch ($action)
 	$sens = false;
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
 	if (isset($_POST['essid'])) $essid = $_POST['essid'];
-	$bssid = str_replace('-', ':', $bssid);
+	$bssid = preg_replace('/[^0-9A-Fa-f\*]/', '', $bssid);
 	if ($UserManager->Level > 1)
 	{
 		if (isset($_POST['comment'])) $comment = $_POST['comment'];
