@@ -36,7 +36,7 @@ CREATE TABLE `base` (
 	INDEX `ESSID` (`ESSID`),
 	INDEX `Time` (`time`),
 	UNIQUE INDEX `WIFI` (`NoBSSID`, `BSSID`, `ESSID`, `WiFiKey`, `WPSPIN`)
-) COLLATE='utf8_general_ci' ENGINE=InnoDB ;
+) COLLATE='utf8_general_ci' ENGINE=InnoDB;
 
 -- Дамп структуры таблицы 3wifi.geo
 CREATE TABLE `geo` (
@@ -47,7 +47,7 @@ CREATE TABLE `geo` (
 	PRIMARY KEY (`BSSID`),
 	INDEX `quadkey` (`quadkey`),
 	INDEX `latitude` (`latitude`)
-) COLLATE='utf8_general_ci' ENGINE=InnoDB ;
+) COLLATE='utf8_general_ci' ENGINE=InnoDB;
 
 -- Дамп структуры для таблицы 3wifi.invites
 CREATE TABLE IF NOT EXISTS `invites` (
@@ -137,7 +137,7 @@ CREATE TABLE `mem_base` (
 	INDEX `ESSID` (`ESSID`),
 	INDEX `Time` (`time`),
 	UNIQUE INDEX `WIFI` (`NoBSSID`, `BSSID`, `ESSID`, `WiFiKey`, `WPSPIN`)
-) COLLATE='utf8_general_ci' ENGINE=MEMORY ;
+) COLLATE='utf8_general_ci' ENGINE=MEMORY;
 
 -- Дамп структуры таблицы 3wifi.mem_geo
 CREATE TABLE `mem_geo` (
@@ -148,7 +148,7 @@ CREATE TABLE `mem_geo` (
 	PRIMARY KEY (`BSSID`),
 	INDEX `quadkey` (`quadkey`),
 	INDEX `latitude` (`latitude`)
-) COLLATE='utf8_general_ci' ENGINE=MEMORY ;
+) COLLATE='utf8_general_ci' ENGINE=MEMORY;
 
 -- Дамп структуры для таблицы 3wifi.users
 CREATE TABLE `users` (
