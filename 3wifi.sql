@@ -36,7 +36,7 @@ CREATE TABLE `base` (
 	INDEX `ESSID` (`ESSID`),
 	INDEX `Time` (`time`),
 	UNIQUE INDEX `WIFI` (`NoBSSID`, `BSSID`, `ESSID`, `WiFiKey`, `WPSPIN`)
-) COLLATE='utf8_general_ci' ENGINE=InnoDB ROW_FORMAT=FIXED;
+) COLLATE='utf8_general_ci' ENGINE=InnoDB;
 
 -- Дамп структуры таблицы 3wifi.geo
 CREATE TABLE `geo` (
@@ -47,7 +47,7 @@ CREATE TABLE `geo` (
 	PRIMARY KEY (`BSSID`),
 	INDEX `quadkey` (`quadkey`),
 	INDEX `latitude` (`latitude`)
-) COLLATE='utf8_general_ci' ENGINE=InnoDB ROW_FORMAT=FIXED;
+) COLLATE='utf8_general_ci' ENGINE=InnoDB;
 
 -- Дамп структуры для таблицы 3wifi.invites
 CREATE TABLE IF NOT EXISTS `invites` (
@@ -72,8 +72,8 @@ CREATE TABLE `tasks` (
 	`tid` CHAR(32) NOT NULL,
 	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
 	`tstate` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0',
-	`created` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
-	`modified` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+	`created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`modified` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`ext` CHAR(4) NOT NULL,
 	`comment` TINYTEXT NOT NULL,
 	`checkexist` BIT(1) NOT NULL,
@@ -137,7 +137,7 @@ CREATE TABLE `mem_base` (
 	INDEX `ESSID` (`ESSID`),
 	INDEX `Time` (`time`),
 	UNIQUE INDEX `WIFI` (`NoBSSID`, `BSSID`, `ESSID`, `WiFiKey`, `WPSPIN`)
-) COLLATE='utf8_general_ci' ENGINE=MEMORY ROW_FORMAT=FIXED;
+) COLLATE='utf8_general_ci' ENGINE=MEMORY;
 
 -- Дамп структуры таблицы 3wifi.mem_geo
 CREATE TABLE `mem_geo` (
@@ -148,7 +148,7 @@ CREATE TABLE `mem_geo` (
 	PRIMARY KEY (`BSSID`),
 	INDEX `quadkey` (`quadkey`),
 	INDEX `latitude` (`latitude`)
-) COLLATE='utf8_general_ci' ENGINE=MEMORY ROW_FORMAT=FIXED;
+) COLLATE='utf8_general_ci' ENGINE=MEMORY;
 
 -- Дамп структуры для таблицы 3wifi.users
 CREATE TABLE `users` (
