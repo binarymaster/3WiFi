@@ -1,5 +1,6 @@
 <?php
 require_once 'utils.php';
+require_once 'dlink_seq.php';
 
 /**
  * Абстрактный класс для генераторов WPS PIN по BSSID
@@ -463,6 +464,51 @@ class WpsGenLinear extends WpspinGenerator
 }
 
 /**
+ * Генератор WPS PIN из 5000 последовательности пинов DLink, индексы которой линейно зависимы от BSSID
+ */
+class WpsGenDLink5KLinear extends WpspinGenerator
+{
+
+	/**
+	 * {@inheritdoc}
+	 */
+	protected $name = "D-Link 5K sequence";
+	private $k;
+	private $x0;
+
+	/**
+	 * Создаёт экземпляр генератора линейной последовательности
+	 *
+	 * @param type $k Отношение приращений BSSID и индексу
+	 * @param type $x0 Значение BSSID, соответствующее нулевому индексу
+	 */
+	public function __construct($k, $x0)
+	{
+		$this->k = $k;
+		$this->x0 = $x0;
+		$this->use_checksum = true;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function getBasePin($bssid)
+	{
+		global $dlink_seq5k;
+
+		$bssid = base_convert($bssid, 16, 10);
+		$dif = bcsub($bssid, $this->x0);
+		$idx = (int)bcmod(bcdiv($dif, $this->k), 5000);
+		if ($idx < 0)
+		{
+			$idx += 5000;
+		}
+		return (int)($dlink_seq5k[$idx] / 10);
+	}
+
+}
+
+/**
  * Генератор WPS PIN, возвращающий фиксированное значение WPS PIN
  */
 class WpsGenStatic extends WpspinGenerator
@@ -527,6 +573,7 @@ function WPSInitAlgos($algos)
  */
 function API_pin_search($bssid)
 {
+	global $dlink_seq5k;
 	$result = array();
 	$algos = WPSInitAlgos(array(
 		'WpsGen24bit',
@@ -646,6 +693,47 @@ function API_pin_search($bssid)
 									$total_score += $plus_score;
 									$algos[] = array(
 										'generator' => new WpsGenLinear($k, bcsub(hex2dec($bss), bcmul((int)($pin), $k)), false),
+										'score' => $plus_score);
+									unset($unkn[$pins[$i]]);
+									unset($unkn[$pins[$j]]);
+									break 2;
+								}
+							}
+						}
+					}
+					if (!$found)
+					{
+						// check DLink 5K sequences
+						for ($i = 0; $i < $unkn_len - 1; $i++)
+						{
+							for ($j = $i + 1; $j < $unkn_len; $j++)
+							{
+								// with checksum, only correct pins
+								$xp = array_search((int)$pin, $dlink_seq5k);
+								$xi = array_search((int)$pins[$i], $dlink_seq5k);
+								$xj = array_search((int)$pins[$j], $dlink_seq5k);
+								if ($xp === false || $xi === false || $xj === false)
+								{
+									continue;
+								}
+								if ($pins[$i] == $pins[$j] || $pins[$i] == $pin)
+								{
+									continue;
+								}
+								$k = (hexdec(substr($unkn[$pins[$i]], 6, 6)) - hexdec(substr($unkn[$pins[$j]], 6, 6))) / ($xi - $xj);
+								if ($k == 0)
+								{
+									continue;
+								}
+								if ($k == (hexdec(substr($bss, 6, 6)) - hexdec(substr($unkn[$pins[$i]], 6, 6))) / ($xp - $xi))
+								{
+									$found = true;
+									$plus_score = 1.0 / sqrt(abs(hexdec(substr($bss, 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
+									$plus_score += 1.0 / sqrt(abs(hexdec(substr($unkn[$pins[$i]], 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
+									$plus_score += 1.0 / sqrt(abs(hexdec(substr($unkn[$pins[$j]], 6, 6)) - hexdec(substr($bssid, 6, 6))) + 1);
+									$total_score += $plus_score;
+									$algos[] = array(
+										'generator' => new WpsGenDLink5KLinear($k, bcsub(hex2dec($bss), bcmul($xp, $k))),
 										'score' => $plus_score);
 									unset($unkn[$pins[$i]]);
 									unset($unkn[$pins[$j]]);
