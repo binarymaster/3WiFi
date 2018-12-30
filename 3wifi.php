@@ -635,15 +635,21 @@ switch ($action)
 
 	// Определение устройства по MAC
 	case 'devicemac':
-	$json['result'] = true;
-	$json['auth'] = $UserManager->Level >= 0;
-	if (!$json['auth']) break;
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 0)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
 
 	$bssid = '';
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
 	if(!ismac($bssid))
 	{
-		$json['result'] = false;
 		$json['error'] = 'form';
 		break;
 	}
@@ -653,10 +659,10 @@ switch ($action)
 	$oui = base_convert($oui, 10, 16);
 	if (!db_connect())
 	{
-		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
+	$json['result'] = true;
 	if ($res = QuerySql("
 		SELECT name, COUNT(name) cnt, ABS(BSSID - 0x$mac) diff 
 		FROM ( 

@@ -18,12 +18,14 @@ function detect()
 		$('button').prop('disabled', false);
 		if (!d.result)
 		{
-			$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
-			return;
-		}
-		if (!d.auth)
-		{
-			$('#fdata > tr:first-child > :first-child').html(loginRequireMsg());
+			if (d.error == 'unauthorized')
+			{
+				$('#fdata > tr:first-child > :first-child').html(loginRequireMsg());
+			}
+			else
+			{
+				$('#fdata > tr:first-child > :first-child').text(errorStr(d.error));
+			}
 			return;
 		}
 		if (d.scores.length > 0)
