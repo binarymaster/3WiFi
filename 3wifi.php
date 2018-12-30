@@ -571,9 +571,16 @@ switch ($action)
 
 	// Поиск диапазонов IP
 	case 'ranges':
-	$json['result'] = true;
-	$json['auth'] = $UserManager->Level >= 0;
-	if (!$json['auth']) break;
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 0)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
 
 	$lat = ''; $lon = '';
 	if (isset($_POST['latitude'])) $lat = $_POST['latitude'];
@@ -617,11 +624,11 @@ switch ($action)
 
 	if (!db_connect())
 	{
-		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
 	require 'ipext.php';
+	$json['result'] = true;
 	$json['data'] = API_get_ranges($lat, $lon, $radius);
 	$db->close();
 	break;

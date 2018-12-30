@@ -19,17 +19,14 @@ function find()
 		$('button').prop('disabled', false);
 		if (!d.result)
 		{
-			$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
-			return;
-		}
-		if (!d.auth)
-		{
-			$('#fdata > tr:first-child > :first-child').html(loginRequireMsg());
-			return;
-		}
-		if(typeof d.error != "undefined")
-		{
-			$('#fdata > tr:first-child > :first-child').text(errorStr(d.error));
+			if (d.error == 'unauthorized')
+			{
+				$('#fdata > tr:first-child > :first-child').html(loginRequireMsg());
+			}
+			else
+			{
+				$('#fdata > tr:first-child > :first-child').text(errorStr(d.error));
+			}
 			return;
 		}
 		if (d.data.length > 0)
