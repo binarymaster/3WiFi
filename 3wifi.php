@@ -59,7 +59,6 @@ switch ($action)
 
 	if (!db_connect())
 	{
-		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
@@ -155,9 +154,16 @@ switch ($action)
 
 	// Поиск по базе
 	case 'find':
-	$json['result'] = true;
-	$json['auth'] = $UserManager->Level >= 0;
-	if (!$json['auth']) break;
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level < 0)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
 
 	function HasWildcards($str, $wc)
 	{
@@ -411,10 +417,10 @@ switch ($action)
 	if (isset($_POST['sens'])) $sens = in_array($_POST['sens'], array('1', 'on', 'true'), true);
 	if (!db_connect())
 	{
-		$json['result'] = false;
 		$json['error'] = 'database';
 		break;
 	}
+	$json['result'] = true;
 	$json['data'] = array();
 
 	if ($comment != '*')

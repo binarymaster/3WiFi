@@ -170,102 +170,106 @@ function find(page)
 
 	$.post('3wifi.php?a=find', formdata, function(d)
 	{
-		if (d.result)
+		if (!d.result)
 		{
-			if (d.auth)
+			if (d.error == 'unauthorized')
 			{
-				if (d.found != null)
-				{
-					var res = '%l10n_find_results% '+ d.found +' ('+ d.time.toFixed(2) +' %l10n_find_secs%)';
-					$('#found'+level).text(res);
-				}
-
-				if (d.page != null)
-				{
-					cur_page = d.page.current;
-					cnt_pages = d.page.count;
-					var pages = buildPages(cnt_pages, cur_page);
-					$('#pages_t').html(pages);
-					$('#pages_b').html(pages);
-					$('input[type=number]').attr('max', cnt_pages);
-					$('input[type=number]').val(cur_page);				
-					$('#page_seeker').css('display', (pages == '' ? 'none' : 'inherit'));
-				}
-
-				if (d.data.length > 0)
-				{
-					if (typeof d.data[0].id == 'number' && ProfileInfo.Level > 1)
-					{
-						switchLevel(2);
-						$('#found'+level).text(res);
-					} else {
-						switchLevel(1);
-						$('#found'+level).text(res);
-					}
-					$('#fdata').empty();
-					for (var i = 0; i < d.data.length; i++)
-					{
-						var e = d.data[i];
-						var links = '';
-						if (!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lon)))
-						{
-							links += '<a href="map?lat='+e.lat+'&lon='+e.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
-							links += '<a href="ranges?lat='+e.lat+'&lon='+e.lon+'&rad=1"><img src="img/icon-ip.png"></a>&nbsp;';
-						}
-						if (typeof e.id != 'number') e.id = 0;
-						links += '<a href="javascript://" onclick="markFav(this,'+e.id+')"><img src="img/icon-fav-'+(e.fav ? 'on' : 'off')+'.png"></a>';
-						var nw = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
-						var mnw = {raw: false, mono: true, nowrap: true, over: false, cs: 1};
-						var mn = {raw: false, mono: true, nowrap: false, over: false, cs: 1};
-						var of = {raw: false, mono: false, nowrap: true, over: true, cs: 1};
-						var rw = {raw: true, mono: false, nowrap: false, over: false, cs: 1};
-						var mrw = {raw: true, mono: true, nowrap: true, over: false, cs: 1};
-						if (e.key.length < 20) of = null;
-						e.lat = String(e.lat).substr(0,9);
-						e.lon = String(e.lon).substr(0,9);
-						e.bssid = encodeHTML(e.bssid, true);
-						if (e.nowifi)
-						{
-							e.bssid += ' <img src="img/icon-nowifi.png" title="%l10n_str_nowifi%"/>';
-						}
-						e.essid = encodeHTML(e.essid, true);
-						if (e.hidden)
-						{
-							e.essid += ' <img src="img/icon-hidden.png" title="%l10n_str_hidden%"/>';
-						}
-						e.key = encodeHTML(e.key, true);
-						if (e.lat == 'none')
-						{
-							e.lat = '%l10n_str_none%';
-							e.lon = '%l10n_str_none%';
-						}
-						else if (e.lat == 'not found')
-						{
-							e.lat = '%l10n_str_notfound%';
-							e.lon = '%l10n_str_notfound%';
-						}
-						switch (level)
-						{
-							case 1:
-							appendTable('fdata', '<td>',
-							[e.time.split(' ')[0], e.comment, e.range, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, links],
-							[mrw, null, mn, mrw, rw, null, rw, mn, nw, nw, rw]);
-							break;
-							case 2:
-							appendTable('fdata', '<td>',
-							[e.id, e.time.split(' ').join('<br>'), e.comment, e.ipport, e.auth, e.name, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, links],
-							[mn, mrw, null, mn, null, null, mrw, rw, null, rw, mn, nw, nw, rw]);
-							break;
-						}
-					}
-				} else {
-					$('#fdata > tr:first-child > :first-child').text('%l10n_find_not_found%.');
-				}
-			} else {
 				$('#fdata > tr:first-child > :first-child').html(loginRequireMsg());
 			}
-		} else {
-			$('#fdata > tr:first-child > :first-child').text('%l10n_err_data%.');
+			else
+			{
+				$('#fdata > tr:first-child > :first-child').text(errorStr(d.error));
+			}
+		}
+		else
+		{
+			if (d.found != null)
+			{
+				var res = '%l10n_find_results% '+ d.found +' ('+ d.time.toFixed(2) +' %l10n_find_secs%)';
+				$('#found'+level).text(res);
+			}
+
+			if (d.page != null)
+			{
+				cur_page = d.page.current;
+				cnt_pages = d.page.count;
+				var pages = buildPages(cnt_pages, cur_page);
+				$('#pages_t').html(pages);
+				$('#pages_b').html(pages);
+				$('input[type=number]').attr('max', cnt_pages);
+				$('input[type=number]').val(cur_page);				
+				$('#page_seeker').css('display', (pages == '' ? 'none' : 'inherit'));
+			}
+
+			if (d.data.length > 0)
+			{
+				if (typeof d.data[0].id == 'number' && ProfileInfo.Level > 1)
+				{
+					switchLevel(2);
+					$('#found'+level).text(res);
+				} else {
+					switchLevel(1);
+					$('#found'+level).text(res);
+				}
+				$('#fdata').empty();
+				for (var i = 0; i < d.data.length; i++)
+				{
+					var e = d.data[i];
+					var links = '';
+					if (!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lon)))
+					{
+						links += '<a href="map?lat='+e.lat+'&lon='+e.lon+'"><img src="img/icon-map.png"></a>&nbsp;';
+						links += '<a href="ranges?lat='+e.lat+'&lon='+e.lon+'&rad=1"><img src="img/icon-ip.png"></a>&nbsp;';
+					}
+					if (typeof e.id != 'number') e.id = 0;
+					links += '<a href="javascript://" onclick="markFav(this,'+e.id+')"><img src="img/icon-fav-'+(e.fav ? 'on' : 'off')+'.png"></a>';
+					var nw = {raw: false, mono: false, nowrap: true, over: false, cs: 1};
+					var mnw = {raw: false, mono: true, nowrap: true, over: false, cs: 1};
+					var mn = {raw: false, mono: true, nowrap: false, over: false, cs: 1};
+					var of = {raw: false, mono: false, nowrap: true, over: true, cs: 1};
+					var rw = {raw: true, mono: false, nowrap: false, over: false, cs: 1};
+					var mrw = {raw: true, mono: true, nowrap: true, over: false, cs: 1};
+					if (e.key.length < 20) of = null;
+					e.lat = String(e.lat).substr(0,9);
+					e.lon = String(e.lon).substr(0,9);
+					e.bssid = encodeHTML(e.bssid, true);
+					if (e.nowifi)
+					{
+						e.bssid += ' <img src="img/icon-nowifi.png" title="%l10n_str_nowifi%"/>';
+					}
+					e.essid = encodeHTML(e.essid, true);
+					if (e.hidden)
+					{
+						e.essid += ' <img src="img/icon-hidden.png" title="%l10n_str_hidden%"/>';
+					}
+					e.key = encodeHTML(e.key, true);
+					if (e.lat == 'none')
+					{
+						e.lat = '%l10n_str_none%';
+						e.lon = '%l10n_str_none%';
+					}
+					else if (e.lat == 'not found')
+					{
+						e.lat = '%l10n_str_notfound%';
+						e.lon = '%l10n_str_notfound%';
+					}
+					switch (level)
+					{
+						case 1:
+						appendTable('fdata', '<td>',
+						[e.time.split(' ')[0], e.comment, e.range, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, links],
+						[mrw, null, mn, mrw, rw, null, rw, mn, nw, nw, rw]);
+						break;
+						case 2:
+						appendTable('fdata', '<td>',
+						[e.id, e.time.split(' ').join('<br>'), e.comment, e.ipport, e.auth, e.name, e.bssid, e.essid, e.sec, e.key, e.wps, e.lat, e.lon, links],
+						[mn, mrw, null, mn, null, null, mrw, rw, null, rw, mn, nw, nw, rw]);
+						break;
+					}
+				}
+			} else {
+				$('#fdata > tr:first-child > :first-child').text('%l10n_find_not_found%.');
+			}
 		}
 		$('input').prop('disabled', false);
 		$('button').prop('disabled', false);
