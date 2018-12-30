@@ -266,7 +266,7 @@ class User {
 	 */
 		$this->saveDB(); // сохраним изменения в базе
 		$this->saveSession(); // сохраним сессию
-		$this->saveCookies(); // сохраним куки
+		//$this->saveCookies(); // сохраним куки
 
 		return true;
 	}
@@ -338,7 +338,7 @@ class User {
 
 			$this->loadDB($this->uID);
 			$this->saveSession(); // сохраним сессию
-			$this->saveCookies(); // сохраним куки
+			//$this->saveCookies(); // сохраним куки
 		}
 		return true;
 	}
@@ -517,7 +517,7 @@ class User {
 	 */
 		$_SESSION = array(); // Очищаем сессию
 		session_destroy(); // Уничтожаем
-		setcookie('auth', '', time()-3600); // Удаляем авто авторизацию
+		//setcookie('Auth', '', time()-3600); // Удаляем авто авторизацию
 		$this->eventLog(self::LOG_LOGOUT, 1);
 		return true;
 	}
