@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Configuration file.
  * All settings must be there.
@@ -13,6 +13,7 @@ define('DB_PASS', '');
 // Settings block
 define('TRY_USE_MEMORY_TABLES', false);
 define('DEBUG_SQLQUERY', false);
+define('DEBUG_FILENAME', 'Debug.log');
 define('MEMORY_TABLES_RELEVANCE_EXPIRES', 60*60*6); // 6 hours
 
 // Tables
