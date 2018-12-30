@@ -238,7 +238,7 @@ class User {
 						'HashKey'	=> $this->HashKey,
 						'HashIP'	=> $this->HashIP	);
 
-		setcookie('Auth', serialize($Cookie), time()+3*24*60*60); // Устанавливаем куки на 3 дня
+		setcookie('Auth', json_encode($Cookie), time()+3*24*60*60); // Устанавливаем куки на 3 дня
 
 		return true;
 	}
@@ -250,7 +250,7 @@ class User {
 	 */
 		if (isset($_COOKIE['Auth'])) // Есть кука
 		{
-			$Cookie = unserialize($_COOKIE['Auth']); // получаем куку
+			$Cookie = json_decode($_COOKIE['Auth'], true); // получаем куку
 			$this->Login	= $Cookie['Login'];
 			$this->HashKey	= $Cookie['HashKey'];
 			$this->HashIP	= $Cookie['HashIP'];
