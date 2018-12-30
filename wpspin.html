@@ -359,9 +359,9 @@ function detect()
 		$('button').prop('disabled', false);
 		if (!d.result)
 		{
-			if (d.error == 'database')
+			if (d.error == 'unauthorized')
 			{
-				$('#fdata > tr:first-child > :first-child').text('%l10n_err_database%.');
+				$('#fdata > tr:first-child > :first-child').html(loginRequireMsg());
 			}
 			else if (d.error == 'bssid')
 			{
@@ -369,13 +369,8 @@ function detect()
 			}
 			else
 			{
-				$('#fdata > tr:first-child > :first-child').text('%l10n_err_unknown%.');
+				$('#fdata > tr:first-child > :first-child').text(errorStr(d.error));
 			}
-			return;
-		}
-		if (!d.auth)
-		{
-			$('#fdata > tr:first-child > :first-child').html(loginRequireMsg());
 			return;
 		}
 		if (d.scores.length > 0)

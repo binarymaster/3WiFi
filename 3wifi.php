@@ -696,16 +696,14 @@ switch ($action)
 
 	// Определение WPS PIN по MAC
 	case 'wpspin':
-	$json['result'] = true;
-	$json['auth'] = $UserManager->Level >= 0;
-	if (!$json['auth'])
+	if (!$UserManager->isLogged())
 	{
+		$json['error'] = 'unauthorized';
 		break;
 	}
-	if (!db_connect())
+	if ($UserManager->Level < 0)
 	{
-		$json['result'] = false;
-		$json['error'] = 'database';
+		$json['error'] = 'lowlevel';
 		break;
 	}
 
@@ -718,12 +716,17 @@ switch ($action)
 
 	if (strlen($bssid) != 12)
 	{
-		$json['result'] = false;
 		$json['error'] = 'bssid';
+		break;
+	}
+	if (!db_connect())
+	{
+		$json['error'] = 'database';
 		break;
 	}
 	require_once 'wpspin.php';
 	$result = API_pin_search($bssid);
+	$json['result'] = true;
 	$json = array_merge($json, $result);
 	$db->close();
 	break;
