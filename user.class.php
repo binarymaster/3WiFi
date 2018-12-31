@@ -2,6 +2,16 @@
 require_once 'db.php';
 
 session_start();
+if (!isset($_SESSION['SessionCreated']))
+{
+	$_SESSION['SessionCreated'] = time();
+}
+else if (time() - $_SESSION['SessionCreated'] > SESSION_TIMEOUT)
+{
+	session_regenerate_id(true);
+	$_SESSION['SessionCreated'] = time();
+}
+
 /*
  * Класс авторизации пользователей для сайта 3WiFi
  * @link https://github.com/binarymaster/3WiFi
@@ -199,6 +209,7 @@ class User {
 		$_SESSION['invites'] 	= $this->invites;
 		$_SESSION['ReadApiKey'] 	= $this->ReadApiKey;
 		$_SESSION['WriteApiKey'] 	= $this->WriteApiKey;
+		$_SESSION['LastActivity'] = time();
 
 		return true;
 	}
@@ -210,6 +221,16 @@ class User {
 	 */
 		if (isset($_SESSION['uID'])) // сессия открыта
 		{
+			if (!isset($_SESSION['LastActivity']))
+			{
+				$_SESSION['LastActivity'] = 0;
+			}
+			$timeout = ($_SESSION['Level'] < 1 ? GUEST_TIMEOUT : USER_TIMEOUT);
+			if (time() - $_SESSION['LastActivity'] > $timeout)
+			{
+				$this->out();
+				return false;
+			}
 			$this->uID 		  = $_SESSION['uID'];
 			$this->puID 	  = $_SESSION['puID'];
 			$this->InviterNickName = $_SESSION['InviterNickName'];
@@ -224,6 +245,7 @@ class User {
 			$this->invites    = $_SESSION['invites'];
 			$this->ReadApiKey  = $_SESSION['ReadApiKey'];
 			$this->WriteApiKey = $_SESSION['WriteApiKey'];
+			$_SESSION['LastActivity'] = time();
 			return true;
 		}
 		else return false;

@@ -120,8 +120,6 @@ if (isset($_GET['redir']) && $_GET['redir'] != '')
 require_once 'user.class.php';
 require_once 'utils.php';
 
-session_start();
-
 $UserManager = new User();
 $UserManager->load();
 
