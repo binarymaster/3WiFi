@@ -79,27 +79,7 @@ function loadForm(frm, callback)
 	switch (frm)
 	{
 		case '#win_login':
-		$(frm).load('?fetch=' + frm.substr(1), function(response, status, xhr)
-		{
-			if (status == "error")
-			{
-				$(frm).html('');
-				return false;
-			}
-			callback();
-		});
-		break;
 		case '#win_reg':
-		$(frm).load('?fetch=' + frm.substr(1), function(response, status, xhr)
-		{
-			if (status == "error")
-			{
-				$(frm).html('');
-				return false;
-			}
-			callback();
-		});
-		break;
 		case '#win_newpass':
 		$(frm).load('?fetch=' + frm.substr(1), function(response, status, xhr)
 		{
@@ -246,7 +226,7 @@ function getCookie(cname)
 	var name = cname + "=";
 	var decodedCookie = decodeURIComponent(document.cookie);
 	var ca = decodedCookie.split(';');
-	for(var i = 0; i <ca.length; i++)
+	for(var i = 0; i < ca.length; i++)
 	{
 		var c = ca[i];
 		while (c.charAt(0) == ' ')
