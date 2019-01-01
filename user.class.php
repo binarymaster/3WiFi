@@ -365,6 +365,31 @@ class User {
 		return true;
 	}
 
+	public function checkQueryTime()
+	{
+		if (GUEST_WAIT <= 0) return true;
+		if ($this->uID == NULL) return true;
+		if ($this->Level > 0) return true;
+		if (is_null(self::$mysqli)) return true;
+
+		$sql = 'SELECT NOW() - querytime FROM users WHERE uid='.$this->uID;
+		$res = self::$mysqli->query($sql);
+
+		if ($res->num_rows != 1) return true;
+
+		$row = $res->fetch_row();
+		$res->close();
+		return ($row[0] >= GUEST_WAIT);
+	}
+
+	public function updateQueryTime()
+	{
+		if ($this->uID == NULL) return false;
+		if (is_null(self::$mysqli)) return false;
+
+		return (self::$mysqli->query('UPDATE users SET querytime=NOW() WHERE uid='.$this->uID) ? true : false);
+	}
+
 	public function setUser($uID=NULL, $puID=0, $Login='', $Nick='', $HashPass=NULL, $HashKey=NULL, $Salt=NULL, $Level=self::USER_UNAUTHORIZED, $HashIP=NULL, $invites=0)
 	{
 	/**

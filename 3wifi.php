@@ -164,6 +164,11 @@ switch ($action)
 		$json['error'] = 'lowlevel';
 		break;
 	}
+	if (!$UserManager->checkQueryTime())
+	{
+		$json['error'] = 'cooldown';
+		break;
+	}
 
 	function HasWildcards($str, $wc)
 	{
@@ -420,6 +425,7 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
+	$UserManager->updateQueryTime();
 	$json['result'] = true;
 	$json['data'] = array();
 
@@ -566,6 +572,7 @@ switch ($action)
 			$_SESSION['Search']['LastId'] = $LastId;
 		}
 	}
+	$UserManager->updateQueryTime();
 	$db->close();
 	break;
 
@@ -1615,11 +1622,17 @@ switch ($action)
 		$json['error'] = 'lowlevel';
 		break;
 	}
+	if (!$UserManager->checkQueryTime())
+	{
+		$json['error'] = 'cooldown';
+		break;
+	}
 	if (!db_connect())
 	{
 		$json['error'] = 'database';
 		break;
 	}
+	$UserManager->updateQueryTime();
 	$json['data'] = array();
 	foreach ($bssid as $i => $mac)
 	{
@@ -1724,6 +1737,7 @@ switch ($action)
 		}
 	}
 	$json['result'] = true;
+	$UserManager->updateQueryTime();
 	$db->close();
 	break;
 
