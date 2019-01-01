@@ -59,6 +59,8 @@ function errorStr(error)
 		return '%l10n_err_token%';
 		case 'notfound':
 		return '%l10n_err_notfound%';
+		case 'cooldown':
+		return '%l10n_err_wait%';
 		default:
 		return '%l10n_err_unknown%';
 	}
@@ -81,6 +83,7 @@ function loadForm(frm, callback)
 		case '#win_login':
 		case '#win_reg':
 		case '#win_newpass':
+		case '#win_wait':
 		$(frm).load('?fetch=' + frm.substr(1), function(response, status, xhr)
 		{
 			if (status == "error")
@@ -100,8 +103,21 @@ function showModal(frm)
 		$('#win_login').css({left: '-9999px'});
 		$('#win_reg').css({left: '-9999px'});
 		$('#win_newpass').css({left: '-9999px'});
-		$(frm).css({left: '50%'});
-		$(frm).css({top: '50%'});
+		$('#win_wait').css({left: '-9999px'});
+		if (frm == '#win_wait')
+		{
+			$(frm).css({left: '0'});
+			$(frm).css({top: '0'});
+			$(frm).css({width: '100%'});
+			$(frm).css({height: '100%'});
+			wait_sec = %var_wait%;
+			timeoutWaitSec();
+		}
+		else
+		{
+			$(frm).css({left: '50%'});
+			$(frm).css({top: '50%'});
+		}
 		$('.modal').show();
 		$('.modal').animate({opacity: 1}, 250);
 	});
@@ -372,6 +388,8 @@ function initmenu()
 	<div class=modal_cnt align=center id=win_reg>
 	</div>
 	<div class=modal_cnt align=center id=win_newpass>
+	</div>
+	<div style="position: absolute" align=center id=win_wait>
 	</div>
 </div>
 </body>

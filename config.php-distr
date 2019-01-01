@@ -59,6 +59,7 @@ define('INVITE_LEN', 12);
 define('SESSION_TIMEOUT', 8*60);
 define('GUEST_TIMEOUT', 60*60);
 define('USER_TIMEOUT', 24*60*60);
+define('GUEST_WAIT', 10);
 
 // Daemons
 define('GEO_PORTION', 100);

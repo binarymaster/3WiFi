@@ -8,6 +8,8 @@ $l10n['msg_reg'] =
 'Registration';
 $l10n['msg_chpass'] =
 'Change your password';
+$l10n['msg_wait'] =
+'Account query time limitation, please wait...';
 $l10n['str_invite'] =
 'Invitation code:';
 $l10n['str_login'] =
@@ -64,6 +66,8 @@ $l10n['err_token'] =
 'Token is incorrect, clear your browser cache and try again';
 $l10n['err_notfound'] =
 'Not found';
+$l10n['err_wait'] =
+'Time limitation encountered, please try again';
 $l10n['err_unknown'] =
 'Unknown error';
 $l10n['reg_ok'] =

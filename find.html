@@ -178,6 +178,7 @@ function find(page)
 			}
 			else
 			{
+				if (d.error == 'cooldown') showModal('#win_wait');
 				$('#fdata > tr:first-child > :first-child').text(errorStr(d.error));
 			}
 		}

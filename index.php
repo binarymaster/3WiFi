@@ -27,7 +27,8 @@ function validForm($form)
 	$result = '';
 	if ($form == 'win_login' ||
 		$form == 'win_reg' ||
-		$form == 'win_newpass')
+		$form == 'win_newpass' ||
+		$form == 'win_wait')
 	{
 		$result = $form;
 	}
@@ -84,6 +85,7 @@ function preparePage(&$content)
 	$content = str_replace('%var_lat%', $lat, $content);
 	$content = str_replace('%var_lon%', $lon, $content);
 	$content = str_replace('%var_rad%', $rad, $content);
+	$content = str_replace('%var_wait%', GUEST_WAIT, $content);
 
 	foreach ($l10n as $key => $value)
 	{

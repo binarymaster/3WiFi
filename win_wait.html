@@ -1,0 +1,20 @@
+<table style="height: 100%">
+	<tr><td>
+		<table>
+			<tr><td align=center><img src="img/rickroll.gif"/></td></tr>
+			<tr><td>&nbsp;</td></tr>
+			<tr><td align=center>%l10n_msg_wait% <span id="wait_sec"></span></td></tr>
+		</table>
+	</td></tr>
+</table>
+
+<script type="text/javascript">
+function timeoutWaitSec()
+{
+	$('#wait_sec').text(wait_sec--);
+	if (wait_sec >= 0)
+		setTimeout(timeoutWaitSec, 1000);
+	else
+		hideModal();
+}
+</script>
