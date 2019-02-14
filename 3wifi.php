@@ -693,7 +693,12 @@ switch ($action)
 				WHERE 
 					BSSID BETWEEN 0x{$m1} AND 0x{$m2} 
 					AND NoBSSID = 0 
-					AND name != ''
+					AND name != '' 
+					AND name NOT LIKE 'FOSCAM%' 
+					AND name NOT LIKE 'IPCAM%' 
+					AND name NOT LIKE '%D-Link DCS%' 
+					AND name NOT LIKE '%IP Camera%' 
+					AND name NOT LIKE '%Network Camera%' 
 			");
 			$json['result'] = $res !== false;
 		}
