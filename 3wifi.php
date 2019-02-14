@@ -661,9 +661,6 @@ switch ($action)
 		break;
 	}
 	$mac = mac2dec($bssid);
-	$oui = bcdiv($mac, bcpow('2', '24'));
-	$mac = base_convert($mac, 10, 16);
-	$oui = base_convert($oui, 10, 16);
 	if (!db_connect())
 	{
 		$json['error'] = 'database';
@@ -672,22 +669,56 @@ switch ($action)
 	$res = QuerySql(
 		"CREATE TEMPORARY TABLE dev_names 
 		(
+			`name` TINYTEXT NOT NULL, 
+			`BSSID` BIGINT(15) UNSIGNED NOT NULL, 
 			INDEX name (name(512)), 
-			INDEX BSSID (BSSID)
+			INDEX BSSID (BSSID), 
+			UNIQUE INDEX uni (BSSID)
 		)
-		SELECT name, BSSID 
-		FROM `BASE_TABLE` 
-		WHERE 
-			BSSID BETWEEN 0x{$oui}000000 AND 0x{$oui}FFFFFF 
-			AND NoBSSID = 0 
-			AND name != ''
 	");
 	$json['result'] = $res !== false;
+	$x = 1;
+	for ($i = 1; $i <= 24; $i++)
+	{
+		$m2 = $mac | $x;
+		$m1 = $m2 - $x;
+		$m2 = base_convert($m2, 10, 16);
+		$m1 = base_convert($m1, 10, 16);
+		if ($json['result'])
+		{
+			$res = QuerySql(
+				"INSERT IGNORE dev_names 
+				SELECT name, BSSID 
+				FROM `BASE_TABLE` 
+				WHERE 
+					BSSID BETWEEN 0x{$m1} AND 0x{$m2} 
+					AND NoBSSID = 0 
+					AND name != ''
+			");
+			$json['result'] = $res !== false;
+		}
+		if ($json['result'])
+		{
+			$res = QuerySql("SELECT COUNT(*) FROM dev_names");
+			$json['result'] = $res !== false;
+			if ($json['result'])
+			{
+				$row = $res->fetch_row();
+				$res->close();
+				if ((int)$row[0] >= 20000)
+					break;
+			}
+		}
+		if (!$json['result'])
+			break;
+		$x |= $x << 1;
+	}
 	if ($json['result'])
 	{
 		$res = QuerySql("CREATE TEMPORARY TABLE device_names LIKE dev_names");
 		$json['result'] = $res !== false;
 	}
+	$mac = base_convert($mac, 10, 16);
 	if ($json['result'])
 	{
 		$res = QuerySql(
