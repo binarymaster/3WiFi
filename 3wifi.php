@@ -669,19 +669,47 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$json['result'] = true;
-	if ($res = QuerySql("
-		SELECT name, COUNT(name) cnt, ABS(BSSID - 0x$mac) diff 
-		FROM ( 
+	$res = QuerySql(
+		"CREATE TEMPORARY TABLE dev_names 
+		(
+			INDEX name (name(512)), 
+			INDEX BSSID (BSSID)
+		)
+		SELECT name, BSSID 
+		FROM `BASE_TABLE` 
+		WHERE 
+			BSSID BETWEEN 0x{$oui}000000 AND 0x{$oui}FFFFFF 
+			AND NoBSSID = 0 
+			AND name != ''
+	");
+	$json['result'] = $res !== false;
+	if ($json['result'])
+	{
+		$res = QuerySql("CREATE TEMPORARY TABLE device_names LIKE dev_names");
+		$json['result'] = $res !== false;
+	}
+	if ($json['result'])
+	{
+		$res = QuerySql(
+			"INSERT device_names 
 			SELECT name, BSSID 
-			FROM `BASE_TABLE` 
-			WHERE BSSID BETWEEN 0x{$oui}000000 AND 0x{$oui}FFFFFF AND name != '' 
+			FROM dev_names 
+			ORDER BY ABS(BSSID - 0x$mac)
+		");
+		$json['result'] = $res !== false;
+	}
+	if ($json['result'])
+	{
+		$res = QuerySql(
+			"SELECT name, COUNT(name) cnt, ABS(BSSID - 0x$mac) diff 
+			FROM device_names 
+			GROUP BY name HAVING(cnt > 1) 
 			ORDER BY ABS(BSSID - 0x$mac) 
-		) T 
-		GROUP BY name HAVING(cnt > 1) 
-		ORDER BY ABS(BSSID - 0x$mac) 
-		LIMIT 10
-	"))
+			LIMIT 10
+		");
+		$json['result'] = $res !== false;
+	}
+	if ($json['result'])
 	{
 		$devs = array();
 		while ($row = $res->fetch_assoc())
@@ -691,6 +719,11 @@ switch ($action)
 		$res->close();
 	}
 	$db->close();
+	if (!$json['result'])
+	{
+		$json['error'] = 'database';
+		break;
+	}
 	$json['scores'] = array();
 	foreach($devs as $dev)
 	{
