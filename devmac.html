@@ -28,6 +28,8 @@ function detect()
 			}
 			return;
 		}
+		var res = '%l10n_find_results% '+ d.scores.length +' ('+ d.time.toFixed(2) +' %l10n_find_secs%)';
+		$('#found').text(res);
 		if (d.scores.length > 0)
 		{
 			$('#fdata').empty();
@@ -64,7 +66,7 @@ function initpage()
 		<tr><td>%l10n_str_bssid%</td><td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" autofocus /></td><td> (%l10n_bssid_format%)</td></tr>
 	</tbody>
 	<tbody>
-		<tr><td><input type=submit value="%l10n_btn_detect%" /></td><td></td></tr>
+		<tr><td><input type=submit value="%l10n_btn_detect%" /></td><td id=found></td></tr>
 	</tbody>
 </table>
 </form>
