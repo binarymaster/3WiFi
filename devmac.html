@@ -9,8 +9,8 @@ function detect()
 	$('button').prop('disabled', true);
 	$('#fdata').empty();
 	$('#fhead').empty();
-	$('#fhead').append('<tr><th>%l10n_tbl_dev_short%</th><th>%l10n_tbl_probability%</th></tr>');
-	$('#fdata').append('<tr><td colspan=2><img src="img/loading.gif"></td></tr>');
+	$('#fhead').append('<tr><th>%l10n_tbl_count%</th><th>%l10n_tbl_dev_short%</th><th>%l10n_tbl_probability%</th></tr>');
+	$('#fdata').append('<tr><td colspan=3><img src="img/loading.gif"></td></tr>');
 
 	$.post('3wifi.php?a=devicemac', formdata, function(d)
 	{
@@ -35,7 +35,7 @@ function detect()
 			$('#fdata').empty();
 			for (var i = 0; i < d.scores.length; i++)
 			{
-				$('#fdata').append('<tr><td>'+encodeHTML(d.scores[i].name, true)+'</td><td style="text-align: left"><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
+				$('#fdata').append('<tr><td>'+d.scores[i].count+'</td><td>'+encodeHTML(d.scores[i].name, true)+'</td><td style="text-align: left"><span class=perc></span><b>&nbsp; '+Math.round(d.scores[i].score * 100)+'%</b></td></tr>');
 				var perc = $('.perc:last');
 				var wid = 180;
 				perc.css('width', wid + 'px');
@@ -66,7 +66,7 @@ function initpage()
 		<tr><td>%l10n_str_bssid%</td><td><input name="bssid" type="text" value="" pattern="([0-9A-Fa-f]{2}[:-]?){5}[0-9A-Fa-f]{2}" autofocus /></td><td> (%l10n_bssid_format%)</td></tr>
 	</tbody>
 	<tbody>
-		<tr><td><input type=submit value="%l10n_btn_detect%" /></td><td id=found></td></tr>
+		<tr><td><input type=submit value="%l10n_btn_detect%" /></td><td id=found colspan=2></td></tr>
 	</tbody>
 </table>
 </form>

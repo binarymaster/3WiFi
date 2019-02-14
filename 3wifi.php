@@ -730,6 +730,7 @@ switch ($action)
 		$entry = array();
 		$entry['name'] = $dev['name'];
 		$entry['score'] = 1 - pow((int)$dev['diff'] / 0xFFFFFF, 1 / 8);
+		$entry['count'] = $dev['cnt'];
 		$json['scores'][] = $entry;
 	}
 	break;
