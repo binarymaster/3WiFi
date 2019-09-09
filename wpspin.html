@@ -789,6 +789,7 @@ function initAlgos()
 	algos.push({id: "pinDSL2740R", name: "DSL-2740R", mode: ALGO_STATIC, func: function (mac) {return 6817554;}});
 	algos.push({id: "pinRealtek1", name: "Realtek 1", mode: ALGO_STATIC, func: function (mac) {return 9566146;}});
 	algos.push({id: "pinRealtek2", name: "Realtek 2", mode: ALGO_STATIC, func: function (mac) {return 9571911;}});
+	algos.push({id: "pinRealtek3", name: "Realtek 3", mode: ALGO_STATIC, func: function (mac) {return 4856371;}});
 	algos.push({id: "pinUpvel", name: "Upvel", mode: ALGO_STATIC, func: function (mac) {return 2085483;}});
 	algos.push({id: "pinUR814AC", name: "UR-814AC", mode: ALGO_STATIC, func: function (mac) {return 4397768;}});
 	algos.push({id: "pinUR825AC", name: "UR-825AC", mode: ALGO_STATIC, func: function (mac) {return 0529417;}});
@@ -903,6 +904,10 @@ ZyXEL DEL1201-T10A
 TRENDnet (%l10n_wpspin_some_fw%)
 TRENDnet TEW-651BR
   00:14:D1:xx:xx:xx
+TRENDnet TEW-735AP
+  D8:EB:97:xx:xx:xx
+  %l10n_wpspin_wsc%
+    Wireless-N Multi-function AP
 D-Link DIR-300NRU B5
   1C:7E:E5:xx:xx:xx
   84:C9:B2:xx:xx:xx
@@ -1798,6 +1803,12 @@ Pin = 9566146</textarea>
 
 %l10n_wpspin_tech%
 Pin = 9571911</textarea>
+
+<textarea id=pinRealtek3>Sercomm Wifire S1010 (Realtek)
+  08:C6:B3:xx:xx:xx
+
+%l10n_wpspin_tech%
+Pin = 4856371</textarea>
 
 <textarea id=pinUpvel>Upvel (%l10n_wpspin_some_fw%)
 Upvel UR-315BN
