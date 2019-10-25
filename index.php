@@ -85,6 +85,7 @@ function preparePage(&$content)
 	$content = str_replace('%var_lat%', $lat, $content);
 	$content = str_replace('%var_lon%', $lon, $content);
 	$content = str_replace('%var_rad%', $rad, $content);
+	$content = str_replace('%var_ymaps_apikey%', YMAPS_APIKEY, $content);
 	$content = str_replace('%var_wait%', GUEST_WAIT, $content);
 
 	foreach ($l10n as $key => $value)
