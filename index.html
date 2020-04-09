@@ -65,6 +65,16 @@ function errorStr(error)
 		return '%l10n_err_unknown%';
 	}
 }
+function loginErrorStr(error)
+{
+	switch (error)
+	{
+		case 'lowlevel':
+		return '%l10n_err_banned%';
+		default:
+		return errorStr(error);
+	}
+}
 function encodeHTML(str, spaces)
 {
 	str = $('<div>').text(str).html();
@@ -175,7 +185,7 @@ function doLogin()
 		else
 		{
 			var errstr = (typeof json.error == 'string' ? json.error : '');
-			$('#loginstat').html('<img src="img/no.png" style="position: relative; top: 3px"> ' + errorStr(errstr));
+			$('#loginstat').html('<img src="img/no.png" style="position: relative; top: 3px"> ' + loginErrorStr(errstr));
 			$('#frm_login :input').prop('disabled', false);
 		}
 	});

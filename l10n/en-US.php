@@ -68,6 +68,8 @@ $l10n['err_notfound'] =
 'Not found';
 $l10n['err_wait'] =
 'Time limitation encountered, please try again';
+$l10n['err_banned'] =
+'Account is disabled';
 $l10n['err_unknown'] =
 'Unknown error';
 $l10n['reg_ok'] =

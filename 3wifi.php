@@ -1613,6 +1613,12 @@ switch ($action)
 			$json['error'] = 'loginfail';
 			break;
 		}
+		if ($UserManager->Level == -2)
+		{
+			$UserManager->out();
+			$json['error'] = 'lowlevel';
+			break;
+		}
 		$json['profile'] = array(
 			'nick' => $UserManager->Nick,
 			'regdate' => $UserManager->RegDate,
