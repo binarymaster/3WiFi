@@ -5,6 +5,9 @@ body
 	font-family: verdana, sans-serif !important;
 	font-size: 11pt;
 }
+ul {
+	text-align: left;
+}
 .pageWidth
 {
 	max-width: 100%;

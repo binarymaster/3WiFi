@@ -1,3 +1,6 @@
+ul {
+	text-align: left;
+}
 .modal {
 	display: none;
 	position: fixed;

@@ -131,7 +131,11 @@ $l10n['title_rules'] =
 $l10n['msg_agreement'] =
 'End user agreement';
 $l10n['msg_rules'] =
-'Project authors and maintainers are not responsible for the stored data in the database; only the users are responsible for their uploads.<br>
+'<ul>
+<li>Project authors do not sale access point data and personal data of their users.</li>
+<li>Project infrastructure is supported solely by user donations, project authors do not use contextual advertising.</li>
+<li>Project authors and maintainers are not responsible for the stored data in the database; only the users are responsible for their uploads. The administration reserves the right to disclose data to law enforcement authorities in case of an official request.</li>
+</ul>
 <br>
 The text of this agreement can be changed at any moment without notification. Keep an eye on latest updates.';
 
