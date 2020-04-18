@@ -803,8 +803,13 @@ function queryAP(e)
 	var id = $('input[name=id]', e).val();
 	var data = '';
 	data += '&id=' + id;
+	var btn = $('input[type=submit]', e);
+	btn.hide();
+	btn.next().show();
 	$.get('3wifi.php?a=queryall' + data, function(json)
 	{
+		btn.show();
+		btn.next().hide();
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
@@ -848,6 +853,9 @@ function queryAP(e)
 function deleteAP(e)
 {
 	var id = $('input[name=id]', e).val();
+	var btn = $('input[type=submit]', e);
+	btn.hide();
+	btn.next().show();
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -860,6 +868,8 @@ function deleteAP(e)
 			data += '&id=' + id;
 			$.get('3wifi.php?a=delete' + data, function(json)
 			{
+				btn.show();
+				btn.next().hide();
 				if (!json.result)
 				{
 					alert(errorStr(json.error));
@@ -880,6 +890,9 @@ function geolocate(e)
 	var bssid = $('input[name=bssid]', e).val();
 	var lat = $('input[name=lat]', e).val();
 	var lon = $('input[name=lon]', e).val();
+	var btn = $('input[type=submit]', e);
+	btn.hide();
+	btn.next().show();
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -894,6 +907,8 @@ function geolocate(e)
 			data += '&lon=' + lon;
 			$.get('3wifi.php?a=geoupdate' + data, function(json)
 			{
+				btn.show();
+				btn.next().hide();
 				if (!json.result)
 				{
 					alert(errorStr(json.error));
@@ -914,8 +929,13 @@ function getLogin(e)
 	var invite = $('input[name=invite]', $(e).closest('form')).val();
 	var data = '';
 	data += '&invite=' + encodeURIComponent(invite);
+	var btn = $(e);
+	btn.hide();
+	btn.next().show();
 	$.get('user.php?a=inviteuser' + data, function(json)
 	{
+		btn.show();
+		btn.next().hide();
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
@@ -933,6 +953,9 @@ function resetUser(e)
 {
 	var login = $('input[name=login]', e).val();
 	var form = e;
+	var btn = $('input[type=submit]', e);
+	btn.hide();
+	btn.next().show();
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -945,6 +968,8 @@ function resetUser(e)
 			data += '&login=' + encodeURIComponent(login);
 			$.get('user.php?a=resetpass' + data, function(json)
 			{
+				btn.show();
+				btn.next().hide();
 				if (!json.result)
 				{
 					alert(errorStr(json.error));
@@ -999,7 +1024,7 @@ function resetUser(e)
 			<fieldset>
 			<legend>%l10n_msg_full_query%</legend>
 			<label>ID: <input type="number" name="id" min="1" required="required"/></label>
-			<input type="submit" value="%l10n_btn_query%"/>
+			<input type="submit" value="%l10n_btn_query%"/><img src="%theme_ajax%" style="display: none;"/>
 			</fieldset>
 			</form>
 			<br/>
@@ -1008,7 +1033,7 @@ function resetUser(e)
 			<fieldset>
 			<legend>%l10n_msg_delete_aps%</legend>
 			<label>ID: <input type="number" name="id" min="1" required="required"/></label>
-			<input type="submit" value="%l10n_btn_delete%"/>
+			<input type="submit" value="%l10n_btn_delete%"/><img src="%theme_ajax%" style="display: none;"/>
 			</fieldset>
 			</form>
 			<br/>
@@ -1025,7 +1050,7 @@ function resetUser(e)
 			<td><input type="number" name="lon" id="lon" min="-180" max="180" step="0.00000001" value="0"/></td><td>° [-180; 180]</td></tr>
 			<tr><td colspan="3">%l10n_msg_geo_def_zero%</td></tr>
 			</table>
-			<input type="submit" value="%l10n_btn_update%"/>
+			<input type="submit" value="%l10n_btn_update%"/><img src="%theme_ajax%" style="display: none;"/>
 			</fieldset>
 			</form>
 			<br/>
@@ -1035,9 +1060,9 @@ function resetUser(e)
 			<legend>%l10n_msg_user_reset%</legend>
 			<table>
 			<tr><td><label for="invite">%l10n_str_invite%</label></td>
-			<td><input type="text" name="invite" id="invite" pattern=".{12,12}"/></td><td><input type="button" value="%l10n_btn_get%" onclick="return getLogin(this)"/></td></tr>
+			<td><input type="text" name="invite" id="invite" pattern=".{12,12}"/></td><td><input type="button" value="%l10n_btn_get%" onclick="return getLogin(this)"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			<tr><td><label for="login">%l10n_str_login%</label></td>
-			<td><input type="text" name="login" id="login" pattern=".{5,30}" required="required"/></td><td><input type="submit" value="%l10n_btn_reset%"/></td></tr>
+			<td><input type="text" name="login" id="login" pattern=".{5,30}" required="required"/></td><td><input type="submit" value="%l10n_btn_reset%"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			<tr><td>%l10n_str_pass%</td>
 			<td><tt id="pass"></tt></td></tr>
 			</table>
