@@ -578,14 +578,18 @@ $l10n['msg_geo_def_zero'] =
 '(leave coordinates at 0 to use geolocation)';
 $l10n['btn_update'] =
 'Update';
-$l10n['msg_user_reset'] =
-'Reset user password';
+$l10n['msg_user_mgmt'] =
+'User account management';
 $l10n['msg_user_reset_success'] =
 'Password was reset';
 $l10n['btn_get'] =
 'Obtain';
 $l10n['btn_reset'] =
 'Reset';
+$l10n['str_visited'] =
+'Visited:';
+$l10n['str_inv_invited_created'] =
+'Invited/Created:';
 
 /* user */
 $l10n['title_user'] =

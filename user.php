@@ -850,8 +850,8 @@ switch($action)
 	}
 	break;
 
-	// Получение имени пользователя по коду приглашения
-	case 'inviteuser':
+	// Получение информации о пользователе
+	case 'getuser':
 	if (!$UserManager->isLogged())
 	{
 		$json['error'] = 'unauthorized';
@@ -862,20 +862,40 @@ switch($action)
 		$json['error'] = 'lowlevel';
 		break;
 	}
-	if (strlen($_GET['invite']) != INVITE_LEN)
+	if (isset($_GET['invite']))
 	{
-		$json['error'] = 'form';
-		break;
+		if (strlen($_GET['invite']) != INVITE_LEN)
+		{
+			$json['error'] = 'form';
+			break;
+		}
+		$info = $UserManager->getInviteInfo($_GET['invite']);
+		if (!$info)
+		{
+			$json['error'] = 'invite';
+			break;
+		}
+		$uid = $info['uid'];
 	}
-	$info = $UserManager->getInviteInfo($_GET['invite']);
-	if (!$info)
+	elseif (isset($_GET['uid']))
 	{
-		$json['error'] = 'invite';
-		break;
+		$uid = $_GET['uid'];
 	}
-	$info = $UserManager->getUserInfo($info['uid']);
-	$json['login'] = $info['login'];
-	$json['result'] = !is_null($json['login']);
+	$info = $UserManager->getUserInfo($uid);
+	$json['result'] = !is_null($info['login']);
+	if ($json['result'])
+	{
+		$json['uid'] = (int)$info['uid'];
+		$json['login'] = $info['login'];
+		$json['nick'] = $info['nick'];
+		$json['regdate'] = $info['regdate'];
+		$json['level'] = (int)$info['level'];
+		$json['lastupdate'] = $info['lastupdate'];
+		$json['invites'] = (int)$info['invites'];
+		$json['puid'] = (int)$info['puid'];
+		$info = $UserManager->getUserInfo($info['puid']);
+		$json['refuser'] = $info['nick'];
+	}
 	break;
 
 	// Сброс пароля пользователя

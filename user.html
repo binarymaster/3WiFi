@@ -59,6 +59,11 @@ function initpage()
 		alert("%l10n_user_login_eq_nick%");
 		editNick();
 	}
+	if (ProfileInfo.Level == 3)
+	{
+		for (var i = -2; i <= 3; i++)
+			$('#user_level').append($('<option>').val(i).text(levelToText(i)));
+	}
 }
 
 function getMyUploads()
@@ -924,7 +929,28 @@ function geolocate(e)
 	return false;
 }
 
-function getLogin(e)
+function processUser(json)
+{
+	if (!json.result)
+	{
+		alert(errorStr(json.error));
+	}
+	else
+	{
+		$('input[name=login]').val(json.login);
+		$('input[name=nick]').val(json.nick);
+		$('input[name=reg_date]').val(json.regdate);
+		$('select#user_level').val(json.level);
+		$('input[name=visited]').val(json.lastupdate);
+		$('#inv_created').text('0/0');
+		$('input[name=invites]').val(json.invites);
+		$('input[name=refuser]').val(json.refuser);
+		mgmt_uid = json.uid;
+		mgmt_puid = json.puid;
+	}
+}
+
+function getUserByInvite(e)
 {
 	var invite = $('input[name=invite]', $(e).closest('form')).val();
 	var data = '';
@@ -932,21 +958,55 @@ function getLogin(e)
 	var btn = $(e);
 	btn.hide();
 	btn.next().show();
-	$.get('user.php?a=inviteuser' + data, function(json)
+	$.get('user.php?a=getuser' + data, function(json)
 	{
 		btn.show();
 		btn.next().hide();
-		if (!json.result)
-		{
-			alert(errorStr(json.error));
-		}
-		else
-		{
-			$('input[name=login]').val(json.login);
-		}
+		processUser(json);
 		return false;
 	}).fail(simpleFail);
 	return false;
+}
+
+function getUserById(uid, e)
+{
+	var data = '';
+	data += '&uid=' + encodeURIComponent(uid);
+	var btn = $(e);
+	btn.hide();
+	btn.next().show();
+	$.get('user.php?a=getuser' + data, function(json)
+	{
+		btn.show();
+		btn.next().hide();
+		processUser(json);
+		return false;
+	}).fail(simpleFail);
+	return false;
+}
+
+function getUserPrev(e)
+{
+	if ($('input[name=nick]').val() == '')
+		return false;
+
+	return getUserById(mgmt_uid - 1, e);
+}
+
+function getUserNext(e)
+{
+	if ($('input[name=nick]').val() == '')
+		return false;
+
+	return getUserById(mgmt_uid + 1, e);
+}
+
+function getUserParent(e)
+{
+	if ($('input[name=refuser]').val() == '')
+		return false;
+
+	return getUserById(mgmt_puid, e);
 }
 
 function resetUser(e)
@@ -976,7 +1036,7 @@ function resetUser(e)
 				}
 				else
 				{
-					$('tt#pass').text(json.pass);
+					$('input[name=pass]').val(json.pass);
 					alert("%l10n_msg_user_reset_success%");
 				}
 				return false;
@@ -1057,14 +1117,28 @@ function resetUser(e)
 
 			<form onsubmit="return resetUser(this)">
 			<fieldset>
-			<legend>%l10n_msg_user_reset%</legend>
+			<legend>%l10n_msg_user_mgmt%</legend>
 			<table>
 			<tr><td><label for="invite">%l10n_str_invite%</label></td>
-			<td><input type="text" name="invite" id="invite" pattern=".{12,12}"/></td><td><input type="button" value="%l10n_btn_get%" onclick="return getLogin(this)"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
+			<td><input type="text" name="invite" id="invite" pattern=".{12,12}"/></td><td><input type="button" value="%l10n_btn_get%" onclick="return getUserByInvite(this)"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			<tr><td><label for="login">%l10n_str_login%</label></td>
-			<td><input type="text" name="login" id="login" pattern=".{5,30}" required="required"/></td><td><input type="submit" value="%l10n_btn_reset%"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
+			<td><input type="text" name="login" id="login" pattern=".{5,30}" required="required"/></td><td><input type="button" value="&lt;" onclick="return getUserPrev(this)"/><img src="%theme_ajax%" style="display: none;"/><input type="button" value="&gt;" onclick="return getUserNext(this)"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
+			<tr><td>%l10n_str_nick_full%</td>
+			<td><input type="text" name="nick" id="nick" readonly /></td></tr>
+			<tr><td>%l10n_str_reg_date%</td>
+			<td><input type="text" name="reg_date" id="reg_date" readonly /></td></tr>
+			<tr><td>%l10n_str_level%</td>
+			<td><select id="user_level"></select></td><td><input type="button" value="%l10n_btn_save%"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			<tr><td>%l10n_str_pass%</td>
-			<td><tt id="pass"></tt></td></tr>
+			<td><input type="text" name="pass" id="pass" readonly /></td><td><input type="submit" value="%l10n_btn_reset%"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
+			<tr><td>%l10n_str_visited%</td>
+			<td><input type="text" name="visited" id="visited" readonly /></td></tr>
+			<tr><td>%l10n_str_inv_invited_created%</td>
+			<td><a href="#" id="inv_created">0/0</a></td></tr>
+			<tr><td>%l10n_str_inv_left%</td>
+			<td colspan=2><input type="number" name="invites" id="invites" min="0" max="100" step="1"/>&nbsp;<input type="button" value="%l10n_btn_save%"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
+			<tr><td>%l10n_str_inviter%</td>
+			<td><input type="text" name="refuser" id="refuser" readonly /></td><td><input type="button" value="%l10n_btn_get%" onclick="return getUserParent(this)"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			</table>
 			</fieldset>
 			</form>
