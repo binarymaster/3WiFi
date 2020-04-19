@@ -941,9 +941,10 @@ function processUser(json)
 		$('input[name=nick]').val(json.nick);
 		$('input[name=reg_date]').val(json.regdate);
 		$('select#user_level').val(json.level);
+		$('input[name=pass]').val('');
 		$('input[name=visited]').val(json.lastupdate);
-		$('#inv_created').text('0/0');
-		$('input[name=invites]').val(json.invites);
+		$('#inv_created').text(json.inv_invited + '/' + json.inv_created);
+		$('input[name=invites]').val(json.inv_left);
 		$('input[name=refuser]').val(json.refuser);
 		mgmt_uid = json.uid;
 		mgmt_puid = json.puid;

@@ -881,6 +881,11 @@ switch($action)
 	{
 		$uid = $_GET['uid'];
 	}
+	else
+	{
+		$json['error'] = 'form';
+		break;
+	}
 	$info = $UserManager->getUserInfo($uid);
 	$json['result'] = !is_null($info['login']);
 	if ($json['result'])
@@ -891,10 +896,25 @@ switch($action)
 		$json['regdate'] = $info['regdate'];
 		$json['level'] = (int)$info['level'];
 		$json['lastupdate'] = $info['lastupdate'];
-		$json['invites'] = (int)$info['invites'];
+		$inv = $UserManager->listInvites($json['uid']);
+		if (is_array($inv))
+		{
+			$json['inv_invited'] = 0;
+			$json['inv_created'] = count($inv);
+			for ($i = 0; $i < count($inv); $i++)
+			{
+				if (!empty($inv[$i]['nick']))
+					$json['inv_invited']++;
+			}
+		}
+		$json['inv_left'] = (int)$info['invites'];
 		$json['puid'] = (int)$info['puid'];
 		$info = $UserManager->getUserInfo($info['puid']);
 		$json['refuser'] = $info['nick'];
+	}
+	else
+	{
+		$json['error'] = 'notfound';
 	}
 	break;
 
