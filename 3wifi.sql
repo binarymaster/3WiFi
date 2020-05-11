@@ -86,9 +86,7 @@ CREATE TABLE `tasks` (
 	INDEX `task_state` (`tstate`),
 	INDEX `created_time` (`created`)
 )
-COLLATE='utf8_general_ci'
-ENGINE=InnoDB
-;
+COLLATE='utf8_general_ci' ENGINE=InnoDB;
 
 -- Дамп структуры таблицы 3wifi.ranges
 CREATE TABLE `ranges` (
