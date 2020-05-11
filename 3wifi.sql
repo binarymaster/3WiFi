@@ -71,21 +71,24 @@ CREATE TABLE `comments` (
 CREATE TABLE `tasks` (
 	`tid` CHAR(32) NOT NULL,
 	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
-	`tstate` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0',
-	`created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`modified` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`tstate` TINYINT(3) UNSIGNED NOT NULL DEFAULT 0,
+	`created` TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+	`modified` TIMESTAMP NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
 	`ext` CHAR(4) NOT NULL,
 	`comment` TINYTEXT NOT NULL,
 	`checkexist` BIT(1) NOT NULL,
 	`nowait` BIT(1) NOT NULL,
-	`lines` INT(10) UNSIGNED NOT NULL DEFAULT '0',
-	`accepted` INT(10) UNSIGNED NOT NULL DEFAULT '0',
-	`onmap` INT(10) UNSIGNED NOT NULL DEFAULT '0',
-	`warns` TEXT NOT NULL,
+	`lines` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+	`accepted` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+	`onmap` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+	`warns` TEXT NULL DEFAULT NULL,
 	PRIMARY KEY (`tid`),
 	INDEX `task_state` (`tstate`),
 	INDEX `created_time` (`created`)
-) COLLATE='utf8_general_ci' ENGINE=InnoDB;
+)
+COLLATE='utf8_general_ci'
+ENGINE=InnoDB
+;
 
 -- Дамп структуры таблицы 3wifi.ranges
 CREATE TABLE `ranges` (
