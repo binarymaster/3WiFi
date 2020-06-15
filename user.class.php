@@ -63,7 +63,7 @@ class User {
 
 	private static $mysqli;
 
-    function __construct($db=NULL)
+	function __construct($db=NULL)
 	{
 		global $db;
 

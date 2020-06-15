@@ -168,6 +168,7 @@ CREATE TABLE `users` (
 	`rapikey` CHAR(32) NULL DEFAULT NULL,
 	`wapikey` CHAR(32) NULL DEFAULT NULL,
 	`querytime` TIMESTAMP NULL DEFAULT NULL,
+	`ban_reason` VARCHAR(16) NULL DEFAULT NULL,
 	PRIMARY KEY (`uid`),
 	UNIQUE INDEX `login` (`login`),
 	UNIQUE INDEX `nick` (`nick`)

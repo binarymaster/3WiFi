@@ -69,9 +69,21 @@ $l10n['err_notfound'] =
 $l10n['err_wait'] =
 'Time limitation encountered, please try again';
 $l10n['err_banned'] =
-'Account is disabled';
+'Account is disabled. Reason: ';
 $l10n['err_unknown'] =
 'Unknown error';
+$l10n['ban_guest'] =
+'Guest account is <a href="https://forum.antichat.ru/posts/4370935" target="_blank">temporarily disabled</a>';
+$l10n['ban_parsing'] =
+'Mass download / parsing attempt / high load';
+$l10n['ban_commerce'] =
+'Commercial use';
+$l10n['ban_public'] =
+'Creation of public account';
+$l10n['ban_inherit'] =
+'The user who invited you was banned — ';
+$l10n['ban_weak'] =
+'Security issue — your login or password is weak';
 $l10n['reg_ok'] =
 'Registration success!';
 $l10n['login_ok'] =
@@ -133,7 +145,23 @@ $l10n['msg_agreement'] =
 $l10n['msg_rules'] =
 '<ul>
 <li>Project authors do not sale access point data and personal data of their users.</li>
+
 <li>Project infrastructure is supported solely by user donations, project authors do not use contextual advertising.</li>
+
+<li>Project usage is allowed only for non-commercial, research, and educational purposes.</li>
+
+<li>User account may be banned without any notice if unfair usage is being detected, which can be described by the following points:
+	<ol>
+	<li>Attempt to mass download or parse the data, or high load on the service — if you need a large chunk of data for research purposes, you must <a href="faq#feedback">contact the administration</a>.</li>
+	<li>Use for commercial purposes — for the purpose of enrichment, the use of access points to save Internet charges does not count here.</li>
+	<li>Use of a personal account to provide open access to everyone — there is a guest account for this, and if it is blocked, you cannot do anything.</li>
+	<li>Registration of a new account by using invitation from the account which violated the rules — the invited accounts are being blocked in a chain if the inviter&apos;s account violates the rules.</li>
+	<li>Registration of a personal account with a weak username or password — the account can be unlocked by changing the username or password.</li>
+	</ol>
+</li>
+
+<li>In case of multiple service usage violations, the administration reserves the right to contact law enforcement authorities with the subsequent sending of a system log with all relevant data.</li>
+
 <li>Project authors and maintainers are not responsible for the stored data in the database; only the users are responsible for their uploads. The administration reserves the right to disclose data to law enforcement authorities in case of an official request.</li>
 </ul>
 <br>

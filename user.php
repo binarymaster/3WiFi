@@ -61,8 +61,21 @@ switch($action)
 		}
 		if ($UserManager->Level == -2)
 		{
-			$UserManager->out();
 			$json['error'] = 'lowlevel';
+			$info = $UserManager->getUserInfo($UserManager->uID);
+			if ($info['ban_reason'] != null)
+			{
+				$json['reason'] = $info['ban_reason'];
+				$json['inherited'] = false;
+
+				if ($json['reason'] == "inherit")
+				{
+					$info = $UserManager->getUserInfo($UserManager->puID);
+					$json['reason'] = $info['ban_reason'];
+					$json['inherited'] = true;
+				}
+			}
+			$UserManager->out();
 			break;
 		}
 		$json['result'] = true;

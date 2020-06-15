@@ -65,14 +65,24 @@ function errorStr(error)
 		return '%l10n_err_unknown%';
 	}
 }
-function loginErrorStr(error)
+function banReasonStr(error)
 {
 	switch (error)
 	{
-		case 'lowlevel':
-		return '%l10n_err_banned%';
+		case 'guest':
+		return '%l10n_ban_guest%';
+		case 'parsing':
+		return '%l10n_ban_parsing%';
+		case 'commerce':
+		return '%l10n_ban_commerce%';
+		case 'public':
+		return '%l10n_ban_public%';
+		case 'inherit':
+		return '%l10n_ban_inherit%';
+		case 'weak':
+		return '%l10n_ban_weak%';
 		default:
-		return errorStr(error);
+		return '%l10n_err_unknown%';
 	}
 }
 function encodeHTML(str, spaces)
@@ -185,7 +195,19 @@ function doLogin()
 		else
 		{
 			var errstr = (typeof json.error == 'string' ? json.error : '');
-			$('#loginstat').html('<img src="img/no.png" style="position: relative; top: 3px"> ' + loginErrorStr(errstr));
+			var err = '';
+			if (errstr == 'lowlevel')
+			{
+				err = '%l10n_err_banned%';
+				if (json.inherited)
+					err += banReasonStr('inherit');
+				err += banReasonStr(json.reason);
+			}
+			else
+			{
+				err = errorStr(errstr);
+			}
+			$('#loginstat').html('<img src="img/no.png" style="position: relative; top: 3px"> ' + err);
 			$('#frm_login :input').prop('disabled', false);
 		}
 	});
