@@ -224,6 +224,21 @@ function mac_mask($macfield, $unmask = true)
 	}
 	return $macfield;
 }
+function bssid2str($nobss, $mac)
+{
+	switch ($nobss)
+	{
+		case 0:
+			return dec2mac($mac);
+		case 2:
+			return '<access denied>';
+		case 3:
+			return '<not accessible>';
+		case 4:
+			return '<not implemented>';
+	}
+	return '';
+}
 
 // Security block
 define('SEC_AUTH_OPEN', 0x00);

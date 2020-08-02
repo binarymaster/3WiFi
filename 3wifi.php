@@ -541,8 +541,7 @@ switch ($action)
 			}
 			$entry['nowifi'] = (bool)$row['RadioOff'];
 			$entry['hidden'] = (bool)$row['Hidden'];
-			$entry['bssid'] = '';
-			if ((int)$row['NoBSSID'] == 0) $entry['bssid'] = dec2mac($row['BSSID']);
+			$entry['bssid'] = bssid2str((int)$row['NoBSSID'], $row['BSSID']);
 			$entry['essid'] = $row['ESSID'];
 			$entry['sec'] = sec2str((int)$row['Security']);
 			$entry['key'] = $row['WiFiKey'];
@@ -998,7 +997,7 @@ switch ($action)
 		'name'    => $row['name'],
 		'radioOff' => (bool)$row['RadioOff'],
 		'hidden'  => (bool)$row['Hidden'],
-		'bssid'   => ($row['NoBSSID'] ? '' : dec2mac($row['BSSID'])),
+		'bssid'   => bssid2str((int)$row['NoBSSID'], $row['BSSID']),
 		'essid'   => $row['ESSID'],
 		'sec'     => sec2str($row['Security']),
 		'key'     => $row['WiFiKey'],
@@ -1793,7 +1792,7 @@ switch ($action)
 			{
 				$entry = array(
 					'time'  => $row['time'],
-					'bssid' => ($row['NoBSSID'] ? '' : dec2mac($row['BSSID'])),
+					'bssid' => bssid2str((int)$row['NoBSSID'], $row['BSSID']),
 					'essid' => $row['ESSID'],
 					'sec'   => sec2str($row['Security']),
 					'key'   => $row['WiFiKey'],

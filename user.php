@@ -330,7 +330,7 @@ switch($action)
 		$ap['name'] = $row['name'];
 		$ap['nowifi'] = (bool)$row['RadioOff'];
 		$ap['hidden'] = (bool)$row['Hidden'];
-		$ap['bssid'] = ($row['NoBSSID'] == 0 ? dec2mac($row['BSSID']) : '');
+		$ap['bssid'] = bssid2str((int)$row['NoBSSID'], $row['BSSID']);
 		$ap['essid'] = $row['ESSID'];
 		$ap['sec'] = sec2str((int)$row['Security']);
 		$ap['key'] = $row['WiFiKey'];
@@ -402,7 +402,7 @@ switch($action)
 		if ($row[1] == '') $row[1] = '0';
 		$row[4] = ($row[4] == 1 ? '[X]' : '');
 		$row[5] = ($row[5] == 1 ? '[X]' : '');
-		$row[7] = ($row[6] == 0 ? dec2mac($row[7]) : '');
+		$row[7] = bssid2str((int)$row[6], $row[7]);
 		$row[9] = sec2str((int)$row[9]);
 		$row[11] = pin2str($row[11]);
 		$row[12] = ($row[12] != 0 ? _long2ip($row[12]) : ''); // LAN IP
@@ -487,7 +487,7 @@ switch($action)
 			$ap['range'] = '';
 		$ap['nowifi'] = (bool)$row['RadioOff'];
 		$ap['hidden'] = (bool)$row['Hidden'];
-		$ap['bssid'] = ($row['NoBSSID'] == 0 ? dec2mac($row['BSSID']) : '');
+		$ap['bssid'] = bssid2str((int)$row['NoBSSID'], $row['BSSID']);
 		$ap['essid'] = $row['ESSID'];
 		$ap['sec'] = sec2str((int)$row['Security']);
 		$ap['key'] = $row['WiFiKey'];
