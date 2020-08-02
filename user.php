@@ -386,8 +386,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
-	if (!$res = QuerySql("SELECT IP, Port, Authorization, name, RadioOff, Hidden, NoBSSID, BSSID, ESSID, Security, WiFiKey, WPSPIN, LANIP, LANMask, WANIP, WANMask, WANGateway, DNS1, DNS2, DNS3, latitude, longitude, cmtval 
-						FROM BASE_TABLE RIGHT JOIN uploads USING(id) LEFT JOIN comments USING (cmtid) LEFT JOIN GEO_TABLE USING (BSSID) WHERE uid=$uid ORDER BY time"))
+	if (!$res = QuerySql("SELECT IP, Port, Authorization, name, RadioOff, Hidden, NoBSSID, BSSID, ESSID, Security, WiFiKey, WPSPIN, LANIP, LANMask, WANIP, WANMask, WANGateway, DNS1, DNS2, DNS3, latitude, longitude, data 
+						FROM BASE_TABLE RIGHT JOIN uploads USING(id) LEFT JOIN extinfo USING (id) LEFT JOIN GEO_TABLE USING (BSSID) WHERE uid=$uid ORDER BY time"))
 	{
 		$json['error'] = 'database';
 		break;
