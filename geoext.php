@@ -44,8 +44,8 @@ function handleGeoErrors($prov, $bssid, $lat, $lon)
 function GetGeolocationServices()
 {
 	return array(
-		'YandexLocator',
 		//'Yandex',
+		'YandexLocator',
 		'Microsoft',
 		//'AlterGeo',
 		//'Mylnikov',
