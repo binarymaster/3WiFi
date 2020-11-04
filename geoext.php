@@ -105,7 +105,7 @@ function GetFromYandexLocator($bssid) {
 	$getLongtude = $xmlGet->position->longitude;
 	$getType = $xmlGet->position->type;
 
-	if ($getType == 'wifi' || $getType == 'ip') {
+	if ($getType == 'wifi') {
 		$result = $getLatitude.';'.$getLongtude.';yandex_locator';
 	}
 	return $result;
