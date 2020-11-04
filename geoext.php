@@ -1,4 +1,5 @@
 <?php
+include 'config.php';
 require_once 'utils.php';
 
 function geoDbg($str)
