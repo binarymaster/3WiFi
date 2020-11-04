@@ -94,7 +94,7 @@ function GetFromYandexLocator($bssid) {
 	$resultXML = curl_exec($curl);
 
 	if(curl_errno($curl)){
-	    throw new Exception(curl_error($curl));
+	    return '';
 	}
 
 	curl_close($curl);
@@ -104,12 +104,12 @@ function GetFromYandexLocator($bssid) {
 	$getLongtude = $xmlGet->position->longitude;
 	$getType = $xmlGet->position->type;
 
-	if ($getType == wifi) {
+	if ($getType == 'wifi' || $getType == 'ip') {
 		$result = $getLatitude.';'.$getLongtude.';yandex_locator';
 	}
 	return $result;
 }
-/*
+
 function GetFromYandex($bssid)
 {
 	geoDbg("yandex: $bssid");
@@ -136,7 +136,7 @@ function GetFromYandex($bssid)
 	}
 	return $result;
 }
-*/
+
 function GetFromAlterGeo($bssid)
 {
 	geoDbg("altergeo: $bssid");
