@@ -70,7 +70,7 @@ function GeoLocateAP($bssid, $svcs = null)
 function GetFromYandexLocator($bssid) {
 	geoDbg("yandex_locator: $bssid");
 	$url = 'http://api.lbs.yandex.net/geolocation';
-	$apiKey = ''; //API-ключ Yandex Locator
+	$apiKey = YLOCATOR_APIKEY;
 
 	$xml = '<?xml version="1.0" encoding="UTF-8"?>
 			<ya_lbs_request xmlns="http://api.lbs.yandex.net/geolocation">
