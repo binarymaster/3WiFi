@@ -132,6 +132,7 @@ $page = validPage(isset($_GET['page']) ? $_GET['page'] : 'home');
 $form = validForm(isset($_GET['fetch']) ? $_GET['fetch'] : '');
 if ($page == '') $page = '404';
 
+// getGeoByIP($_SERVER['REMOTE_ADDR'], YLOCATOR_APIKEY)
 $lat = DEFAULT_LAT;
 $lon = DEFAULT_LON;
 $rad = DEFAULT_RAD;

@@ -45,6 +45,7 @@ function GetGeolocationServices()
 {
 	return array(
 		'Yandex',
+		//'YandexLocator',
 		'Microsoft',
 		//'AlterGeo',
 		//'Mylnikov',
@@ -88,6 +89,55 @@ function GetFromYandex($bssid)
 		if (handleGeoErrors('yandex', $bssid, (float)$latitude, (float)$longitude))
 		{
 			$result = $latitude.';'.$longitude.';yandex';
+		}
+	}
+	return $result;
+}
+function GetFromYandexLocator($bssid)
+{
+	geoDbg("yandex_locator: $bssid");
+	$url = 'http://api.lbs.yandex.net/geolocation';
+	$apiKey = YLOCATOR_APIKEY;
+	if (empty($apiKey))
+	{
+		return '';
+	}
+	$xmlRequest = '<?xml version="1.0" encoding="UTF-8"?>
+		<ya_lbs_request xmlns="http://api.lbs.yandex.net/geolocation">
+			<common>
+				<version>1.0</version>
+				<api_key>'.$apiKey.'</api_key>
+			</common>
+			<wifi_networks>
+				<network>
+					<mac>'.$bssid.'</mac>
+				</network>
+			</wifi_networks>
+		</ya_lbs_request>';
+	$curl = curl_init($url);
+	curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: text/xml"));
+	curl_setopt($curl, CURLOPT_POST, true);
+	curl_setopt($curl, CURLOPT_POSTFIELDS, "xml=" . urlencode($xmlRequest));
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	$data = curl_exec($curl);
+
+	if (curl_errno($curl))
+	{
+		return '';
+	}
+	curl_close($curl);
+
+	$result = '';
+	geoDebug('yandex_locator', $bssid, $data);
+	$xml = simplexml_load_string($data);
+
+	if ($xml->position->type == 'wifi')
+	{
+		$latitude = $xml->position->latitude;
+		$longitude = $xml->position->longitude;
+		if (handleGeoErrors('yandex_locator', $bssid, $latitude, $longitude))
+		{
+			$result = $latitude.';'.$longitude.';yandex_locator';
 		}
 	}
 	return $result;
