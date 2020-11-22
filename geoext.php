@@ -97,7 +97,7 @@ function GetFromAlterGeo($bssid)
 	geoDbg("altergeo: $bssid");
 	$tries = 3;
 	$bssid = strtolower(str_replace(":","-",$bssid));
-	while (!($data = cURL_Get("http://api.platform.altergeo.ru/loc/json?browser=firefox&sensor=false&wifi=mac:$bssid|ss:0")) && ($tries > 0))
+	while (!($data = cURL_Get("http://api.platform.altergeo.ru/loc/json?browser=firefox&sensor=false&wifi=mac:$bssid%7Css:0")) && ($tries > 0))
 	{
 		$tries--;
 		sleep(5);
@@ -110,7 +110,7 @@ function GetFromAlterGeo($bssid)
 	if (!$json) return $result;
 	if ($json->status == 'OK')
 	{
-		if ($json->accuracy < 50000 && handleGeoErrors('altergeo', $bssid, $json->location->lat, $json->location->lng))
+		if ($json->accuracy < 1000 && handleGeoErrors('altergeo', $bssid, $json->location->lat, $json->location->lng))
 		{
 			$latitude = $json->location->lat;
 			$longitude = $json->location->lng;
@@ -178,17 +178,17 @@ function GetFromMylnikov($bssid)
 {
 	geoDbg("mylnikov: $bssid");
 	$tries = 5;
-	while (!($data = cURL_Get("http://api.mylnikov.org/wifi/main.py/get?bssid=$bssid", ''/* 127.0.0.1:3128 */)) && ($tries > 0))
+	while (!($data = cURL_Get("https://api.mylnikov.org/wifi/main.py/get?bssid=$bssid", ''/* 127.0.0.1:3128 */)) && ($tries > 0))
 	{
 		$tries--;
 		sleep(5);
 	}
 
+	geoDebug('mylnikov', $bssid, $data);
 	$result = '';
 	if (!$data) return $result;
 	$json = json_decode($data);
 	if (!$json) return $result;
-	geoDebug('mylnikov', $bssid, $data);
 	if ($json->result == 200 && handleGeoErrors('mylnikov', $bssid, $json->data->lat, $json->data->lon))
 	{
 		$latitude = $json->data->lat;
