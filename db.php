@@ -226,6 +226,7 @@ function getTask($tid)
 			$result = array();
 			$result['id'] = $row['tid'];
 			$result['uid'] = $row['uid'];
+			$result['ipaddr'] = (int)$row['ipaddr'];
 			$result['state'] = (int)$row['tstate'];
 			$result['created'] = $row['created'];
 			$result['modified'] = $row['modified'];
@@ -356,7 +357,7 @@ function CheckRelevanceOfMemoryTables($UseFix)
 	return $Result;
 }
 
-function db_add_ap($row, $cmtid, $uid)
+function db_add_ap($row, $cmtid, $uid, $ipaddr)
 {
 	global $checkexist;
 	global $db;
@@ -463,13 +464,18 @@ function db_add_ap($row, $cmtid, $uid)
 			VALUES ($cmtid, $addr, $port, $auth, $name, $radio, $hide, $NoBSSID, $bssid, $essid, $sec, $key, $wps, $lanip, $lanmsk, $wanip, $wanmsk, $gate, $DNS[0], $DNS[1], $DNS[2])
 			ON DUPLICATE KEY UPDATE
 			`cmtid`=$cmtid,`IP`=$addr,`Port`=$port,`Authorization`=$auth,`name`=$name,`RadioOff`=$radio,`Hidden`=$hide,`NoBSSID`=$NoBSSID,`BSSID`=$bssid,`ESSID`=$essid,`Security`=$sec,`WiFiKey`=$key,`WPSPIN`=$wps,`LANIP`=$lanip,`LANMask`=$lanmsk,`WANIP`=$wanip,`WANMask`=$wanmsk,`WANGateway`=$gate,`DNS1`=$DNS[0],`DNS2`=$DNS[1],`DNS3`=$DNS[2];");
+	// Берём id точки из таблицы base в любом случае (могут быть расхождения с mem_base)
+	$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND BINARY ESSID=$essid AND BINARY WiFiKey=$key AND WPSPIN=$wps");
+	$row = $res->fetch_row();
+	$res->close();
+	$id = (int)$row[0];
+	if ($ipaddr != 0)
+	{
+		// Регистрируем кто и когда загрузил / последний раз обновил эту точку
+		$db->query("INSERT INTO logupload (`id`, `ipaddr`) VALUES ($id, $ipaddr) ON DUPLICATE KEY UPDATE `ipaddr` = $ipaddr, `updated` = NOW()");
+	}
 	if (!is_null($uid))
 	{
-		// Берём id точки из таблицы base в любом случае (могут быть расхождения с mem_base)
-		$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND BINARY ESSID=$essid AND BINARY WiFiKey=$key AND WPSPIN=$wps");
-		$row = $res->fetch_row();
-		$res->close();
-		$id = (int)$row[0];
 		// Выясняем, если кто-то уже загрузил такую точку
 		$res = $db->query("SELECT COUNT(uid) FROM uploads WHERE id=$id");
 		$row = $res->fetch_row();
@@ -481,11 +487,6 @@ function db_add_ap($row, $cmtid, $uid)
 	if (!empty($data))
 	{
 		// Собираем доп. информацию о точке (может быть серийник и что-либо ещё)
-		$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND BINARY ESSID=$essid AND BINARY WiFiKey=$key AND WPSPIN=$wps");
-		$row = $res->fetch_row();
-		$res->close();
-		$id = (int)$row[0];
-		// Добавляем информацию
 		$dt = parseDelimStr($data);
 		$data = '\''.$db->real_escape_string($data).'\'';
 		$db->query("INSERT INTO extinfo (`id`, `data`) VALUES ($id, $data) ON DUPLICATE KEY UPDATE `data` = $data");

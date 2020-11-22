@@ -895,10 +895,11 @@ switch ($action)
 				$useapi = false;
 				if (!is_null($key))
 					$useapi = $UserManager->AuthByApiKey($key, true);
+				$ip = _ip2long($_SERVER["REMOTE_ADDR"]);
 				$uid = $UserManager->uID;
 				if (is_null($uid) || $UserManager->Level < 1 || ($useapi && $UserManager->ApiAccess != 'write'))
 					$uid = 'NULL';
-				if ($db->query('INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`,`uid`) VALUES (\''.$tid.'\', now(), now(), \''.$ext.'\', \''.$comment.'\', '.$checkexist.', '.$nowait.', '.$uid.')'))
+				if ($db->query('INSERT INTO tasks (`tid`,`created`,`modified`,`ext`,`comment`,`checkexist`,`nowait`,`uid`,`ipaddr`) VALUES (\''.$tid.'\', now(), now(), \''.$ext.'\', \''.$comment.'\', '.$checkexist.', '.$nowait.', '.$uid.', '.$ip.')'))
 				{
 					$json['upload']['state'] = true;
 					$json['upload']['tid'] = $tid;
@@ -972,11 +973,13 @@ switch ($action)
 	}
 	$id = (int)$id;
 	$sql = "SELECT 
-				* 
+				*, extinfo.data AS extinfo 
 			FROM 
 				`BASE_TABLE` 
 				INNER JOIN `GEO_TABLE` USING(BSSID) 
 				LEFT JOIN `comments` USING(cmtid) 
+				LEFT JOIN extinfo USING (id) 
+				LEFT JOIN logupload USING (id) 
 			WHERE 
 				id = $id";
 	$res = QuerySql($sql);
@@ -990,6 +993,8 @@ switch ($action)
 	$json['data'] = array(
 		'id'      => (int)$row['id'],
 		'time'    => $row['time'],
+		'updated' => $row['updated'],
+		'last_uploader' => _long2ip($row['ipaddr']),
 		'comment' => $row['cmtval'],
 		'ip'      => _long2ip($row['IP']),
 		'port'    => (int)$row['Port'],
@@ -1010,6 +1015,7 @@ switch ($action)
 		'dns1'    => _long2ip($row['DNS1']),
 		'dns2'    => _long2ip($row['DNS2']),
 		'dns3'    => _long2ip($row['DNS3']),
+		'extinfo' => $row['extinfo'],
 		'lat'     => 'none',
 		'lon'     => 'none',
 		'quadkey' => $row['quadkey'],

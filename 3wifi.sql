@@ -71,6 +71,7 @@ CREATE TABLE `comments` (
 CREATE TABLE `tasks` (
 	`tid` CHAR(32) NOT NULL,
 	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
+	`ipaddr` INT(11) NOT NULL,
 	`tstate` TINYINT(3) UNSIGNED NOT NULL DEFAULT 0,
 	`created` TIMESTAMP NOT NULL DEFAULT current_timestamp(),
 	`modified` TIMESTAMP NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -178,12 +179,24 @@ CREATE TABLE `users` (
 CREATE TABLE `logauth` (
 	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	`IP` INT(15) UNSIGNED NOT NULL,
+	`IP` INT(15) NOT NULL,
 	`uid` INT(11) UNSIGNED NULL DEFAULT NULL,
 	`action` TINYINT(3) UNSIGNED NOT NULL,
 	`data` CHAR(64) NOT NULL DEFAULT '',
 	`status` BIT(1) NOT NULL DEFAULT b'0',
 	PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Дамп структуры для таблицы 3wifi.logupload
+CREATE TABLE `logupload` (
+	`id` INT(10) UNSIGNED NOT NULL,
+	`updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`ipaddr` INT(11) NOT NULL,
+	PRIMARY KEY (`id`),
+	UNIQUE INDEX `FK1_logupload_base` (`id`),
+	INDEX `updated` (`updated`),
+	INDEX `ipaddr` (`ipaddr`),
+	CONSTRAINT `FK1_logupload_base` FOREIGN KEY (`id`) REFERENCES `base` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Дамп структуры для таблицы 3wifi.uploads
