@@ -788,7 +788,7 @@ class User {
 	public function eventLog($Action, $Status, $Data='')
 	{
 		$IP = $_SERVER['REMOTE_ADDR'];
-		$IP = ip2long($IP);
+		$IP = _ip2long($IP);
 		if($IP === false) return;
 
 		$sql = 'INSERT INTO logauth SET IP='.$IP.', uid='.$this->uID.',action='.$Action.', data="'.$Data.'", status='.$Status;

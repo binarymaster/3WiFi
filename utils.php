@@ -3,7 +3,7 @@
 function Debug($Text)
 {
 	$LogFile = fopen(DEBUG_FILENAME, 'a');
-	fwrite($LogFile, '['.date('H:i:s').'] ('.$_SERVER['REMOTE_ADDR'].'): '.$Text."\r\n");
+	fwrite($LogFile, '['.date('Y.m.d H:i:s').'] ('.$_SERVER['REMOTE_ADDR'].'): '.$Text."\r\n");
 	fclose($LogFile);
 }
 

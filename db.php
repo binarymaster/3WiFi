@@ -221,22 +221,22 @@ function getTask($tid)
 	$result = false;
 	if ($res = $db->query("SELECT * FROM tasks WHERE `tid`='$tid'"))
 	{
-		if ($row = $res->fetch_row())
+		if ($row = $res->fetch_assoc())
 		{
 			$result = array();
-			$result['id'] = $row[0];
-			$result['uid'] = $row[1];
-			$result['state'] = (int)$row[2];
-			$result['created'] = $row[3];
-			$result['modified'] = $row[4];
-			$result['ext'] = $row[5];
-			$result['comment'] = $row[6];
-			$result['checkexist'] = (bool)$row[7];
-			$result['nowait'] = (bool)$row[8];
-			$result['lines'] = (int)$row[9];
-			$result['accepted'] = (int)$row[10];
-			$result['onmap'] = (int)$row[11];
-			$result['warns'] = $row[12];
+			$result['id'] = $row['tid'];
+			$result['uid'] = $row['uid'];
+			$result['state'] = (int)$row['tstate'];
+			$result['created'] = $row['created'];
+			$result['modified'] = $row['modified'];
+			$result['ext'] = $row['ext'];
+			$result['comment'] = $row['comment'];
+			$result['checkexist'] = (bool)$row['checkexist'];
+			$result['nowait'] = (bool)$row['nowait'];
+			$result['lines'] = (int)$row['lines'];
+			$result['accepted'] = (int)$row['accepted'];
+			$result['onmap'] = (int)$row['onmap'];
+			$result['warns'] = $row['warns'];
 		}
 		$res->close();
 	}
