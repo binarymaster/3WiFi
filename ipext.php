@@ -170,7 +170,7 @@ function cidr_to_range($cidr)
 		$ip .= '.0';
 		$i++;
 	}
-	$ip = _ip2long($ip);
+	$ip = ip2long($ip);
 	return array('startIP' => $ip,
 		// will not work on 32bit if $mask=0; but it doesn't matter here
 		'endIP' => $ip | ((1<<(32-$mask)) - 1)); 
@@ -230,8 +230,8 @@ function query_range_from_rir($ip)
 				$descr = iconv("ISO-8859-1", "UTF-8", $descr);
 			}
 			$country = strtoupper(get_whois_field($whois_res, 'country'));
-			return array('startIP' => _ip2long($inetnum[0]),
-				'endIP' => _ip2long($inetnum[1]),
+			return array('startIP' => ip2long($inetnum[0]),
+				'endIP' => ip2long($inetnum[1]),
 				'netname' => $netname,
 				'descr' => $descr,
 				'country' => $country);
@@ -247,7 +247,7 @@ function query_range_from_rir($ip)
 				if ($inetnum != '')
 				{
 					$inetnum = preg_split('/\s*-\s*/', $inetnum);
-					$ip_count[$start_pos] = _ip2long($inetnum[1]) - _ip2long($inetnum[0]);
+					$ip_count[$start_pos] = ip2long($inetnum[1]) - ip2long($inetnum[0]);
 				}
 			}
 			if (!empty($ip_count))
@@ -271,8 +271,8 @@ function query_range_from_rir($ip)
 				$descr = get_whois_field($whois_res, 'CustName');
 			}
 			$country = strtoupper(get_whois_field($whois_res, 'Country'));
-			return array('startIP' => _ip2long($inetnum[0]),
-				'endIP' => _ip2long($inetnum[1]),
+			return array('startIP' => ip2long($inetnum[0]),
+				'endIP' => ip2long($inetnum[1]),
 				'netname' => $netname,
 				'descr' => $descr,
 				'country' => $country);
@@ -339,8 +339,8 @@ function get_ip_range($db, $ip)
 		{
 			$res->close();
 			// TODO: convert unsigned integer (represented by string) to int
-			return array('startIP' => _ip2long(long2ip($row[1])),
-				'endIP' => _ip2long(long2ip($row[2])),
+			return array('startIP' => ip2long(long2ip($row[1])),
+				'endIP' => ip2long(long2ip($row[2])),
 				'netname' => $row[3],
 				'descr' => $row[4],
 				'country' => $row[5]);
