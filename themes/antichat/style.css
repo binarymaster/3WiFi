@@ -304,6 +304,7 @@ table.st1 th
 	border-top: 2px solid #2B2F34;
 	border-bottom: 2px solid #2B2F34;
 	border-left: 1px solid #363940;
+	white-space: nowrap;
 }
 table.st1 td
 {

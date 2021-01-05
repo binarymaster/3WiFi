@@ -246,6 +246,7 @@ TABLE.st1 {
 TABLE.st1 TD,
 TABLE.st1 TH {
 	padding: 3px; /* Поля вокруг содержимого ячейки */
+	white-space: nowrap;
 }
 TABLE.st1 TD {
 	text-align: center; /* Выравнивание по центру */
