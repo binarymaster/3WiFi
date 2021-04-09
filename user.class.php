@@ -1,6 +1,7 @@
 <?php
 require_once 'db.php';
 
+ini_set('session.cookie_lifetime', USER_TIMEOUT + 60*60);
 session_start();
 if (!isset($_SESSION['SessionCreated']))
 {
