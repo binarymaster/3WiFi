@@ -132,8 +132,43 @@ $page = validPage(isset($_GET['page']) ? $_GET['page'] : 'home');
 $form = validForm(isset($_GET['fetch']) ? $_GET['fetch'] : '');
 if ($page == '') $page = '404';
 
-$lat = DEFAULT_LAT;
-$lon = DEFAULT_LON;
+$ip = $_SERVER['REMOTE_ADDR'];
+
+$url = 'http://api.lbs.yandex.net/geolocation';
+$apiKey = YLOCATOR_APIKEY;
+
+$xml = '<?xml version="1.0" encoding="UTF-8"?>
+		<ya_lbs_request xmlns="http://api.lbs.yandex.net/geolocation">
+			<common>
+				<version>1.0</version>
+				<api_key>'.$apiKey.'</api_key>
+			</common>
+			<ip>
+     			<address_v4>'.$ip.'</address_v4>
+ 			</ip>
+			
+		</ya_lbs_request>';
+
+$curl = curl_init($url);
+curl_setopt ($curl, CURLOPT_HTTPHEADER, array("Content-Type: text/xml"));
+curl_setopt($curl, CURLOPT_POST, true);
+$data = "xml=".urlencode($xml);
+curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+$resultXML = curl_exec($curl);
+
+if(curl_errno($curl)){
+	return '';
+}
+
+curl_close($curl);
+
+$xmlGet = simplexml_load_string($resultXML);
+$getLatitude = $xmlGet->position->latitude;
+$getLongtude = $xmlGet->position->longitude;
+
+$lat = $getLatitude;
+$lon = $getLongtude;
 $rad = DEFAULT_RAD;
 
 function setFloat($in, &$out)
@@ -224,4 +259,3 @@ if (strpos($content, '%news%') !== false)
 preparePage($content);
 
 echo str_replace('</body>', $incscript.'</body>', $content);
-?>

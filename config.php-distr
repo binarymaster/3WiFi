@@ -42,11 +42,10 @@ define('TOP_SSID', 10);
 define('MAX_ZOOM_LEVEL', 23);
 define('MAX_YANDEX_ZOOM', 18);
 
-define('DEFAULT_LAT', 55.76);
-define('DEFAULT_LON', 37.64);
 define('DEFAULT_RAD', 2);
 
 define('YMAPS_APIKEY', '');
+define('YLOCATOR_APIKEY', '');
 
 // Users
 define('LOGIN_MIN', 5);
