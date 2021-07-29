@@ -84,6 +84,8 @@ $l10n['ban_inherit'] =
 'The user who invited you was banned — ';
 $l10n['ban_weak'] =
 'Security issue — your login or password is weak';
+$l10n['ban_left'] =
+'You are no longer in community';
 $l10n['reg_ok'] =
 'Registration success!';
 $l10n['login_ok'] =
