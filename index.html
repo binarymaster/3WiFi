@@ -11,7 +11,7 @@ body { margin: 0px }
 <script type="text/javascript">
 function isMobile() 
 { 
-	if( navigator.userAgent.match(/Android/i)
+	if (navigator.userAgent.match(/Android/i)
 	|| navigator.userAgent.match(/webOS/i)
 	|| navigator.userAgent.match(/iPhone/i)
 	|| navigator.userAgent.match(/iPad/i)
@@ -22,11 +22,13 @@ function isMobile()
 	{
 		return true;
 	}
-	if(window.innerWidth <= 800 && window.innerHeight <= 600) 
+	if (window.innerWidth <= 800 && window.innerHeight <= 600)
 	{
 		return true;
 	}
-	return false;
+	return (('ontouchstart' in window) ||
+		(navigator.maxTouchPoints > 0) ||
+		(navigator.msMaxTouchPoints > 0));
 }
 
 function errorStr(error)
@@ -336,13 +338,13 @@ var ProfileInfo = {%profile%};
 
 function initmenu()
 {
-	if(this != top)
+	if (this != top)
 	{
 		top.location.href = this.location.href;
 	}
 	if (ProfileInfo.isUser == 0) $('a[href=user]').hide();
 
-	if(!isMobile())
+	if (!isMobile())
 	{
 		$('.multi').mouseenter(function()
 		{
