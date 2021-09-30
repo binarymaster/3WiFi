@@ -494,6 +494,8 @@ function db_add_ap($row, $cmtid, $uid, $ipaddr)
 		$sn = getDelimStr('Serial', $dt);
 		if (!$sn)
 			$sn = getDelimStr('SN', $dt);
+		if (!$sn)
+			$sn = getDelimStr('S/N', $dt);
 		if ($sn !== false)
 		{
 			$sn = '\''.$db->real_escape_string($sn).'\'';
