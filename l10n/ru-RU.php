@@ -694,6 +694,8 @@ $l10n['str_get_new'] =
 'получить новый';
 $l10n['str_cookies'] =
 'настройка хранится в cookies';
+$l10n['str_show_sens'] =
+'Показать чувствительные данные';
 $l10n['btn_save'] =
 'Сохранить';
 $l10n['btn_cancel'] =

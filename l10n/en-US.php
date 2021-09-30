@@ -694,6 +694,8 @@ $l10n['str_get_new'] =
 'get new';
 $l10n['str_cookies'] =
 'stored in cookies';
+$l10n['str_show_sens'] =
+'Display sensitive information';
 $l10n['btn_save'] =
 'Save';
 $l10n['btn_cancel'] =

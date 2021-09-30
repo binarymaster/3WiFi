@@ -15,9 +15,38 @@ function levelToText(level)
 		default: return '%l10n_no_access%';
 	}
 }
+
+function hideText(val, n)
+{
+	var hide = '';
+	for (var i = n; i < val.length; i++)
+		hide += '•';
+	return val.substr(0, n) + hide;
+}
+
+function revealSens(val)
+{
+	var loginField = ProfileLogin;
+	var rapikey = ProfileRAPI;
+	var wapikey = ProfileWAPI;
+	if (!val)
+	{
+		loginField = hideText(loginField, 1);
+		rapikey = hideText(rapikey, 4);
+		wapikey = hideText(wapikey, 4);
+	}
+	$('#loginField').text(loginField);
+	$('#rapikey').val(rapikey);
+	$('#wapikey').val(wapikey);
+}
+
 function initpage()
 {
 	if (ProfileInfo.isUser == 0) window.location.href = 'home';
+	ProfileLogin = '%login%';
+	ProfileRAPI = '%rapikey%';
+	ProfileWAPI = '%wapikey%';
+	revealSens($('#sens_chk').prop('checked'));
 	ThemesList = %themes%;
 	var sel = $('select[name=themes]');
 	var theme = '%theme%';
@@ -651,8 +680,9 @@ function createApiKey(type)
 					alert(errorStr(json.error));
 					return;
 				}
-				if(json.data.r) $('#rapikey').text(json.data.r);
-				if(json.data.w) $('#wapikey').text(json.data.w);
+				if (json.data.r) ProfileRAPI = json.data.r;
+				if (json.data.w) ProfileWAPI = json.data.w;
+				revealSens($('#sens_chk').prop('checked'));
 			}).fail(simpleFail);
 		}
 	}).fail(simpleFail);
@@ -1065,7 +1095,7 @@ function resetUser(e)
 	<div class=userCodeContainer>
 		<div id=tab1 class=userCode dir=ltr style="display: block;">
 			<table>
-			<tr><td>%l10n_str_login%</td><td>%login%</td></tr>
+			<tr><td>%l10n_str_login%</td><td id="loginField"></td></tr>
 			<tr><td>%l10n_str_nick_full%</td><td>
 				<span id=nicklabel>%nick% <a href="javascript://" onclick="editNick()">(%l10n_str_change%)</a></span>
 				<span id=nickeditor style="display:none"><input type=text id=nickedit />&nbsp;<button onclick="changeNick()">%l10n_btn_save%</button>&nbsp;<button onclick="editNick()">%l10n_btn_cancel%</button></span>
@@ -1073,11 +1103,12 @@ function resetUser(e)
 			<tr><td>%l10n_str_reg_date%</td><td>%regdate%</td></tr>
 			<tr><td>%l10n_str_level%</td><td id=userlevel></td></tr>
 			<tr><td>%l10n_str_pass%</td><td><a href="javascript://" onclick="showModal('#win_newpass')">%l10n_btn_change%</a></td></tr>
-			<tr><td>%l10n_str_apikey_r%</td><td><span id="rapikey">%rapikey%</span> <a href="javascript://" onclick="createApiKey(1)">(%l10n_str_get_new%)</a></td></tr>
-			<tr><td>%l10n_str_apikey_w%</td><td><span id="wapikey">%wapikey%</span> <a href="javascript://" onclick="createApiKey(2)">(%l10n_str_get_new%)</a></td></tr>
+			<tr><td>%l10n_str_apikey_r%</td><td><input type="text" style="width: 34ch; font-family: monospace" id="rapikey" readonly /> <a href="javascript://" onclick="createApiKey(1)">(%l10n_str_get_new%)</a></td></tr>
+			<tr><td>%l10n_str_apikey_w%</td><td><input type="text" style="width: 34ch; font-family: monospace" id="wapikey" readonly /> <a href="javascript://" onclick="createApiKey(2)">(%l10n_str_get_new%)</a></td></tr>
 			<tr><td>%l10n_str_inviter%</td><td>%refuser%</td></tr>
 			<tr><td colspan=2></td></tr>
 			<tr><td>%l10n_str_theme%</td><td><select name="themes"><option value="">3WiFi Classic</option></select> <small>(%l10n_str_cookies%)</small></td></tr>
+			<tr><td colspan=2><input type="checkbox" id="sens_chk" onclick="revealSens($(this).prop('checked'))" /> %l10n_str_show_sens%</td></tr>
 			</table>
 		</div>
 		<div id=tab2 class=userCode dir=ltr style="display: none;">
