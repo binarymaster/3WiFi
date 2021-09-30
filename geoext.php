@@ -50,6 +50,7 @@ function GetGeolocationServices()
 		//'AlterGeo',
 		//'Mylnikov',
 		'MylnikovOpen',
+		//'Multigeo',
 	);
 }
 function GeoLocateAP($bssid, $svcs = null)
@@ -267,6 +268,37 @@ function GetFromMylnikovOpen($bssid)
 		$latitude = $json->data->lat;
 		$longitude = $json->data->lon;
 		$result = $latitude.';'.$longitude.';mylnikov_open';
+	}
+	return $result;
+}
+function GetFromMultigeo($bssid)
+{
+	geoDbg("multigeo: $bssid");
+	$tries = 3;
+	while (!($data = cURL_Get("http://geomac.local/locate.php?mac=$bssid")) && ($tries > 0))
+	{
+		$tries--;
+		sleep(2);
+	}
+
+	$result = '';
+	if (strpos($data, 'Results for ') === false) return $result;
+	geoDebug('multigeo', $bssid, $data);
+	$svc = 'apple';
+	$line = getStringBetween($data, 'Apple           | ', "\n");
+	if (empty($line))
+	{
+		$svc = 'google';
+		$line = getStringBetween($data, 'Google          | ', "\n");
+	}
+	if (empty($line))
+		return $result;
+	$line = explode(', ', $line);
+	$latitude = $line[0];
+	$longitude = $line[1];
+	if (handleGeoErrors('multigeo', $bssid, (float)$latitude, (float)$longitude))
+	{
+		$result = $latitude.';'.$longitude.';'.$svc;
 	}
 	return $result;
 }
