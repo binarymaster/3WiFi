@@ -236,7 +236,7 @@ switch ($action)
 			$_SESSION['Search']['LastId'] = -1;
 		}
 
-		$sql = 'SELECT '.($isLimitedRequest ? '' : 'SQL_CALC_FOUND_ROWS ').'
+		$sql = 'SELECT 
 				B.`id`,`time`,
 				`cmtid`,`cmtval`,
 				`IP`,`Port`,`Authorization`,`name`,
@@ -248,10 +248,12 @@ switch ($action)
 				LEFT JOIN `comments` USING(cmtid) 
 				LEFT JOIN `GEO_TABLE` USING(BSSID) 
 				LEFT JOIN `favorites` AS F ON B.id = F.id AND uid = '.$uid.' 
-				WHERE 1';
+				WHERE ';
+		$where = '1';
+		$final = '';
 		if ($cmtid != -1)
 		{
-			$sql .= ' AND (`cmtid` '.($cmtid == 0 ? 'IS NULL)' : "= $cmtid)");
+			$where .= ' AND (`cmtid` '.($cmtid == 0 ? 'IS NULL)' : "= $cmtid)");
 		}
 		$ipaddr = explode('/', $ipaddr);
 		$range = 32;
@@ -281,11 +283,11 @@ switch ($action)
 			}
 			if (isset($ipmax) && !empty($ipmax))
 			{
-				$sql .= " AND `IP` BETWEEN $ipaddr AND $ipmax";
+				$where .= " AND `IP` BETWEEN $ipaddr AND $ipmax";
 			}
 			else
 			{
-				$sql .= " AND `IP` = $ipaddr";
+				$where .= " AND `IP` = $ipaddr";
 			}
 		}
 		if (str_replace('*', '', $BSSID) != '')
@@ -297,50 +299,46 @@ switch ($action)
 					$mmac = mac_mask($BSSID);
 					$mask = mac_mask($BSSID, false);
 					$n_mask = str_replace('0', 'F', ltrim($mask, 'F'));
-					$sql .= " AND `BSSID` BETWEEN (0x$mmac & 0x$mask) AND (0x$mmac | 0x$n_mask)";
+					$where .= " AND `BSSID` BETWEEN (0x$mmac & 0x$mask) AND (0x$mmac | 0x$n_mask)";
 				}
 				else
 				{
 					$mmac = mac2dec(mac_mask($BSSID));
 					$mask = mac2dec(mac_mask($BSSID, false));
-					$sql .= " AND (`BSSID` & $mask = $mmac)";
+					$where .= " AND (`BSSID` & $mask = $mmac)";
 				}
 			}
-			else $sql .= ' AND `BSSID` = '.mac2dec($BSSID).'';
+			else $where .= ' AND `BSSID` = '.mac2dec($BSSID).'';
 		}
 		if (FilterWildcards($ESSID, $Wildcards, false) != '' || empty($ESSID))
 		{
-			if (HasWildcards($ESSID, $Wildcards)) $sql .= ' AND '.$binary.' `ESSID` LIKE \''.UniStrWildcard($ESSID, $Wildcards).'\'';
-			else $sql .= ' AND '.$binary.' `ESSID` = \''.$ESSID.'\'';
+			if (HasWildcards($ESSID, $Wildcards)) $where .= ' AND '.$binary.' `ESSID` LIKE \''.UniStrWildcard($ESSID, $Wildcards).'\'';
+			else $where .= ' AND '.$binary.' `ESSID` = \''.$ESSID.'\'';
 		}
 		if (FilterWildcards($Auth, $Wildcards, false) != '' || empty($Auth))
 		{
-			if (HasWildcards($Auth, $Wildcards)) $sql .= ' AND '.$binary.' `Authorization` LIKE \''.UniStrWildcard($Auth, $Wildcards).'\'';
-			else $sql .= ' AND '.(empty($Auth) ? '`Authorization` IS NULL' : $binary.' `Authorization` = \''.$Auth.'\'');
+			if (HasWildcards($Auth, $Wildcards)) $where .= ' AND '.$binary.' `Authorization` LIKE \''.UniStrWildcard($Auth, $Wildcards).'\'';
+			else $where .= ' AND '.(empty($Auth) ? '`Authorization` IS NULL' : $binary.' `Authorization` = \''.$Auth.'\'');
 		}
 		if (FilterWildcards($Name, $Wildcards, false) != '' || empty($Name))
 		{
-			if (HasWildcards($Name, $Wildcards)) $sql .= ' AND '.$binary.' `name` LIKE \''.UniStrWildcard($Name, $Wildcards).'\'';
-			else $sql .= ' AND '.$binary.' `name` = \''.$Name.'\'';
+			if (HasWildcards($Name, $Wildcards)) $where .= ' AND '.$binary.' `name` LIKE \''.UniStrWildcard($Name, $Wildcards).'\'';
+			else $where .= ' AND '.$binary.' `name` = \''.$Name.'\'';
 		}
 		if (FilterWildcards($Key, $Wildcards, false) != '' || empty($Key))
 		{
-			if (HasWildcards($Key, $Wildcards)) $sql .= ' AND '.$binary.' `WiFiKey` LIKE \''.UniStrWildcard($Key, $Wildcards).'\'';
-			else $sql .= ' AND '.$binary.' `WiFiKey` = \''.$Key.'\'';
+			if (HasWildcards($Key, $Wildcards)) $where .= ' AND '.$binary.' `WiFiKey` LIKE \''.UniStrWildcard($Key, $Wildcards).'\'';
+			else $where .= ' AND '.$binary.' `WiFiKey` = \''.$Key.'\'';
 		}
 		if (FilterWildcards($WPS, $Wildcards, false) != '' || empty($WPS))
 		{
-			if (HasWildcards($WPS, $Wildcards)) $sql .= ' AND WPSPIN != 1 AND LPAD(WPSPIN, 8, "0") LIKE \''.UniStrWildcard($WPS, $Wildcards).'\'';
-			else $sql .= (empty($WPS) ? ' AND `WPSPIN` = 1' : ' AND `WPSPIN` = \''.$WPS.'\'');
+			if (HasWildcards($WPS, $Wildcards)) $where .= ' AND WPSPIN != 1 AND LPAD(WPSPIN, 8, "0") LIKE \''.UniStrWildcard($WPS, $Wildcards).'\'';
+			else $where .= (empty($WPS) ? ' AND `WPSPIN` = 1' : ' AND `WPSPIN` = \''.$WPS.'\'');
 		}
 
 		if (TRY_USE_MEMORY_TABLES)
 		{
-			if ($_SESSION['Search']['ArgsHash'] == md5($cmtid.$ipaddr.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS.$binary.$joinloc))
-			{
-				$sql = str_replace('SQL_CALC_FOUND_ROWS', '', $sql);
-			}
-			else
+			if ($_SESSION['Search']['ArgsHash'] != md5($cmtid.$ipaddr.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS.$binary.$joinloc))
 			{
 				$_SESSION['Search']['LastRowsNum'] = -1;
 				$_SESSION['Search']['FirstId'] = -1;
@@ -376,26 +374,29 @@ switch ($action)
 				$DiffPage = 0;
 			}
 
-			$sql .= ' AND B.`id` '.$Sign.' '.$NextPageStartId;
-			$sql .= ' LIMIT '.($DiffPage * $Limit).', '.$Limit;
+			$where .= ' AND B.`id` '.$Sign.' '.$NextPageStartId;
+			$final .= ' LIMIT '.($DiffPage * $Limit).', '.$Limit;
 
 			$_SESSION['Search']['ArgsHash'] = md5($cmtid.$BSSID.$ESSID.$Auth.$Name.$Key.$WPS.$binary);
 			$_SESSION['Search']['LastPage'] = $Page;
 		}
 		else
 		{
-			$sql .= ' ORDER BY `time` DESC';
+			$final .= ' ORDER BY `time` DESC';
 			if ($isLimitedRequest)
 			{
-				$sql .= ' LIMIT '.$Limit;
+				$final .= ' LIMIT '.$Limit;
 			}
 			else
 			{
-				$sql .= ' LIMIT '.(($Page - 1) * $Limit).', '.$Limit;
+				$final .= ' LIMIT '.(($Page - 1) * $Limit).', '.$Limit;
 			}
 		}
 
-		return $sql;
+		return array(
+			'request' => $sql.$where.$final,
+			'count' => 'SELECT COUNT(*) FROM `BASE_TABLE` AS B '.$joinloc.' WHERE '.$where
+		);
 	}
 	$comment = '*';
 	$cmtid = -1;
@@ -465,13 +466,13 @@ switch ($action)
 	if ($cur_page < 1) $cur_page = 1;
 
 	$sql = GenerateFindQuery($cmtid, $ipaddr, $bssid, $essid, $auth, $name, $key, $wps, $sens, $useloc, $cur_page, $per_page);
-	if ($res = QuerySql($sql))
+	if ($res = QuerySql($sql['request']))
 	{
 		if (TRY_USE_MEMORY_TABLES)
 		{
 			if ($_SESSION['Search']['LastRowsNum'] == -1)
 			{
-				$res_rows = QuerySql('SELECT FOUND_ROWS()');
+				$res_rows = QuerySql($sql['count']);
 				$t = $res_rows->fetch_row();
 				$_SESSION['Search']['LastRowsNum'] = (int)$t[0];
 			}
@@ -486,7 +487,7 @@ switch ($action)
 		}
 		else
 		{
-			$res_rows = QuerySql('SELECT FOUND_ROWS()');
+			$res_rows = QuerySql($sql['count']);
 			$rows = $res_rows->fetch_row();
 			$rows = (int)$rows[0];
 			$pages = ceil($rows / $per_page);
