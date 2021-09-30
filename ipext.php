@@ -484,3 +484,51 @@ function API_get_ranges($lat, $lon, $radius)
 	}
 	return $result;
 }
+
+/**
+ * Get geolocation based on IP Address
+ *
+ * @param string $ip IP Address to get location for.
+ * @param string $apiKey Yandex Locator API key.
+ *
+ * @return array|null Array ("lat" => (float), "lon" => (float)) or null in case of error.
+ */
+function getGeoByIP($ip, $apiKey)
+{
+	if (empty($apiKey))
+	{
+		return;
+	}
+	$url = 'http://api.lbs.yandex.net/geolocation';
+
+	$xmlRequest = '<?xml version="1.0" encoding="UTF-8"?>
+		<ya_lbs_request xmlns="http://api.lbs.yandex.net/geolocation">
+			<common>
+				<version>1.0</version>
+				<api_key>'.$apiKey.'</api_key>
+			</common>
+			<ip>
+				<address_v4>'.$ip.'</address_v4>
+			</ip>
+		</ya_lbs_request>';
+
+	$curl = curl_init($url);
+	curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: text/xml"));
+	curl_setopt($curl, CURLOPT_POST, true);
+	curl_setopt($curl, CURLOPT_POSTFIELDS, "xml=" . urlencode($xmlRequest));
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	$data = curl_exec($curl);
+
+	if (curl_errno($curl))
+	{
+		return;
+	}
+
+	curl_close($curl);
+
+	$xml = simplexml_load_string($data);
+	return array(
+		"lat" => $xml->position->latitude,
+		"lon" => $xml->position->longitude
+	);
+}

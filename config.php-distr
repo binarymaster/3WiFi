@@ -47,6 +47,7 @@ define('DEFAULT_LON', 37.64);
 define('DEFAULT_RAD', 2);
 
 define('YMAPS_APIKEY', '');
+define('YLOCATOR_APIKEY', '');
 
 // Users
 define('LOGIN_MIN', 5);
