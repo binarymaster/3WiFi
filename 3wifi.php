@@ -244,11 +244,15 @@ switch ($action)
 				`NoBSSID`,`BSSID`,`ESSID`,`Security`,
 				`WiFiKey`,`WPSPIN`,`WANIP`,
 				`latitude`,`longitude`, uid IS NOT NULL fav 
-				FROM `BASE_TABLE` AS B '.$joinloc.' 
+				FROM (
+					SELECT B.id FROM `BASE_TABLE` AS B '.$joinloc.' 
+					WHERE %where% 
+					%final%
+				) BB 
+				JOIN `BASE_TABLE` B ON BB.id = B.id 
 				LEFT JOIN `comments` USING(cmtid) 
 				LEFT JOIN `GEO_TABLE` USING(BSSID) 
-				LEFT JOIN `favorites` AS F ON B.id = F.id AND uid = '.$uid.' 
-				WHERE ';
+				LEFT JOIN `favorites` AS F ON B.id = F.id AND uid = '.$uid;
 		$where = '1';
 		$final = '';
 		if ($cmtid != -1)
@@ -394,7 +398,7 @@ switch ($action)
 		}
 
 		return array(
-			'request' => $sql.$where.$final,
+			'request' => str_replace('%where%', $where, str_replace('%final%', $final, $sql)),
 			'count' => 'SELECT COUNT(*) FROM `BASE_TABLE` AS B '.$joinloc.' WHERE '.$where
 		);
 	}
