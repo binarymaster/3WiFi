@@ -92,4 +92,3 @@ while($row = $res->fetch_assoc())
 		$geo->execute();
 	}
 }
-?>

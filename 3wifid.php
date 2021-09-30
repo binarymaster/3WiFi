@@ -481,4 +481,3 @@ switch ($argv[1])
 	break;
 }
 $db->close();
-?>

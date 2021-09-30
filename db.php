@@ -551,5 +551,3 @@ function quote($var)
 	global $db;
 	return $db->real_escape_string($var);
 }
-
-?>

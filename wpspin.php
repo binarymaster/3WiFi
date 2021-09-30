@@ -792,4 +792,3 @@ function API_pin_search($bssid)
 	}
 	return $result;
 }
-?>

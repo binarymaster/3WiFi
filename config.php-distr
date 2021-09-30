@@ -65,5 +65,3 @@ define('GUEST_WAIT', 10);
 
 // Daemons
 define('GEO_PORTION', 100);
-
-?>

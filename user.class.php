@@ -832,4 +832,3 @@ class User {
 		return true;
 	}
 }
-?>

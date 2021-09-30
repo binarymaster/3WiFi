@@ -256,4 +256,3 @@ function getMultiStats($db, $cols, $top, $useloc = false, $where = array(), $pos
 	$result['date'] = date('Y.m.d H:i:s');
 	return $result;
 }
-?>

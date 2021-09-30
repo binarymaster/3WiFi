@@ -521,4 +521,3 @@ function loadLanguage()
 	$lang = detectBestLang($langs);
 	return "l10n/$lang.php";
 }
-?>

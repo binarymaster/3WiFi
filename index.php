@@ -224,4 +224,3 @@ if (strpos($content, '%news%') !== false)
 preparePage($content);
 
 echo str_replace('</body>', $incscript.'</body>', $content);
-?>

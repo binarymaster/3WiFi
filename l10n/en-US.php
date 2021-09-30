@@ -726,4 +726,3 @@ $l10n['tbl_nick'] =
 'Nickname';
 $l10n['str_inv_left'] =
 'Invites left:';
-?>

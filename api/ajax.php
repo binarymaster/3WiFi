@@ -118,4 +118,3 @@ switch ($_GET['Query'])
 
 Header('Content-Type: application/json');
 echo json_encode($json);
-?>
