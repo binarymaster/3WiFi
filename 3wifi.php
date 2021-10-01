@@ -316,8 +316,10 @@ switch ($action)
 		}
 		if (FilterWildcards($ESSID, $Wildcards, false) != '' || empty($ESSID))
 		{
-			if (HasWildcards($ESSID, $Wildcards)) $where .= ' AND '.$binary.' `ESSID` LIKE \''.UniStrWildcard($ESSID, $Wildcards).'\'';
-			else $where .= ' AND '.$binary.' `ESSID` = \''.$ESSID.'\'';
+			if (HasWildcards($ESSID, $Wildcards)) $idx = '`ESSID` LIKE \''.UniStrWildcard($ESSID, $Wildcards).'\'';
+			else $idx = '`ESSID` = \''.$ESSID.'\'';
+
+			$where .= ' AND '.$idx.($sens ? ' AND '.$binary.' '.$idx : '');
 		}
 		if (FilterWildcards($Auth, $Wildcards, false) != '' || empty($Auth))
 		{
@@ -331,8 +333,10 @@ switch ($action)
 		}
 		if (FilterWildcards($Key, $Wildcards, false) != '' || empty($Key))
 		{
-			if (HasWildcards($Key, $Wildcards)) $where .= ' AND '.$binary.' `WiFiKey` LIKE \''.UniStrWildcard($Key, $Wildcards).'\'';
-			else $where .= ' AND '.$binary.' `WiFiKey` = \''.$Key.'\'';
+			if (HasWildcards($Key, $Wildcards)) $idx = '`WiFiKey` LIKE \''.UniStrWildcard($Key, $Wildcards).'\'';
+			else $idx = '`WiFiKey` = \''.$Key.'\'';
+
+			$where .= ' AND '.$idx.($sens ? ' AND '.$binary.' '.$idx : '');
 		}
 		if (FilterWildcards($WPS, $Wildcards, false) != '' || empty($WPS))
 		{
@@ -1732,7 +1736,7 @@ switch ($action)
 				$ess = $db->real_escape_string($essid[$i]);
 				if ($sens)
 				{
-					$where .= " AND BINARY ESSID = '$ess'";
+					$where .= " AND ESSID = '$ess' AND BINARY ESSID = '$ess'";
 				}
 				else
 				{
@@ -1780,7 +1784,7 @@ switch ($action)
 			$ess = $db->real_escape_string($essid[$i]);
 			if ($sens)
 			{
-				$where = "BINARY ESSID = '$ess'";
+				$where = "ESSID = '$ess' AND BINARY ESSID = '$ess'";
 			}
 			else
 			{

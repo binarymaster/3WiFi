@@ -465,7 +465,7 @@ function db_add_ap($row, $cmtid, $uid, $ipaddr)
 			ON DUPLICATE KEY UPDATE
 			`cmtid`=$cmtid,`IP`=$addr,`Port`=$port,`Authorization`=$auth,`name`=$name,`RadioOff`=$radio,`Hidden`=$hide,`NoBSSID`=$NoBSSID,`BSSID`=$bssid,`ESSID`=$essid,`Security`=$sec,`WiFiKey`=$key,`WPSPIN`=$wps,`LANIP`=$lanip,`LANMask`=$lanmsk,`WANIP`=$wanip,`WANMask`=$wanmsk,`WANGateway`=$gate,`DNS1`=$DNS[0],`DNS2`=$DNS[1],`DNS3`=$DNS[2];");
 	// Берём id точки из таблицы base в любом случае (могут быть расхождения с mem_base)
-	$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND BINARY ESSID=$essid AND BINARY WiFiKey=$key AND WPSPIN=$wps");
+	$res = $db->query("SELECT id FROM ".BASE_TABLE." WHERE NoBSSID=$NoBSSID AND BSSID=$bssid AND ESSID=$essid AND WiFiKey=$key AND BINARY ESSID=$essid AND BINARY WiFiKey=$key AND WPSPIN=$wps");
 	$row = $res->fetch_row();
 	$res->close();
 	$id = (int)$row[0];
@@ -524,7 +524,7 @@ function db_ap_exist($NoBSSID, $bssid, $essid, $key)
 	$essid = $db->real_escape_string($essid);
 	$key = $db->real_escape_string($key);
 	// Проверяем, есть ли эта точка в базе (по BSSID/ESSID/WiFiKey)
-	if ($res = QuerySql("SELECT `id` FROM BASE_TABLE WHERE `NoBSSID`=$NoBSSID AND `BSSID`=$bssid AND BINARY `ESSID`='$essid' AND BINARY `WiFiKey`='$key' LIMIT 1"))
+	if ($res = QuerySql("SELECT id FROM BASE_TABLE WHERE `NoBSSID`=$NoBSSID AND `BSSID`=$bssid AND `ESSID`='$essid' AND `WiFiKey`='$key' AND BINARY `ESSID`='$essid' AND BINARY `WiFiKey`='$key' LIMIT 1"))
 	{
 		$result = $res->num_rows;
 		$res->close();
@@ -540,7 +540,7 @@ function db_ap_checkempty($NoBSSID, $bssid, $essid, $sec, $wps)
 	$sec = str2sec($sec);
 	$wps = (($wps == '') ? 1 : (int)$wps);
 	// Проверяем, есть ли эта точка в базе (с непустым ключом)
-	if ($res = QuerySql("SELECT `id` FROM BASE_TABLE WHERE `NoBSSID`=$NoBSSID AND `BSSID`=$bssid AND BINARY `ESSID`='$essid' AND `Security`=$sec AND `WiFiKey`!='' AND `WPSPIN`=$wps LIMIT 1"))
+	if ($res = QuerySql("SELECT id FROM BASE_TABLE WHERE `NoBSSID`=$NoBSSID AND `BSSID`=$bssid AND `ESSID`='$essid' AND BINARY `ESSID`='$essid' AND `Security`=$sec AND `WiFiKey`!='' AND `WPSPIN`=$wps LIMIT 1"))
 	{
 		$result = $res->num_rows;
 		$res->close();
