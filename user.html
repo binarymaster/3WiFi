@@ -925,6 +925,7 @@ function geolocate(e)
 	var bssid = $('input[name=bssid]', e).val();
 	var lat = $('input[name=lat]', e).val();
 	var lon = $('input[name=lon]', e).val();
+	var rem = $('input[name=remove]', e).prop('checked');
 	var btn = $('input[type=submit]', e);
 	btn.hide();
 	btn.next().show();
@@ -940,6 +941,8 @@ function geolocate(e)
 			data += '&bssid=' + encodeURIComponent(bssid);
 			data += '&lat=' + lat;
 			data += '&lon=' + lon;
+			if (rem)
+				data += '&remove=1';
 			$.get('3wifi.php?a=geoupdate' + data, function(json)
 			{
 				btn.show();
@@ -1141,6 +1144,7 @@ function resetUser(e)
 			<tr><td><label for="lon">%l10n_str_lon%</label></td>
 			<td><input type="number" name="lon" id="lon" min="-180" max="180" step="0.00000001" value="0"/></td><td>° [-180; 180]</td></tr>
 			<tr><td colspan="3">%l10n_msg_geo_def_zero%</td></tr>
+			<tr><td colspan="3"><input type="checkbox" name="remove" id="remove" /> %l10n_str_geo_remove%</td></tr>
 			</table>
 			<input type="submit" value="%l10n_btn_update%"/><img src="%theme_ajax%" style="display: none;"/>
 			</fieldset>

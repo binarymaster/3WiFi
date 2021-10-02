@@ -1148,6 +1148,7 @@ switch ($action)
 	}
 	$lat = isset($_GET['lat']) ? (float)$_GET['lat'] : 0;
 	$lon = isset($_GET['lon']) ? (float)$_GET['lon'] : 0;
+	$rem = isset($_GET['remove']) ? true : false;
 	require_once 'geoext.php';
 	if ($lat == 0 && $lon == 0)
 	{
@@ -1157,13 +1158,17 @@ switch ($action)
 	{
 		$coords = "$lat;$lon;manual";
 	}
+	$bssid = mac2dec($bssid);
 	if ($coords == '')
 	{
+		if ($rem)
+		{
+			QuerySql("UPDATE GEO_TABLE SET `latitude`=0,`longitude`=0,`quadkey`=NULL WHERE `BSSID`=$bssid");
+		}
 		$json['error'] = 'notfound';
 		break;
 	}
 	$json['result'] = true;
-	$bssid = mac2dec($bssid);
 	$coords = explode(';', $coords);
 	$latitude = $coords[0];
 	$longitude = $coords[1];

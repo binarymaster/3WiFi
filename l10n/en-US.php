@@ -608,6 +608,8 @@ $l10n['msg_geo_def_zero'] =
 '(leave coordinates at 0 to use geolocation)';
 $l10n['btn_update'] =
 'Update';
+$l10n['str_geo_remove'] =
+'Remove from map if not found';
 $l10n['msg_user_mgmt'] =
 'User account management';
 $l10n['msg_user_reset_success'] =
