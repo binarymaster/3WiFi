@@ -340,9 +340,9 @@ class User {
 
 		if ($syms) $arr = array_merge($arr, $symb_arr);
 
-		for($i = 0; $i < $size; $i++)
+		for ($i = 0; $i < $size; $i++)
 		{
-		  $Str .= $arr[rand(0, sizeof($arr) - 1)];
+			$Str .= $arr[rand(0, sizeof($arr) - 1)];
 		}
 		return $Str;
 	}
@@ -513,7 +513,7 @@ class User {
 				$this->loadDB($row['uid']);
 				$this->setUser($row['uid'], $row['puid'], $login, $row['nick'], $row['pass_hash'], $this->newHashKey(), $row['salt'], $row['level'], $this->newHashIP(), $row['invites']);
 				$this->RegDate = $row['regdate'];
-				if(!$getDataOnly)
+				if (!$getDataOnly)
 				{
 					$this->save();
 					$this->eventLog(self::LOG_AUTHORIZATION, 1);
@@ -589,7 +589,12 @@ class User {
 	 * @param string $invite
 	 * @return bool
 	 */
-		$res = self::$mysqli->query("SELECT invite FROM invites WHERE `invite`='{$this->quote($invite)}' AND `uid` IS NULL LIMIT 1;");
+		$ban = self::USER_BAN;
+		if (INVITE_VALID_FROM_BANNED)
+			$sql = "SELECT invite FROM invites WHERE invite='{$this->quote($invite)}' AND uid IS NULL LIMIT 1;";
+		else
+			$sql = "SELECT invite FROM invites JOIN users ON invites.puid = users.uid WHERE invite='{$this->quote($invite)}' AND invites.uid IS NULL AND users.level != $ban LIMIT 1;";
+		$res = self::$mysqli->query($sql);
 		$result = ($res->num_rows == 1);
 		$res->close();
 		return $result;
@@ -597,7 +602,12 @@ class User {
 
 	public function getInviteInfo($invite) {
 
-		$res = self::$mysqli->query("SELECT * FROM invites WHERE `invite`='{$this->quote($invite)}' LIMIT 1;");
+		$ban = self::USER_BAN;
+		if (INVITE_VALID_FROM_BANNED)
+			$sql = "SELECT * FROM invites WHERE invite='{$this->quote($invite)}' LIMIT 1;";
+		else
+			$sql = "SELECT * FROM invites JOIN users ON invites.puid = users.uid WHERE invite='{$this->quote($invite)}' AND users.level != $ban LIMIT 1;";
+		$res = self::$mysqli->query($sql);
 		if (!$res) return false;
 		$result = $res->fetch_assoc();
 		$res->close();
@@ -804,7 +814,7 @@ class User {
 	{
 		$IP = $_SERVER['REMOTE_ADDR'];
 		$IP = _ip2long($IP);
-		if($IP === false) return;
+		if ($IP === false) return;
 
 		$sql = 'INSERT INTO logauth SET IP='.$IP.', uid='.$this->uID.',action='.$Action.', data="'.$Data.'", status='.$Status;
 		self::$mysqli->query($sql);
@@ -832,7 +842,7 @@ class User {
 		$sql = "SELECT uid, IF(rapikey = '$ApiKey', 'read', IF(wapikey = '$ApiKey', 'write', NULL)) AS access FROM users WHERE rapikey = '$ApiKey' OR wapikey = '$ApiKey'";
 		$res = self::$mysqli->query($sql);
 
-		if($res->num_rows != 1)
+		if ($res->num_rows != 1)
 		{
 			$this->LastError = 'unauthorized';
 			return false;
