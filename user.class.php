@@ -714,7 +714,7 @@ class User {
 			$this->LastError = 'database';
 			return false;
 		}
-		if ($uid != null)
+		if ($uid != null && $this->Level == self::USER_ADMIN)
 		{
 			self::$mysqli->query("UPDATE users SET level=$level WHERE uid=$uid");
 			if (self::$mysqli->errno != 0)
