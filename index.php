@@ -126,6 +126,12 @@ require_once 'utils.php';
 $UserManager = new User();
 $UserManager->load();
 
+if ($UserManager->Level == -2)
+{
+	$UserManager->out();
+	$UserManager->setUser();
+}
+
 $incscript = file_get_contents('counter.txt');
 
 $page = validPage(isset($_GET['page']) ? $_GET['page'] : 'home');
