@@ -23,7 +23,7 @@ $l10n['str_pass_rep'] =
 $l10n['str_stay_here'] =
 'Stay on this page';
 $l10n['str_accept_rules'] =
-'I accept <a href="rules" target=_blank>site rules</a>.';
+'I accept <a href="rules" target=_blank>service rules</a>.';
 $l10n['str_has_login'] =
 'Already registered';
 $l10n['str_reg'] =

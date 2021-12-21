@@ -23,7 +23,7 @@ $l10n['str_pass_rep'] =
 $l10n['str_stay_here'] =
 'Остаться на текущей странице';
 $l10n['str_accept_rules'] =
-'Я согласен с <a href="rules" target=_blank>условиями сайта</a>.';
+'Я согласен с <a href="rules" target=_blank>условиями сервиса</a>.';
 $l10n['str_has_login'] =
 'Уже есть аккаунт';
 $l10n['str_reg'] =

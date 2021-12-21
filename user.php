@@ -101,53 +101,50 @@ switch($action)
 	}
 	break;
 
-	// Проверка логина на существование
-	case 'checklogin':
+	// Проверка логина и ника на существование
+	case 'testreg':
+	$json['result'] = false;
 	if ($UserManager->isLogged())
 	{
 		$json['error'] = 'loggedin';
 		break;
 	}
-	if (isset($_POST['invite']) && isset($_POST['login']))
+	if (isset($_POST['invite']) && (isset($_POST['login']) || isset($_POST['nick'])))
 	{
 		if (strlen($_POST['invite']) != INVITE_LEN || !$UserManager->isValidInvite($_POST['invite']))
 		{
 			$json['error'] = 'invite';
 			break;
 		}
-		filterLogin($_POST['login']);
-		if (strlen($_POST['login']) < LOGIN_MIN || strlen($_POST['login']) > LOGIN_MAX)
+		if (isset($_POST['login']))
 		{
-			$json['result'] = 'form';
-			break;
+			filterLogin($_POST['login']);
+			if (strlen($_POST['login']) < LOGIN_MIN || strlen($_POST['login']) > LOGIN_MAX)
+			{
+				$json['error'] = 'login';
+				break;
+			}
+			if ($UserManager->isUserLogin($_POST['login']))
+			{
+				$json['error'] = 'login';
+				break;
+			}
 		}
-		$json['result'] = !$UserManager->isUserLogin($_POST['login']);
-	}
-	else
-		$json['error'] = 'form';
-	break;
-
-	// Проверка ника на существование
-	case 'checknick':
-	if ($UserManager->isLogged())
-	{
-		$json['error'] = 'loggedin';
-		break;
-	}
-	if (isset($_POST['invite']) && isset($_POST['nick']))
-	{
-		if (strlen($_POST['invite']) != INVITE_LEN || !$UserManager->isValidInvite($_POST['invite']))
+		if (isset($_POST['nick']))
 		{
-			$json['error'] = 'invite';
-			break;
+			filterNick($_POST['nick']);
+			if (strlen($_POST['nick']) < NICK_MIN || strlen($_POST['nick']) > NICK_MAX)
+			{
+				$json['error'] = 'nick';
+				break;
+			}
+			if ($UserManager->isUserNick($_POST['nick']))
+			{
+				$json['error'] = 'nick';
+				break;
+			}
 		}
-		filterNick($_POST['nick']);
-		if (strlen($_POST['nick']) < NICK_MIN || strlen($_POST['nick']) > NICK_MAX)
-		{
-			$json['result'] = 'form';
-			break;
-		}
-		$json['result'] = !$UserManager->isUserNick($_POST['nick']);
+		$json['result'] = true;
 	}
 	else
 		$json['error'] = 'form';
@@ -191,13 +188,23 @@ switch($action)
 		break;
 	}
 	filterLogin($newLogin);
-	if (strlen($newLogin) < LOGIN_MIN || strlen($newLogin) > LOGIN_MAX || $UserManager->isUserLogin($newLogin))
+	if (strlen($newLogin) < LOGIN_MIN || strlen($newLogin) > LOGIN_MAX)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if ($UserManager->isUserLogin($newLogin))
 	{
 		$json['error'] = 'login';
 		break;
 	}
 	filterNick($newNick);
-	if (strlen($newNick) < NICK_MIN || strlen($newNick) > NICK_MAX || $UserManager->isUserNick($newNick))
+	if (strlen($newNick) < NICK_MIN || strlen($newNick) > NICK_MAX)
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if ($UserManager->isUserNick($newNick))
 	{
 		$json['error'] = 'nick';
 		break;

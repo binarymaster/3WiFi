@@ -60,6 +60,12 @@ ul {
 	padding-top: 0px;
 	height: 250px;
 }
+form td#checkinv,
+form td#checklogin,
+form td#checknick,
+form td#checkpass {
+	width: 18px;
+}
 .mainmenu {
 	background-color: black;
 	color: white;
