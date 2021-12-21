@@ -103,17 +103,6 @@ class User {
 		return md5(md5($IP).$Salt);
 	}
 
-	public function getSessionLevel($default = NULL) {
-	/**
-	 * Проверяет, авторизован пользователь или нет
-	 * Устанавливает уровень доступа если авторизован, иначе NULL (гость)
-	 * @param int [$default]
-	 * @return int
-	 */
-		$this->Level = (isset($_SESSION['level']) ? $_SESSION['level'] : NULL);
-		return $this->Level;
-	}
-
 	public function saveDB() {
 	/**
 	 * Сохраняет состояние в БД
@@ -205,7 +194,6 @@ class User {
 		$_SESSION['HashPass'] 	= $this->HashPass;
 		$_SESSION['HashKey'] 	= $this->HashKey;
 		$_SESSION['Salt'] 		= $this->Salt;
-		$_SESSION['Level'] 		= $this->Level;
 		$_SESSION['HashIP'] 	= $this->HashIP;
 		$_SESSION['invites'] 	= $this->invites;
 		$_SESSION['ReadApiKey'] 	= $this->ReadApiKey;
@@ -226,13 +214,29 @@ class User {
 			{
 				$_SESSION['LastActivity'] = 0;
 			}
-			$timeout = ($_SESSION['Level'] < 1 ? GUEST_TIMEOUT : USER_TIMEOUT);
+			$this->uID = $_SESSION['uID'];
+
+			$res = self::$mysqli->query('SELECT level FROM users WHERE uid='.(int)$this->uID);
+			if (self::$mysqli->errno != 0)
+			{
+				$this->LastError = 'database';
+				return false;
+			}
+			if ($res->num_rows == 0)
+			{
+				$this->LastError = 'database';
+				return false;
+			}
+			$data = $res->fetch_assoc();
+			$res->close();
+			$this->Level = (int)$data['level'];
+
+			$timeout = ($this->Level < 1 ? GUEST_TIMEOUT : USER_TIMEOUT);
 			if (time() - $_SESSION['LastActivity'] > $timeout)
 			{
 				$this->out();
 				return false;
 			}
-			$this->uID 		  = $_SESSION['uID'];
 			$this->puID 	  = $_SESSION['puID'];
 			$this->InviterNickName = $_SESSION['InviterNickName'];
 			$this->Login	  = $_SESSION['Login'];
@@ -241,7 +245,6 @@ class User {
 			$this->HashPass	  = $_SESSION['HashPass'];
 			$this->HashKey 	  = $_SESSION['HashKey'];
 			$this->Salt		  = $_SESSION['Salt'];
-			$this->Level	  = $_SESSION['Level'];
 			$this->HashIP 	  = $_SESSION['HashIP'];
 			$this->invites    = $_SESSION['invites'];
 			$this->ReadApiKey  = $_SESSION['ReadApiKey'];
@@ -355,6 +358,7 @@ class User {
 		if ($res->num_rows != 1) return false;
 
 		$row = $res->fetch_row();
+		$res->close();
 		if ($this->LastUpdate < $row[0])
 		{
 			if (!$fix) return false;
@@ -492,6 +496,7 @@ class User {
 
 	 */
 
+		$result = false;
 		$login = ( is_null($login) ? $this->Login : $login );
 		$res = self::$mysqli->query("SELECT * FROM `users` WHERE `login`='{$this->quote($login)}' LIMIT 1");
 		if ($res->num_rows == 1) // Если логин существует
@@ -511,13 +516,15 @@ class User {
 				{
 					$this->eventLog(self::LOG_AUTHORIZATION_DATAONLY, 1);
 				}
-				return true;
+				$result = true;
 			}
-		}else { // Логин не существует, авторизация провалилась
-			return false;
+		}
+		else
+		{ // Логин не существует, авторизация провалилась
+			$this->eventLog(self::LOG_AUTHORIZATION, 0);
 		}
 		$res->close();
-		$this->eventLog(self::LOG_AUTHORIZATION, 0);
+		return $result;
 	}
 
 	/**
@@ -746,6 +753,7 @@ class User {
 			return false;
 		}
 		$data = $res->fetch_assoc();
+		$res->close();
 		$this->eventLog(self::LOG_GET_APIKEYS, 1, '');
 		return $data;
 	}
@@ -824,6 +832,7 @@ class User {
 			return false;
 		}
 		$row = $res->fetch_assoc();
+		$res->close();
 		$this->ApiAccess = $row['access'];
 		if ($loadData)
 		{
