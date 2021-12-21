@@ -231,7 +231,7 @@ class User {
 			$res->close();
 			$this->Level = (int)$data['level'];
 
-			$timeout = ($this->Level < 1 ? GUEST_TIMEOUT : USER_TIMEOUT);
+			$timeout = ($this->Level < self::USER_BASIC ? GUEST_TIMEOUT : USER_TIMEOUT);
 			if (time() - $_SESSION['LastActivity'] > $timeout)
 			{
 				$this->out();
@@ -374,7 +374,7 @@ class User {
 	{
 		if (GUEST_WAIT <= 0) return true;
 		if ($this->uID == NULL) return true;
-		if ($this->Level > 0) return true;
+		if ($this->Level > self::USER_GUEST) return true;
 		if (is_null(self::$mysqli)) return true;
 
 		$sql = 'SELECT NOW() - querytime FROM users WHERE uid='.$this->uID;
@@ -463,16 +463,20 @@ class User {
 
 		$ParentUser = $this->getUserInfo($InviteInfo['puid']);
 		$Invites = 0;
-		if($ParentUser['level'] >= 2)
+		if ($ParentUser['level'] >= self::USER_ADVANCED)
 		{
 			switch($InviteInfo['level'])
 			{
-				case 1: $Invites = 3;
-				break;
-				case 2: $Invites = 10;
-				break;
+				case self::USER_BASIC:
+					$Invites = 3;
+					break;
+				case self::USER_ADVANCED:
+					$Invites = 10;
+					break;
 			}
 		}
+		if ($ParentUser['level'] == self::USER_BAN && !ALLOW_BANNED_INVITE_REG)
+			$InviteInfo['level'] = self::USER_BAN;
 		$this->setUser(NULL, $InviteInfo['puid'], $Login, $Nick, md5($Password.$Salt), '', $Salt, (int)$InviteInfo['level'], NULL, $Invites);
 		$this->save();
 		if ($this->Auth($Password, $Login))
@@ -480,6 +484,8 @@ class User {
 			$sql = "UPDATE invites SET uid=".$this->uID." WHERE invite='".self::quote($Invite)."'";
 			$res = self::$mysqli->query($sql);
 			self::$mysqli->query('UPDATE users SET regdate=NOW() WHERE uid='.$this->uID);
+			if ($this->Level == self::USER_BAN && !ALLOW_BANNED_INVITE_REG)
+				self::$mysqli->query("UPDATE users SET ban_reason='inherit' WHERE uid=".$this->uID);
 			$this->eventLog(self::LOG_REGISTRATION, 1, 'Invite: '.$Invite);
 			return true;
 		}
@@ -623,25 +629,25 @@ class User {
 		return $result;
 	}
 
-	public function createInvite($level=1, $uid=NULL)
+	public function createInvite($level = self::USER_BASIC, $uid = NULL)
 	{
 		if (is_null($uid)) $uid = $this->uID;
 		if ($uid == NULL) return false;
 
 		// Если не осталось инвайтов (и не админ)
-		if ($this->invites <= 0 && $this->Level < 3)
+		if ($this->invites <= 0 && $this->Level < self::USER_ADMIN)
 		{
 			$this->LastError = 'limit';
 			return false;
 		}
 		// Только админ может пригласить пользователя с нестандартным уровнем
-		if ($this->Level <= 2 && $level != 1)
+		if ($this->Level < self::USER_ADMIN && $level != self::USER_BASIC)
 		{
 			$this->LastError = 'lowlevel';
 			return false;
 		}
 		// Нельзя создавать инвайты с отрицательным уровнем
-		if ($level < 0)
+		if ($level < self::USER_GUEST)
 		{
 			$this->LastError = 'form';
 			return false;
@@ -655,7 +661,7 @@ class User {
 			$this->LastError = 'database';
 			return false;
 		}
-		if ($this->Level < 3) $res = self::$mysqli->query("UPDATE users SET invites=invites-1 WHERE uid=$uid");
+		if ($this->Level < self::USER_ADMIN) $res = self::$mysqli->query("UPDATE users SET invites=invites-1 WHERE uid=$uid");
 		$this->eventLog(self::LOG_CREATEINVITE, 1, $invite);
 		return true;
 	}
@@ -665,12 +671,12 @@ class User {
 		$uid = $this->uID;
 		if ($uid == null) return false;
 
-		if ($this->Level <= 2 && $level != 1)
+		if ($this->Level < self::USER_ADMIN && $level != self::USER_BASIC)
 		{
 			$this->LastError = 'lowlevel';
 			return false;
 		}
-		if ($level < 0)
+		if ($level < self::USER_GUEST)
 		{
 			$this->LastError = 'form';
 			return false;
@@ -726,7 +732,7 @@ class User {
 			$this->LastError = 'login';
 			return false;
 		}
-		if ($this->Level < 3) $res = self::$mysqli->query("UPDATE users SET invites=invites+1 WHERE uid=$uid");
+		if ($this->Level < self::USER_ADMIN) $res = self::$mysqli->query("UPDATE users SET invites=invites+1 WHERE uid=$uid");
 		$this->eventLog(self::LOG_DELETEINVITE, 1, $invite);
 		return true;
 	}
@@ -735,7 +741,7 @@ class User {
 	{
 		$uid = $this->uID;
 		if ($uid == NULL) return false;
-		if ($this->Level < 0)
+		if ($this->Level < self::USER_GUEST)
 		{
 			$this->LastError = 'lowlevel';
 			return false;
@@ -767,7 +773,7 @@ class User {
 			$this->LastError = 'form';
 			return false;
 		}
-		if ($this->Level < 1)
+		if ($this->Level < self::USER_BASIC)
 		{
 			$this->LastError = 'lowlevel';
 			return false;
