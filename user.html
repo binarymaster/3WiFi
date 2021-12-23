@@ -1111,7 +1111,7 @@ function resetUser(e)
 			<tr><td>%l10n_str_inviter%</td><td>%refuser%</td></tr>
 			<tr><td colspan=2></td></tr>
 			<tr><td>%l10n_str_theme%</td><td><select name="themes"><option value="">3WiFi Classic</option></select> <small>(%l10n_str_cookies%)</small></td></tr>
-			<tr><td colspan=2><input type="checkbox" id="sens_chk" onclick="revealSens($(this).prop('checked'))" /> %l10n_str_show_sens%</td></tr>
+			<tr><td colspan=2><input type="checkbox" id="sens_chk" onclick="revealSens($(this).prop('checked'))" /> <label for="sens_chk">%l10n_str_show_sens%</label></td></tr>
 			</table>
 		</div>
 		<div id=tab2 class=userCode dir=ltr style="display: none;">
@@ -1144,7 +1144,7 @@ function resetUser(e)
 			<tr><td><label for="lon">%l10n_str_lon%</label></td>
 			<td><input type="number" name="lon" id="lon" min="-180" max="180" step="0.00000001" value="0"/></td><td>° [-180; 180]</td></tr>
 			<tr><td colspan="3">%l10n_msg_geo_def_zero%</td></tr>
-			<tr><td colspan="3"><input type="checkbox" name="remove" id="remove" /> %l10n_str_geo_remove%</td></tr>
+			<tr><td colspan="3"><input type="checkbox" name="remove" id="remove" /> <label for="remove">%l10n_str_geo_remove%</label></td></tr>
 			</table>
 			<input type="submit" value="%l10n_btn_update%"/><img src="%theme_ajax%" style="display: none;"/>
 			</fieldset>

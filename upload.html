@@ -427,7 +427,7 @@ function initpage()
 		<input name="comment" type="text" placeholder="%l10n_str_comment_place%" autocomplete="off" onkeyup="showHint()" />
 		<span class=hint style="display: none; width: 320px; max-height: 300px; overflow-y: auto"></span>
 	</span></td></tr>
-	<tr><td style="vertical-align: top">%l10n_str_misc%</td><td><input type="checkbox" name="checkexist" value="1">%l10n_upload_checkexist%</td></tr>
+	<tr><td style="vertical-align: top">%l10n_str_misc%</td><td><input type="checkbox" name="checkexist" id="checkexist" value="1"> <label for="checkexist">%l10n_upload_checkexist%</label></td></tr>
 	<tr><td>%l10n_str_upload_progress%</td><td><span class=perc></span><b id=percnum></b></td></tr>
 	<tr><td><input type="submit" value="%l10n_btn_upload%" onclick="startProcess()" disabled></td><td></td></tr>
 	</table>

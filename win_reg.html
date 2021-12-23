@@ -8,8 +8,8 @@
 			<tr><td>%l10n_str_nick%</td><td><input type=text name=nick></td><td id=checknick></td></tr>
 			<tr><td>%l10n_str_pass%</td><td><input type=password name=password></td><td id=checkpass></td></tr>
 			<tr><td align=right>
-				<input type=checkbox onclick="$('#frm_reg').find('input[type=button]').prop('disabled', !this.checked)"/>
-			</td><td colspan=2 style="font-size: 12px">%l10n_str_accept_rules%</td></tr>
+				<input type=checkbox id=accept_rules onclick="$('#frm_reg').find('input[type=button]').prop('disabled', !this.checked)" />
+			</td><td colspan=2 style="font-size: 12px"><label for=accept_rules>%l10n_str_accept_rules%</label></td></tr>
 			<tr><td colspan=2 align=center id=regstat style="font-size: 13px; padding-top: 0px; max-width: 250px"></td></tr>
 			<tr><td>
 				<input type=button value="%l10n_btn_reg%" onclick="doReg()" disabled /></td>
