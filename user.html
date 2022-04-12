@@ -838,18 +838,30 @@ function loadstat(e, st)
 	});
 }
 
+function btnShowLoad(btn, load)
+{
+	if (load)
+	{
+		btn.hide();
+		btn.next().show();
+	}
+	else
+	{
+		btn.show();
+		btn.next().hide();
+	}
+}
+
 function queryAP(e)
 {
 	var id = $('input[name=id]', e).val();
 	var data = '';
 	data += '&id=' + id;
 	var btn = $('input[type=submit]', e);
-	btn.hide();
-	btn.next().show();
+	btnShowLoad(btn, true);
 	$.get('3wifi.php?a=queryall' + data, function(json)
 	{
-		btn.show();
-		btn.next().hide();
+		btnShowLoad(btn, false);
 		if (!json.result)
 		{
 			alert(errorStr(json.error));
@@ -894,8 +906,7 @@ function deleteAP(e)
 {
 	var id = $('input[name=id]', e).val();
 	var btn = $('input[type=submit]', e);
-	btn.hide();
-	btn.next().show();
+	btnShowLoad(btn, true);
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -908,8 +919,7 @@ function deleteAP(e)
 			data += '&id=' + id;
 			$.get('3wifi.php?a=delete' + data, function(json)
 			{
-				btn.show();
-				btn.next().hide();
+				btnShowLoad(btn, false);
 				if (!json.result)
 				{
 					alert(errorStr(json.error));
@@ -932,8 +942,7 @@ function geolocate(e)
 	var lon = $('input[name=lon]', e).val();
 	var rem = $('input[name=remove]', e).prop('checked');
 	var btn = $('input[type=submit]', e);
-	btn.hide();
-	btn.next().show();
+	btnShowLoad(btn, true);
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -950,8 +959,7 @@ function geolocate(e)
 				data += '&remove=1';
 			$.get('3wifi.php?a=geoupdate' + data, function(json)
 			{
-				btn.show();
-				btn.next().hide();
+				btnShowLoad(btn, false);
 				if (!json.result)
 				{
 					alert(errorStr(json.error));
@@ -998,12 +1006,10 @@ function getUserByInvite(e)
 	var data = '';
 	data += '&invite=' + encodeURIComponent(invite);
 	var btn = $(e);
-	btn.hide();
-	btn.next().show();
+	btnShowLoad(btn, true);
 	$.get('user.php?a=getuser' + data, function(json)
 	{
-		btn.show();
-		btn.next().hide();
+		btnShowLoad(btn, false);
 		processUser(json);
 		return false;
 	}).fail(simpleFail);
@@ -1015,12 +1021,10 @@ function getUserById(uid, e)
 	var data = '';
 	data += '&uid=' + encodeURIComponent(uid);
 	var btn = $(e);
-	btn.hide();
-	btn.next().show();
+	btnShowLoad(btn, true);
 	$.get('user.php?a=getuser' + data, function(json)
 	{
-		btn.show();
-		btn.next().hide();
+		btnShowLoad(btn, false);
 		processUser(json);
 		return false;
 	}).fail(simpleFail);
@@ -1056,8 +1060,7 @@ function resetUser(e)
 	var login = $('input[name=login]', e).val();
 	var form = e;
 	var btn = $('input[type=submit]', e);
-	btn.hide();
-	btn.next().show();
+	btnShowLoad(btn, true);
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)
@@ -1070,8 +1073,7 @@ function resetUser(e)
 			data += '&login=' + encodeURIComponent(login);
 			$.get('user.php?a=resetpass' + data, function(json)
 			{
-				btn.show();
-				btn.next().hide();
+				btnShowLoad(btn, false);
 				if (!json.result)
 				{
 					alert(errorStr(json.error));
