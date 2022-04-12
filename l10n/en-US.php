@@ -612,8 +612,10 @@ $l10n['str_geo_remove'] =
 'Remove from map if not found';
 $l10n['msg_user_mgmt'] =
 'User account management';
+$l10n['msg_user_set_success'] =
+'User account has been updated';
 $l10n['msg_user_reset_success'] =
-'Password was reset';
+'Password has been reset';
 $l10n['btn_get'] =
 'Obtain';
 $l10n['btn_reset'] =

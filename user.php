@@ -940,6 +940,56 @@ switch($action)
 	}
 	break;
 
+	// Изменение информации о пользователе
+	case 'setuser':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level != 3)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!$UserManager->checkToken($_POST['token']))
+	{
+		$json['error'] = 'token';
+		break;
+	}
+	if (!isset($_POST['uid']))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+
+	$uid = (int)$_POST['uid'];
+	$level = isset($_POST['level']) ? (int)$_POST['level'] : null;
+	$ban_reason = isset($_POST['ban_reason']) ? $_POST['ban_reason'] : null;
+
+	if (!is_null($level))
+	{
+		$json['result'] = $UserManager->admSetLevel($uid, $level);
+		if ($json['result'])
+			$json['result'] = $UserManager->admBanReason($uid, $ban_reason);
+		if (!$json['result'])
+			$json['error'] = 'database';
+		break;
+	}
+
+	$invites = isset($_POST['invites']) ? (int)$_POST['invites'] : null;
+
+	if (!is_null($invites) && $invites >= 0)
+	{
+		$json['result'] = $UserManager->admSetInvites($uid, $invites);
+		if (!$json['result'])
+			$json['error'] = 'database';
+		break;
+	}
+
+	$json['error'] = 'form';
+	break;
+
 	// Сброс пароля пользователя
 	case 'resetpass':
 	if (!$UserManager->isLogged())
@@ -962,7 +1012,7 @@ switch($action)
 		$json['error'] = 'notfound';
 		break;
 	}
-	$json['pass'] = $UserManager->resetPass($_GET['login']);
+	$json['pass'] = $UserManager->admResetPass($_GET['login']);
 	if ($json['pass'] === false)
 	{
 		$json['error'] = 'database';

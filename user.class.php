@@ -445,13 +445,45 @@ class User {
 		return true;
 	}
 
-	public function resetPass($login)
+	public function admResetPass($login)
 	{
 		$salt = $this->GenerateRandomString(32);
 		$pass = $this->GenerateRandomString(10, false);
 		$hash = md5($pass.$salt);
 
-		return (self::$mysqli->query("UPDATE users SET pass_hash='$hash',salt='{$this->quote($salt)}' WHERE login='{$this->quote($login)}'") ? $pass : false);
+		return (self::$mysqli->query("UPDATE users SET pass_hash='$hash',salt='{$this->quote($salt)}',lastupdate=lastupdate WHERE login='{$this->quote($login)}'") ? $pass : false);
+	}
+
+	public function admSetLevel($uid, $level)
+	{
+		self::$mysqli->query("UPDATE users SET level=$level,lastupdate=lastupdate WHERE uid=$uid");
+		if (self::$mysqli->errno != 0)
+		{
+			$this->LastError = 'database';
+			return false;
+		}
+		return true;
+	}
+
+	public function admSetInvites($uid, $invites)
+	{
+		self::$mysqli->query("UPDATE users SET invites=$invites,lastupdate=lastupdate WHERE uid=$uid");
+		if (self::$mysqli->errno != 0)
+		{
+			$this->LastError = 'database';
+			return false;
+		}
+		return true;
+	}
+
+	public function admBanReason($uid, $ban_reason)
+	{
+		if (is_null($ban_reason))
+			$ban_reason = 'NULL';
+		else
+			$ban_reason = "'{$this->quote($ban_reason)}'";
+
+		return self::$mysqli->query("UPDATE users SET ban_reason=$ban_reason,lastupdate=lastupdate WHERE uid=$uid");
 	}
 
 	public function Registration($Login, $Nick, $Password, $Invite)
@@ -716,12 +748,8 @@ class User {
 		}
 		if ($uid != null && $this->Level == self::USER_ADMIN)
 		{
-			self::$mysqli->query("UPDATE users SET level=$level WHERE uid=$uid");
-			if (self::$mysqli->errno != 0)
-			{
-				$this->LastError = 'database';
+			if (!$this->admSetLevel($uid, $level))
 				return false;
-			}
 		}
 		return true;
 	}

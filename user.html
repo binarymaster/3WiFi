@@ -1055,10 +1055,52 @@ function getUserParent(e)
 	return getUserById(mgmt_puid, e);
 }
 
+function setUserAccount(e, opt)
+{
+	var btn = $(e);
+	btnShowLoad(btn, true);
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return false;
+		} else {
+			var ban_reason = $('select#ban_reason').val();
+			var postdata = '';
+			postdata += 'token=' + encodeURIComponent(json.token);
+			postdata += '&uid=' + mgmt_uid;
+			if (opt == 'a')
+			{
+				postdata += '&level=' + $('select#user_level').val();
+				if (ban_reason != '')
+					postdata += '&ban_reason=' + ban_reason;
+			}
+			else
+			{
+				postdata += '&invites=' + $('input[name=invites]').val();
+			}
+			$.post('user.php?a=setuser', postdata, function(json)
+			{
+				btnShowLoad(btn, false);
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+				}
+				else
+				{
+					alert("%l10n_msg_user_set_success%");
+				}
+				return false;
+			}).fail(simpleFail);
+		}
+	}).fail(simpleFail);
+	return false;
+}
+
 function resetUser(e)
 {
 	var login = $('input[name=login]', e).val();
-	var form = e;
 	var btn = $('input[type=submit]', e);
 	btnShowLoad(btn, true);
 	$.get('user.php?a=token', function(json)
@@ -1174,7 +1216,7 @@ function resetUser(e)
 			<tr><td>%l10n_str_reg_date%</td>
 			<td><input type="text" name="reg_date" id="reg_date" readonly /></td></tr>
 			<tr><td>%l10n_str_level%</td>
-			<td><select id="user_level"></select>&nbsp;<select id="ban_reason"></select></td><td><input type="button" value="%l10n_btn_save%"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
+			<td><select id="user_level"></select>&nbsp;<select id="ban_reason"></select></td><td><input type="button" value="%l10n_btn_save%" onclick="return setUserAccount(this, 'a')"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			<tr><td><label for="pass">%l10n_str_pass%</label></td>
 			<td><input type="text" name="pass" id="pass" readonly /></td><td><input type="submit" value="%l10n_btn_reset%"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			<tr><td>%l10n_str_visited%</td>
@@ -1182,7 +1224,7 @@ function resetUser(e)
 			<tr><td>%l10n_str_inv_invited_created%</td>
 			<td><a href="#" id="inv_created">0/0</a></td></tr>
 			<tr><td><label for="invites">%l10n_str_inv_left%</label></td>
-			<td colspan=2><input type="number" name="invites" id="invites" min="0" max="100" step="1"/>&nbsp;<input type="button" value="%l10n_btn_save%"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
+			<td colspan=2><input type="number" name="invites" id="invites" min="0" max="100" step="1"/>&nbsp;<input type="button" value="%l10n_btn_save%" onclick="return setUserAccount(this, 'b')"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			<tr><td><label for="refuser">%l10n_str_inviter%</label></td>
 			<td><input type="text" name="refuser" id="refuser" readonly /></td><td><input type="button" value="%l10n_btn_get%" onclick="return getUserParent(this)"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			</table>
