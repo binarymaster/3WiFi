@@ -488,6 +488,10 @@ table.st2 td#stat_cn
 	text-decoration: none;
 }
 
+.userCode * table.userMgmt * input[type=text] {
+	width: 100%;
+}
+
 .content.stat
 {
 	padding-left: 0px;

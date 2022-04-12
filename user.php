@@ -915,6 +915,8 @@ switch($action)
 		$json['nick'] = $info['nick'];
 		$json['regdate'] = $info['regdate'];
 		$json['level'] = (int)$info['level'];
+		if (isset($info['ban_reason']))
+			$json['ban_reason'] = $info['ban_reason'];
 		$json['lastupdate'] = $info['lastupdate'];
 		$inv = $UserManager->listInvites($json['uid']);
 		if (is_array($inv))

@@ -497,6 +497,9 @@ TABLE.st2 TD#stat_cn {
 	font-weight:bold;
 	text-decoration:none;
 }
+.userCode * table.userMgmt * input[type=text] {
+	width: 100%;
+}
 .fQuestion {
 	background: lightgrey;
 	padding: 12 8 12 8;
