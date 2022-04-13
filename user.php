@@ -306,6 +306,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	if (!$res = QuerySql(
 		"SELECT id, time, cmtval, 
 		IP, Port, Authorization, name, 
@@ -369,6 +371,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	if (!$res = QuerySql("SELECT COUNT(id) FROM uploads WHERE uid=$uid"))
 	{
 		$json['error'] = 'database';
@@ -393,6 +397,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	if (!$res = QuerySql("SELECT IP, Port, Authorization, name, RadioOff, Hidden, NoBSSID, BSSID, ESSID, Security, WiFiKey, WPSPIN, LANIP, LANMask, WANIP, WANMask, WANGateway, DNS1, DNS2, DNS3, latitude, longitude, data 
 						FROM BASE_TABLE RIGHT JOIN uploads USING(id) LEFT JOIN extinfo USING (id) LEFT JOIN GEO_TABLE USING (BSSID) WHERE uid=$uid ORDER BY time"))
 	{
@@ -451,6 +457,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	if (!$res = QuerySql(
 		"SELECT id,time,cmtval,IP,
 		RadioOff,Hidden,
@@ -581,6 +589,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	if (!$res = QuerySql("SELECT latitude,longitude,comment FROM locations WHERE uid=$uid"))
 	{
 		$json['error'] = 'database';
@@ -620,6 +630,8 @@ switch($action)
 	$callback = $_GET['callback'];
 	$mob = (isset($_GET['mobile']) ? (bool)$_GET['mobile'] : false);
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	if (!$res = QuerySql("SELECT latitude,longitude,comment FROM locations WHERE uid=$uid AND latitude BETWEEN $lat1 AND $lat2 AND longitude BETWEEN $lon1 AND $lon2"))
 	{
 		$json['error'] = 'database';
@@ -931,8 +943,7 @@ switch($action)
 		}
 		$json['inv_left'] = (int)$info['invites'];
 		$json['puid'] = (int)$info['puid'];
-		$info = $UserManager->getUserInfo($info['puid']);
-		$json['refuser'] = $info['nick'];
+		$json['refuser'] = $UserManager->getUserNameById($info['puid']);
 	}
 	else
 	{
@@ -987,6 +998,19 @@ switch($action)
 		break;
 	}
 
+	$view = isset($_POST['view']) ? (int)$_POST['view'] : null;
+
+	if (!is_null($view))
+	{
+		if ($view == 0)
+			$json['result'] = $UserManager->admViewUser(null);
+		else
+			$json['result'] = $UserManager->admViewUser($uid);
+		if (!$json['result'])
+			$json['error'] = 'notfound';
+		break;
+	}
+
 	$json['error'] = 'form';
 	break;
 
@@ -1021,6 +1045,22 @@ switch($action)
 	$json['result'] = isset($json['pass']);
 	break;
 
+	// Получение информации о текущей сессии
+	case 'sessioninfo':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level <= 2)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	$json['result'] = true;
+	$json['session'] = $_SESSION;
+	break;
+
 	// Статистика пользователя
 	case 'stat':
 	set_time_limit(30);
@@ -1035,6 +1075,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	if (!$res = QuerySql("SELECT COUNT(id) FROM uploads WHERE uid=$uid"))
 	{
 		$json['error'] = 'database';
@@ -1083,6 +1125,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	if ($res = QuerySql("SELECT cmtid, COUNT(cmtid) FROM (SELECT cmtid FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) cmt GROUP BY cmtid ORDER BY COUNT(cmtid) DESC"))
 	{
 		$json['stat']['data'] = array();
@@ -1112,6 +1156,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	$json['stat']['top'] = TOP_NAME;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT name) FROM (SELECT name FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) dev WHERE name != ''"))
 	{
@@ -1148,6 +1194,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	$json['stat']['top'] = TOP_PORT;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT Port) FROM (SELECT Port FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) prt WHERE NOT(Port IS NULL)"))
 	{
@@ -1184,6 +1232,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	$json['stat']['top'] = TOP_AUTH;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT Authorization) FROM (SELECT Authorization FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) auth WHERE Authorization != ''"))
 	{
@@ -1220,6 +1270,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	$json['stat']['top'] = TOP_BSSID;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT BSSID) FROM (SELECT NoBSSID,BSSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) bss WHERE NoBSSID = 0"))
 	{
@@ -1256,6 +1308,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	$json['stat']['top'] = TOP_ESSID;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT ESSID) FROM (SELECT ESSID FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid)"))
 	{
@@ -1292,6 +1346,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	$json['stat']['top'] = TOP_SECURITY;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT Security) FROM (SELECT Security FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) sec"))
 	{
@@ -1328,6 +1384,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	$json['stat']['top'] = TOP_WIFI_KEY;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT WiFiKey) FROM (SELECT WiFiKey FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) wifi"))
 	{
@@ -1364,6 +1422,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	$json['stat']['top'] = TOP_WPS_PIN;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT WPSPIN) FROM (SELECT WPSPIN FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) pin WHERE WPSPIN != 1"))
 	{
@@ -1400,6 +1460,8 @@ switch($action)
 		break;
 	}
 	$uid = $UserManager->uID;
+	if (!is_null($UserManager->vuID))
+		$uid = $UserManager->vuID;
 	$json['stat']['top'] = TOP_DNS;
 	if ($res = QuerySql("SELECT COUNT(DISTINCT DNS) FROM (
 	SELECT DNS1 AS DNS FROM (SELECT DNS1 FROM uploads JOIN BASE_TABLE USING(id) WHERE uid=$uid) tdns1 WHERE DNS1 != 0 

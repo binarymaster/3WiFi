@@ -260,6 +260,35 @@ function doReg()
 		}
 	});
 }
+function doReturnView()
+{
+	$.get('user.php?a=token', function(json)
+	{
+		if (!json.result)
+		{
+			alert(errorStr(json.error));
+			return false;
+		} else {
+			var postdata = '';
+			postdata += 'token=' + encodeURIComponent(json.token);
+			postdata += '&uid=0';
+			postdata += '&view=0';
+			$.post('user.php?a=setuser', postdata, function(json)
+			{
+				if (!json.result)
+				{
+					alert(errorStr(json.error));
+				}
+				else
+				{
+					window.location.reload();
+				}
+				return false;
+			}).fail(onFail);
+		}
+	}).fail(onFail);
+	return false;
+}
 function loginBtn(force)
 {
 	if (ProfileInfo.isUser == 0 || force)
@@ -342,7 +371,18 @@ function initmenu()
 	{
 		top.location.href = this.location.href;
 	}
-	if (ProfileInfo.isUser == 0) $('a[href=user]').hide();
+
+	if (ProfileInfo.isUser == 0)
+	{
+		$('a[href=user]').hide();
+	}
+	else if (ProfileInfo.viewUser != '')
+	{
+		var str = $('#returnbtn > p').html();
+		str = str.replace(/%username%/g, encodeHTML(ProfileInfo.viewUser));
+		$('#returnbtn > p').html(str);
+		$($('a[href=user]')[0]).hide().next().show();
+	}
 
 	if (!isMobile())
 	{
@@ -408,7 +448,13 @@ function initmenu()
 			</span>
 		</span>
 		<a href="javascript://" onclick="loginBtn(false)" style="float: right"><div class=menubtn><p>%login_str%</p></div></a>
-		<a href="user"><div class="%chk_user%" style="float: right" id=nickname><p>%nick%</p></div></a>
+		<a href="user"><div class="%chk_user%" style="float: right"><p>%nick%</p></div></a>
+		<span class=multi style="display: none; float: right">
+			<a href="user"><div class="%chk_user%"><p>%nick%</p></div></a>
+			<span class=submenu>
+				<a href="#" onclick="return doReturnView()"><div class="submbtn" id=returnbtn><p>%l10n_menu_return%</p></div></a>
+			</span>
+		</span>
 	</div>
 </div>
 

@@ -71,17 +71,45 @@ function preparePage(&$content)
 	$content = str_replace('%broadcast%', $broadcast, $content);
 
 	global $UserManager, $l10n, $profile, $lat, $lon, $rad;
+	$ViewLogin = $UserManager->Login;
+	$ViewNick = $UserManager->Nick;
+	$ViewLevel = $UserManager->Level;
+	$ViewInvites = $UserManager->invites;
+	$ViewRAPI = $UserManager->ReadApiKey;
+	$ViewWAPI = $UserManager->WriteApiKey;
+	$ViewReg = $UserManager->RegDate;
+	$ViewInviter = $UserManager->InviterNickName;
+	$ViewUser = '';
+
+	if (!is_null($UserManager->vuID))
+	{
+		$ViewUser = $ViewNick;
+		$info = $UserManager->getUserInfo($UserManager->vuID);
+		$ViewLogin = $info['login'];
+		$ViewNick = $info['nick'];
+		$ViewLevel = (int)$info['level'];
+		$ViewInvites = (int)$info['invites'];
+		$ViewRAPI = $info['rapikey'];
+		$ViewWAPI = $info['wapikey'];
+		$ViewReg = $info['regdate'];
+		$ViewInviter = $UserManager->getUserNameById($info['puid']);
+	}
+
+	if (empty($ViewRAPI)) $ViewRAPI = $l10n['no_access'];
+	if (empty($ViewWAPI)) $ViewWAPI = $l10n['no_access'];
+
 	$content = str_replace('%login_str%', ($UserManager->isLogged() ? $l10n['menu_logout'] : $l10n['menu_login']), $content);
 	$content = str_replace('%profile%', $profile, $content);
 	$content = str_replace('%isUser%', (int)$UserManager->isLogged(), $content);
-	$content = str_replace('%login%', htmlspecialchars($UserManager->Login), $content);
-	$content = str_replace('%nick%', htmlspecialchars($UserManager->Nick), $content);
-	$content = str_replace('%user_access_level%', $UserManager->Level, $content);
-	$content = str_replace('%user_invites%', $UserManager->invites, $content);
-	$content = str_replace('%rapikey%', $UserManager->ReadApiKey, $content);
-	$content = str_replace('%wapikey%', $UserManager->WriteApiKey, $content);
-	$content = str_replace('%regdate%', $UserManager->RegDate, $content);
-	$content = str_replace('%refuser%', $UserManager->InviterNickName, $content);
+	$content = str_replace('%login%', htmlspecialchars($ViewLogin), $content);
+	$content = str_replace('%nick%', htmlspecialchars($ViewNick), $content);
+	$content = str_replace('%user_access_level%', $ViewLevel, $content);
+	$content = str_replace('%user_invites%', $ViewInvites, $content);
+	$content = str_replace('%view_user%', htmlspecialchars($ViewUser), $content);
+	$content = str_replace('%rapikey%', $ViewRAPI, $content);
+	$content = str_replace('%wapikey%', $ViewWAPI, $content);
+	$content = str_replace('%regdate%', $ViewReg, $content);
+	$content = str_replace('%refuser%', $ViewInviter, $content);
 	$content = str_replace('%var_lat%', $lat, $content);
 	$content = str_replace('%var_lon%', $lon, $content);
 	$content = str_replace('%var_rad%', $rad, $content);
@@ -175,7 +203,7 @@ if(TRY_USE_MEMORY_TABLES)
 	}
 }
 
-$profile = 'isUser: %isUser%, Nickname: "%nick%", Level: %user_access_level%, invites: %user_invites%';
+$profile = 'isUser: %isUser%, Nickname: "%nick%", Level: %user_access_level%, invites: %user_invites%, viewUser: "%view_user%"';
 
 $theme_base = 'themes';
 $themes = scandir("$theme_base/");

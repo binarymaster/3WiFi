@@ -124,6 +124,8 @@ $l10n['menu_login'] =
 'Вход';
 $l10n['menu_logout'] =
 'Выход';
+$l10n['menu_return'] =
+'Вернуться к %username%';
 
 /* 404 */
 $l10n['msg_404'] =

@@ -170,6 +170,13 @@ switch ($action)
 		break;
 	}
 
+	$viewLevel = $UserManager->Level;
+	if (!is_null($UserManager->vuID))
+	{
+		$info = $UserManager->getUserInfo($UserManager->vuID);
+		$viewLevel = (int)$info['level'];
+	}
+
 	function HasWildcards($str, $wc)
 	{
 		return StrInStr($str, $wc[0]) || StrInStr($str, $wc[1]);
@@ -219,10 +226,12 @@ switch ($action)
 		if ($k >= 6)
 			$DataCount += $k;
 
-		global $UserManager;
+		global $UserManager, $viewLevel;
 		$uid = $UserManager->uID;
+		if (!is_null($UserManager->vuID))
+			$uid = $UserManager->vuID;
 
-		if ((!$UseLocation) && ($UserManager->Level < 2) && ($DataCount < 6))
+		if ((!$UseLocation) && ($viewLevel < 2) && ($DataCount < 6))
 		{
 			$isLimitedRequest = true;
 		}
@@ -419,7 +428,7 @@ switch ($action)
 	if (isset($_POST['bssid'])) $bssid = $_POST['bssid'];
 	if (isset($_POST['essid'])) $essid = $_POST['essid'];
 	$bssid = preg_replace('/[^0-9A-Fa-f\*]/', '', $bssid);
-	if ($UserManager->Level > 1)
+	if ($viewLevel > 1)
 	{
 		if (isset($_POST['comment'])) $comment = $_POST['comment'];
 		if (isset($_POST['ipaddr'])) $ipaddr = $_POST['ipaddr'];
@@ -512,12 +521,12 @@ switch ($action)
 			$LastId = (int)$row['id'];
 
 			$entry = array();
-			if ($UserManager->Level >= 1) $entry['id'] = (int)$row['id'];
+			if ($viewLevel >= 1) $entry['id'] = (int)$row['id'];
 			$entry['time'] = $row['time'];
 			$entry['comment'] = ($row['cmtid'] == null ? '' : $row['cmtval']);
 			$ip = _long2ip($row['IP']);
 			$wanip = _long2ip($row['WANIP']);
-			if ($UserManager->Level > 1)
+			if ($viewLevel > 1)
 			{
 				$entry['ipport'] = ($ip != '' ? $ip : ($wanip != '' ? $wanip : ''));
 				if (isLocalIP($entry['ipport'])

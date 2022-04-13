@@ -45,6 +45,7 @@ class User {
 
 	public $uID = NULL;
 	public $puID = NULL;
+	public $vuID = NULL;
 	public $InviterNickName = NULL;
 	public $Login = '';
 	public $Nick = '';
@@ -55,8 +56,8 @@ class User {
 	public $Level = self::USER_UNAUTHORIZED;
 	public $HashIP = NULL;
 	public $invites = 0;
-	public $ReadApiKey = 'N/A';
-	public $WriteApiKey = 'N/A';
+	public $ReadApiKey = '';
+	public $WriteApiKey = '';
 	public $ApiAccess = '';
 
 	public $LastUpdate = 0;
@@ -187,6 +188,8 @@ class User {
 	 */
 		$_SESSION['uID'] 		= $this->uID;
 		$_SESSION['puID'] 		= $this->puID;
+		if (!is_null($this->vuID))
+			$_SESSION['view_uid'] 	= $this->vuID;
 		$_SESSION['InviterNickName'] = $this->InviterNickName;
 		$_SESSION['Login'] 		= $this->Login;
 		$_SESSION['Nick'] 		= $this->Nick;
@@ -238,6 +241,7 @@ class User {
 				return false;
 			}
 			$this->puID 	  = $_SESSION['puID'];
+			$this->vuID 	  = $_SESSION['view_uid'];
 			$this->InviterNickName = $_SESSION['InviterNickName'];
 			$this->Login	  = $_SESSION['Login'];
 			$this->Nick 	  = $_SESSION['Nick'];
@@ -486,6 +490,21 @@ class User {
 		return self::$mysqli->query("UPDATE users SET ban_reason=$ban_reason,lastupdate=lastupdate WHERE uid=$uid");
 	}
 
+	public function admViewUser($uid)
+	{
+		unset($_SESSION['view_uid']);
+		$this->vuID = NULL;
+		if (!is_null($uid))
+		{
+			$info = $this->getUserInfo($uid);
+			if (is_null($info['login']))
+				return false;
+			$_SESSION['view_uid'] = $uid;
+			$this->vuID = $uid;
+		}
+		return true;
+	}
+
 	public function Registration($Login, $Nick, $Password, $Invite)
 	{
 		$Salt = $this->GenerateRandomString(32);
@@ -661,7 +680,12 @@ class User {
 	 * @param int $uid
 	 * @return array $Invites
 	 */
-		if (is_null($uid)) $uid = $this->uID;
+		if (is_null($uid))
+		{
+			$uid = $this->uID;
+			if (!is_null($this->vuID))
+				$uid = $this->vuID;
+		}
 		if ($uid == NULL) return false;
 
 		$sql = 'SELECT time, users.regdate, invite, nick, IF(users.level IS NULL, invites.level, users.level) AS level FROM invites LEFT JOIN users USING(`uid`) WHERE invites.puid='.$this->quote($uid).' ORDER BY time';
