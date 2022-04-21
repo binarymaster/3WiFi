@@ -91,11 +91,15 @@ function initpage()
 	if (ProfileInfo.Level == 3)
 	{
 		for (var i = -2; i <= 3; i++)
-			$('#user_level').append($('<option>').val(i).text(levelToText(i)));
+			$('select#user_level').append($('<option>').val(i).text(levelToText(i)));
 		var br = ['', 'guest', 'parsing', 'commerce', 'public', 'inherit', 'weak', 'left'];
 		br.forEach(function(reason)
 		{
-			$('#ban_reason').append($('<option>').val(reason).text(reason));
+			$('select#ban_reason').append($('<option>').val(reason).text(reason));
+		});
+		$('select#user_level').change(function()
+		{
+			$('select#ban_reason').val(this.value < 0 ? 'left' : '');
 		});
 	}
 }

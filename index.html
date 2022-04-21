@@ -262,6 +262,10 @@ function doReg()
 }
 function doReturnView()
 {
+	var onFail = function(jqXHR, textStatus, errorThrown)
+	{
+		alert('%l10n_err_data%');
+	};
 	$.get('user.php?a=token', function(json)
 	{
 		if (!json.result)

@@ -1052,7 +1052,7 @@ switch($action)
 		$json['error'] = 'unauthorized';
 		break;
 	}
-	if ($UserManager->Level <= 2)
+	if ($UserManager->Level < 2)
 	{
 		$json['error'] = 'lowlevel';
 		break;
