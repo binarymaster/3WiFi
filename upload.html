@@ -2,11 +2,26 @@
 
 <head>
 <script type="text/javascript">
+function hideHintCheck(e)
+{
+	var hint = $('.hint');
+	if (!hint.is(e.target) && hint.has(e.target).length === 0)
+	{
+		if ($('input[type=text]').is(e.target))
+			return;
+		hideHint();
+	}
+}
+function hideHint()
+{
+	$(document).unbind('mouseup', hideHintCheck);
+	$('.hint').hide();
+}
 function selectComm(e)
 {
 	var el = (e.target.tagName == 'B' ? e.target.parentNode : e.target);
 	$('input[type=text]').val($(el).text());
-	$('.hint').hide();
+	hideHint();
 }
 function showHintExec()
 {
@@ -15,22 +30,24 @@ function showHintExec()
 	query += '&html=1';
 	$.get('3wifi.php?' + query, function(data)
 	{
-		$('.hint').empty();
+		var hint = $('.hint');
+		hint.empty();
 		if (data.hint.length > 0)
 		{
-			$('.hint').css('top', ($('.wrapper input').height() + 6) + 'px');
+			hint.css('top', ($('.wrapper input').height() + 6) + 'px');
 			for (var i = 0; i < data.hint.length; i++)
 			{
 				var div = $('<div>');
 				div.prop('class', 'hval');
 				div.html(data.hint[i]);
 				div.click(selectComm);
-				$('.hint').append(div);
+				hint.append(div);
 			}
-			$('.hint').show();
+			$(document).mouseup(hideHintCheck);
+			hint.show();
 		}
 		else
-			$('.hint').hide();
+			hideHint();
 	});
 }
 function showHint()
@@ -39,7 +56,7 @@ function showHint()
 		clearTimeout(hintTimeout);
 	if ($('input[type=text]').val() == '')
 	{
-		$('.hint').hide();
+		hideHint();
 		return;
 	}
 	hintTimeout = setTimeout(showHintExec, 500);
@@ -415,6 +432,13 @@ function initpage()
 		$('#formtable').html("%l10n_msg_upload_fileapi%");
 	}
 	hintTimeout = null;
+	$('input[type=text]').click(function()
+	{
+		if ($('.hint').is(":hidden"))
+			showHint();
+		else
+			hideHint();
+	});
 }
 </script>
 </head>
