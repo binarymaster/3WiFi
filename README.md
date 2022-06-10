@@ -1,6 +1,6 @@
 # 3WiFi Database
 
-(c) 2015-2021 Anton Kokarev et al.
+(c) 2015-2022 Anton Kokarev et al.
 
 This project was created to collect data from Router Scan log reports, search for access points, obtain its geolocation coordinates, and display it on world map.
 
