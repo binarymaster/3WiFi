@@ -252,6 +252,8 @@ TABLE.st1 {
 TABLE.st1 TD,
 TABLE.st1 TH {
 	padding: 3px; /* Поля вокруг содержимого ячейки */
+}
+TABLE.st1 TH {
 	white-space: nowrap;
 }
 TABLE.st1 TD {
