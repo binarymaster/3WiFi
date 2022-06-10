@@ -152,6 +152,45 @@
 </tr>
 
 <tr>
+	<td rowspan="4"><b>apidev</b></td>
+	<td rowspan="4">Определяет модели устройств на основе BSSID и похожих устройств в базе</td>
+	<td rowspan="4" style="text-align: left">
+		GET (запрос)<br>
+		POST (форма)<br>
+		POST (JSON-объект)</td>
+	<td style="text-align: left">
+		string <b>key</b> - API-ключ с правами на чтение</td>
+	<td rowspan="3" style="text-align: left">
+		array <b>data</b> - массив найденных данных, ключи массива содержат "BSSID"; каждая запись представляет из себя ещё один массив со следующими параметрами: <b>name</b> - название устройства, <b>score</b> - вероятность (значение от 0 до 1), <b>count</b> - кол-во таких же устройств в базе</td>
+</tr>
+<tr>
+	<td style="text-align: left">
+		array <b>bssid</b> - массив BSSID точек доступа</td>
+</tr>
+<tr>
+	<td style="text-align: left">
+		bool <b>nocli</b> - исключать Wi-Fi клиенты из определения (по умолчанию включено)</td>
+</tr>
+<tr>
+	<td colspan="2" style="text-align: left">
+		<p><b>Примеры (единичный запрос):</b></p>
+		<tt>GET /api/apidev?key=001122334455&amp;bssid=01:23:45:67:89:AB</tt><hr>
+		<tt>POST /api/apidev<br>
+		Content-Type: application/json<br>
+		<br>
+		{"key": "001122334455", "bssid": "01:23:45:67:89:AB"}</tt><hr>
+		<p><b>Ответ:</b></p>
+		<tt>{"result": true, "data": {"01:23:45:67:89:AB": [{"name": "Router Model 1", "score": 0.9, "count": 2000}, {"name": "Router Model 2", "score": 0.75, "count": 500}, {"name": "Router Model 3", "score": 0.4, "count": 100}]}}</tt>
+		<p><b>Примеры (мульти-запрос):</b></p>
+		<tt>POST /api/apidev<br>
+		Content-Type: application/json<br>
+		<br>
+		{"key": "001122334455", "bssid": ["11:22:33:44:55:66", "77:88:99:AA:BB:CC"]}</tt><hr>
+		<p><b>Ответ:</b></p>
+		<tt>{"result": true, "data": {"11:22:33:44:55:66": [{"name": "Router Model 1", "score": 0.9, "count": 2000}, {"name": "Router Model 2", "score": 0.75, "count": 500}, {"name": "Router Model 3", "score": 0.4, "count": 100}], "77:88:99:AA:BB:CC": [{"name": "Router Model 4", "score": 0.75, "count": 2000}, {"name": "Router Model 5", "score": 0.6, "count": 500}, {"name": "Router Model 6", "score": 0.2, "count": 100}]}}</tt></td>
+</tr>
+
+<tr>
 	<td rowspan="5"><b>apiranges</b></td>
 	<td rowspan="5">Получает список диапазонов по широте, долготе и радиусу</td>
 	<td rowspan="5" style="text-align: left">

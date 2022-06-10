@@ -677,115 +677,14 @@ switch ($action)
 		$json['error'] = 'form';
 		break;
 	}
-	$mac = mac2dec($bssid);
 	if (!db_connect())
 	{
 		$json['error'] = 'database';
 		break;
 	}
-	$res = QuerySql(
-		"CREATE TEMPORARY TABLE dev_names 
-		(
-			`name` TINYTEXT NOT NULL, 
-			`BSSID` BIGINT(15) UNSIGNED NOT NULL, 
-			INDEX name (name(512)), 
-			INDEX BSSID (BSSID), 
-			UNIQUE INDEX uni (BSSID)
-		)
-	");
-	$json['result'] = $res !== false;
-	$x = 1;
-	for ($i = 1; $i <= 24; $i++)
-	{
-		$m2 = $mac | $x;
-		$m1 = $m2 - $x;
-		$m2 = base_convert($m2, 10, 16);
-		$m1 = base_convert($m1, 10, 16);
-		if ($json['result'])
-		{
-			$res = QuerySql(
-				"INSERT IGNORE dev_names 
-				SELECT name, BSSID 
-				FROM `BASE_TABLE` 
-				WHERE 
-					BSSID BETWEEN 0x{$m1} AND 0x{$m2} 
-					AND NoBSSID = 0 
-					AND name != '' 
-					AND name NOT LIKE 'FOSCAM%' 
-					AND name NOT LIKE 'IPCAM%' 
-					AND name NOT LIKE '%D-Link DCS%' 
-					AND name NOT LIKE '%IP Camera%' 
-					AND name NOT LIKE '%Network Camera%' 
-			");
-			$json['result'] = $res !== false;
-		}
-		if ($json['result'])
-		{
-			$res = QuerySql("SELECT COUNT(*) FROM dev_names");
-			$json['result'] = $res !== false;
-			if ($json['result'])
-			{
-				$row = $res->fetch_row();
-				$res->close();
-				if ((int)$row[0] >= 20000)
-					break;
-			}
-		}
-		if (!$json['result'])
-			break;
-		$x |= $x << 1;
-	}
-	if ($json['result'])
-	{
-		$res = QuerySql("CREATE TEMPORARY TABLE device_names LIKE dev_names");
-		$json['result'] = $res !== false;
-	}
-	$mac = base_convert($mac, 10, 16);
-	if ($json['result'])
-	{
-		$res = QuerySql(
-			"INSERT device_names 
-			SELECT name, BSSID 
-			FROM dev_names 
-			ORDER BY ABS(BSSID - 0x$mac)
-		");
-		$json['result'] = $res !== false;
-	}
-	if ($json['result'])
-	{
-		$res = QuerySql(
-			"SELECT name, COUNT(name) cnt, ABS(BSSID - 0x$mac) diff 
-			FROM device_names 
-			GROUP BY name HAVING(cnt > 1) 
-			ORDER BY ABS(BSSID - 0x$mac) 
-			LIMIT 10
-		");
-		$json['result'] = $res !== false;
-	}
-	if ($json['result'])
-	{
-		$devs = array();
-		while ($row = $res->fetch_assoc())
-		{
-			$devs[] = $row;
-		}
-		$res->close();
-	}
+	require_once 'devmac.php';
+	$json = API_device_mac($bssid, true);
 	$db->close();
-	if (!$json['result'])
-	{
-		$json['error'] = 'database';
-		break;
-	}
-	$json['scores'] = array();
-	foreach($devs as $dev)
-	{
-		$entry = array();
-		$entry['name'] = $dev['name'];
-		$entry['score'] = 1 - pow((int)$dev['diff'] / 0xFFFFFF, 1 / 8);
-		$entry['count'] = $dev['cnt'];
-		$json['scores'][] = $entry;
-	}
 	break;
 
 	// Определение WPS PIN по MAC
@@ -1904,6 +1803,77 @@ switch ($action)
 			$json['data'][dec2mac(mac2dec($mac))] = $data;
 	}
 	$json['result'] = true;
+	$db->close();
+	break;
+
+	// API определение устройства по MAC
+	case 'apidev':
+	$json['result'] = false;
+	$mode = explode(';', $_SERVER["CONTENT_TYPE"]);
+	$mode = trim($mode[0]);
+	if ($mode == 'application/x-www-form-urlencoded')
+	{
+		$data = $_POST;
+	}
+	elseif ($mode == 'application/json')
+	{
+		$data = json_decode(file_get_contents('php://input'), true);
+	}
+	else
+	{
+		$data = $_REQUEST;
+	}
+	$key = (isset($data) ? $data['key'] : null);
+	$bssid = (isset($data) ? $data['bssid'] : null);
+	$nocli = true;
+	if (isset($data) && isset($data['nocli']))
+		$nocli = in_array($data['nocli'], array('1', 'on', 'true', 1, true), true);
+	if (is_string($bssid) && strlen($bssid))
+		$bssid = array($bssid);
+	if (is_null($key) || empty($key) ||
+		!is_array($bssid) || !count($bssid))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	if (count($bssid) > 100)
+	{
+		$json['error'] = 'limit';
+		break;
+	}
+	if (!$UserManager->AuthByApiKey($key, true))
+	{
+		$json['error'] = 'loginfail';
+		break;
+	}
+	if ($UserManager->Level < 0 || $UserManager->ApiAccess != 'read')
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!db_connect())
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	require_once 'devmac.php';
+	$json['result'] = true;
+	$json['data'] = array();
+	foreach ($bssid as $i => $mac)
+	{
+		$mac = preg_replace('/[^0-9A-Fa-f]/', '', $mac);
+		if(!ismac($mac))
+			continue;
+		$data = API_device_mac($mac, $nocli);
+		if ($data['result'] && count($data['scores']))
+			$json['data'][dec2mac(mac2dec($mac))] = $data['scores'];
+		if (!$data['result'])
+		{
+			$json['result'] = $data['result'];
+			$json['error'] = $data['error'];
+			break;
+		}
+	}
 	$db->close();
 	break;
 
