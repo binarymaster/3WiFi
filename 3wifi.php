@@ -1169,9 +1169,10 @@ switch ($action)
 		$json['error'] = 'database';
 		break;
 	}
-	$useloc = useLocationAllowed($_COOKIE['uselocation']);
 	$json['stat'] = array();
 	$mode = (isset($_GET['mode']) ? (int)$_GET['mode'] : 0);
+	if ($mode != 2)
+		$useloc = useLocationAllowed($_COOKIE['uselocation']);
 	if ($mode == 0 || $mode == 1)
 	{
 		$res = ($useloc ? false : loadStatsCache('main'));

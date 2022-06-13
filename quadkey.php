@@ -355,14 +355,16 @@ function query_radius_ids($db, $lat, $lon, $radius)
 	$quadkeys = get_quadkeys_for_tiles($tile_x1, $tile_y1, $tile_x2, $tile_y2, 7, false);
 	$quadkeys = '(' . implode(',', array_map(function($x){return base_convert($x, 2, 10);}, $quadkeys)) . ')';
 
-	$res = QuerySql(
-		"CREATE TEMPORARY TABLE IF NOT EXISTS radius_ids AS (SELECT id 
+	$sql = "CREATE TEMPORARY TABLE IF NOT EXISTS radius_ids AS (SELECT id 
 		FROM `BASE_TABLE`, `GEO_TABLE` 
 		WHERE (`GEO_TABLE`.`quadkey` >> 32) IN $quadkeys AND
 				`BASE_TABLE`.`BSSID` = `GEO_TABLE`.`BSSID` 
 				AND (`GEO_TABLE`.`quadkey` IS NOT NULL) 
 				AND (`GEO_TABLE`.`latitude` BETWEEN $lat1 AND $lat2 AND `GEO_TABLE`.`longitude` BETWEEN $lon1 AND $lon2)
 		)
-	");
+	";
+	$res = QuerySql($sql);
+	if ($res !== false)
+		QuerySql("ALTER TABLE radius_ids ADD PRIMARY KEY(id)");
 	return $res !== false;
 }

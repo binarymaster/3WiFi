@@ -88,10 +88,7 @@ function getLoads($db, $useloc = false)
 {
 	$result = array();
 	date_default_timezone_set('UTC');
-	$sql = 'SELECT DATE_FORMAT(time,\'%Y.%m.%d\'), COUNT(id) FROM BASE_TABLE ';
-	if ($useloc)
-		$sql .= 'JOIN radius_ids USING(id) ';
-	$sql .= 'GROUP BY DATE_FORMAT(time,\'%Y%m%d\') ORDER BY id DESC LIMIT 30';
+	$sql = 'CALL show_graph_stat(' . ($useloc ? '1)' : '0)');
 	if ($res = QuerySql($sql))
 	{
 		while ($row = $res->fetch_row())
