@@ -87,6 +87,11 @@ function getDelimStr($name, $arr)
 	}
 	return false;
 }
+function highlightWords($text, array $words)
+{
+	$words = array_map(preg_quote, $words);
+	return preg_replace('/('. implode('|', $words) .')/isu', '<b>$1</b>', $text);
+}
 
 // IP block
 function _long2ip($arg)

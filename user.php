@@ -882,6 +882,49 @@ switch($action)
 	}
 	break;
 
+	// Поиск пользователей
+	case 'finduser':
+	if (!$UserManager->isLogged())
+	{
+		$json['error'] = 'unauthorized';
+		break;
+	}
+	if ($UserManager->Level != 3)
+	{
+		$json['error'] = 'lowlevel';
+		break;
+	}
+	if (!isset($_GET['query']))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	$query = $_GET['query'];
+	if (empty($query) || strlen($query) > max(LOGIN_MAX, NICK_MAX))
+	{
+		$json['error'] = 'form';
+		break;
+	}
+	$query = $db->real_escape_string($query);
+	if (!$res = QuerySql("SELECT uid, login, nick FROM users WHERE login LIKE '%{$query}%' OR nick LIKE '%{$query}%'"))
+	{
+		$json['error'] = 'database';
+		break;
+	}
+	$json['result'] = true;
+	$json['users'] = array();
+	while ($row = $res->fetch_row())
+	{
+		$usr = array();
+		$usr['uid'] = (int)$row[0];
+		$usr['login'] = $row[1];
+		$usr['html'] = highlightWords(htmlspecialchars($row[1] . ' | ' . $row[2]), array($query));
+		$json['users'][] = $usr;
+		unset($usr);
+	}
+	$res->close();
+	break;
+
 	// Получение информации о пользователе
 	case 'getuser':
 	if (!$UserManager->isLogged())

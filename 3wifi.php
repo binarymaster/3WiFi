@@ -1146,11 +1146,6 @@ switch ($action)
 	}
 	$db->close();
 
-	function highlightWords($text, array $words)
-	{
-		$words = array_map(preg_quote, $words);
-		return preg_replace('/('. implode('|', $words) .')/isu', '<b>$1</b>', $text);
-	}
 	if ($html)
 		for ($i = 0; $i < count($json['hint']); $i++)
 		{

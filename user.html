@@ -90,6 +90,7 @@ function initpage()
 	}
 	if (ProfileInfo.Level == 3)
 	{
+		userBoxTimeout = null;
 		for (var i = -2; i <= 3; i++)
 			$('select#user_level').append($('<option>').val(i).text(levelToText(i)));
 		var br = ['', 'guest', 'parsing', 'commerce', 'public', 'inherit', 'weak', 'left'];
@@ -1020,6 +1021,72 @@ function getUserByInvite(e)
 	return false;
 }
 
+function userBoxHideCheck(e)
+{
+	var box = $('.hint');
+	if (!box.is(e.target) && box.has(e.target).length === 0)
+	{
+		if ($('input[name=login]').is(e.target))
+			return;
+		userBoxHide();
+	}
+}
+
+function userBoxHide()
+{
+	$(document).unbind('mouseup', userBoxHideCheck);
+	$('.hint').hide();
+}
+
+function userBoxSelect(e)
+{
+	var el = (e.target.tagName == 'B' ? e.target.parentNode : e.target);
+	$('input[name=login]').val($(el).prop('data-login'));
+	getUserById($(el).prop('data-uid'), e);
+	userBoxHide();
+}
+
+function searchUsers()
+{
+	var data = '';
+	data += '&query=' + encodeURIComponent($('input[name=login]').val());
+	$.get('user.php?a=finduser' + data, function(json)
+	{
+		var box = $('.hint');
+		box.empty();
+		if (json.users.length > 0)
+		{
+			box.css('top', ($('.wrapper input').height() + 6) + 'px');
+			for (var i = 0; i < json.users.length; i++)
+			{
+				var div = $('<div>');
+				div.prop('class', 'hval');
+				div.prop('data-uid', json.users[i].uid);
+				div.prop('data-login', json.users[i].login);
+				div.html(json.users[i].html);
+				div.click(userBoxSelect);
+				box.append(div);
+			}
+			$(document).mouseup(userBoxHideCheck);
+			box.show();
+		}
+		else
+			userBoxHide();
+	}).fail(simpleFail);
+}
+
+function userBoxShow()
+{
+	if (userBoxTimeout != null)
+		clearTimeout(userBoxTimeout);
+	if ($('input[name=login]').val() == '')
+	{
+		userBoxHide();
+		return;
+	}
+	userBoxTimeout = setTimeout(searchUsers, 500);
+}
+
 function getUserById(uid, e)
 {
 	var data = '';
@@ -1224,7 +1291,10 @@ function resetUser(e)
 			<tr><td><label for="invite">%l10n_str_invite%</label></td>
 			<td><input type="text" name="invite" id="invite" pattern=".{12,12}"/></td><td><input type="button" value="%l10n_btn_get%" onclick="return getUserByInvite(this)"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			<tr><td><label for="login">%l10n_str_login%</label></td>
-			<td><input type="text" name="login" id="login" pattern=".{5,30}" required="required"/></td><td><input type="button" value="&lt;" onclick="return getUserPrev(this)"/><img src="%theme_ajax%" style="display: none;"/><input type="button" value="&gt;" onclick="return getUserNext(this)"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
+			<td><span class=wrapper>
+				<input type="text" name="login" id="login" pattern=".{5,30}" onkeyup="userBoxShow()" required="required"/>
+				<span class=hint style="display: none; width: 320px; max-height: 300px; overflow-y: auto"></span>
+			</span></td><td><input type="button" value="&lt;" onclick="return getUserPrev(this)"/><img src="%theme_ajax%" style="display: none;"/><input type="button" value="&gt;" onclick="return getUserNext(this)"/><img src="%theme_ajax%" style="display: none;"/></td></tr>
 			<tr><td><label for="nick">%l10n_str_nick_full%</label></td>
 			<td><input type="text" name="nick" id="nick" readonly /></td></tr>
 			<tr><td>%l10n_str_reg_date%</td>
