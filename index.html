@@ -69,25 +69,10 @@ function errorStr(error)
 }
 function banReasonStr(error)
 {
-	switch (error)
-	{
-		case 'guest':
-		return '%l10n_ban_guest%';
-		case 'parsing':
-		return '%l10n_ban_parsing%';
-		case 'commerce':
-		return '%l10n_ban_commerce%';
-		case 'public':
-		return '%l10n_ban_public%';
-		case 'inherit':
-		return '%l10n_ban_inherit%';
-		case 'weak':
-		return '%l10n_ban_weak%';
-		case 'left':
-		return '%l10n_ban_left%';
-		default:
+	if (error in BanReasons)
+		return BanReasons[error];
+	else
 		return '%l10n_err_unknown%';
-	}
 }
 function encodeHTML(str, spaces)
 {
@@ -368,6 +353,7 @@ function recheckCoordsLock()
 }
 
 var ProfileInfo = {%profile%};
+var BanReasons = %ban_reasons%;
 
 function initmenu()
 {

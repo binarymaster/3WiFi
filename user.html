@@ -93,7 +93,11 @@ function initpage()
 		userBoxTimeout = null;
 		for (var i = -2; i <= 3; i++)
 			$('select#user_level').append($('<option>').val(i).text(levelToText(i)));
-		var br = ['', 'guest', 'parsing', 'commerce', 'public', 'inherit', 'weak', 'left'];
+		var br = [''];
+		for (var reason in BanReasons)
+		{
+			br.push(reason);
+		};
 		br.forEach(function(reason)
 		{
 			$('select#ban_reason').append($('<option>').val(reason).text(reason));

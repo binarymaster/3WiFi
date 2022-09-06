@@ -70,7 +70,7 @@ function preparePage(&$content)
 	global $broadcast;
 	$content = str_replace('%broadcast%', $broadcast, $content);
 
-	global $UserManager, $l10n, $profile, $lat, $lon, $rad;
+	global $UserManager, $l10n, $ban_reasons, $profile, $lat, $lon, $rad;
 	$ViewLogin = $UserManager->Login;
 	$ViewNick = $UserManager->Nick;
 	$ViewLevel = $UserManager->Level;
@@ -99,6 +99,7 @@ function preparePage(&$content)
 	if (empty($ViewWAPI)) $ViewWAPI = $l10n['no_access'];
 
 	$content = str_replace('%login_str%', ($UserManager->isLogged() ? $l10n['menu_logout'] : $l10n['menu_login']), $content);
+	$content = str_replace('%ban_reasons%', json_encode($ban_reasons), $content);
 	$content = str_replace('%profile%', $profile, $content);
 	$content = str_replace('%isUser%', (int)$UserManager->isLogged(), $content);
 	$content = str_replace('%login%', htmlspecialchars($ViewLogin), $content);
@@ -203,7 +204,13 @@ if(TRY_USE_MEMORY_TABLES)
 	}
 }
 
+$ban_reasons = array();
 $profile = 'isUser: %isUser%, Nickname: "%nick%", Level: %user_access_level%, invites: %user_invites%, viewUser: "%view_user%"';
+
+foreach (explode('|', BAN_REASONS) as $reason)
+{
+	$ban_reasons[$reason] = $l10n["ban_$reason"];
+}
 
 $theme_base = 'themes';
 $themes = scandir("$theme_base/");
