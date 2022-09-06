@@ -86,6 +86,8 @@ $l10n['ban_weak'] =
 'Security issue — your login or password is weak';
 $l10n['ban_left'] =
 'You are no longer in community';
+$l10n['ban_contact'] =
+'Security issue — ask for help in Router Scan chat';
 $l10n['reg_ok'] =
 'Registration success!';
 $l10n['login_ok'] =

@@ -65,7 +65,7 @@ define('USER_TIMEOUT', 24*60*60);
 define('GUEST_WAIT', 10);
 define('INVITE_VALID_FROM_BANNED', false);
 define('ALLOW_BANNED_INVITE_REG', false);
-define('BAN_REASONS', 'guest|parsing|commerce|public|inherit|weak|left');
+define('BAN_REASONS', 'guest|parsing|commerce|public|inherit|weak|left|contact');
 
 // Daemons
 define('GEO_PORTION', 100);
